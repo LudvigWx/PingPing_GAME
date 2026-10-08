@@ -6323,7 +6323,9 @@ function syncInstall() {
   if (TI.installed) { b.hidden = true; n.textContent = 'You are playing the installed app.'; }
   else if (TI.canPrompt) { b.hidden = false; n.textContent = 'Put Trepong on your home screen or desktop. It opens fullscreen without the browser bar and works offline against bots.'; }
   else if (TI.ios) { b.hidden = true; n.textContent = 'On iPhone or iPad: open the game in Safari, tap the Share button, then "Add to Home Screen".'; }
-  else { b.hidden = true; n.textContent = 'In Chrome or Edge, open the browser menu and pick "Install Trepong" (on Android: "Add to Home screen"). Already installed? Open it from your apps.'; }
+  else if (/SamsungBrowser/i.test(navigator.userAgent)) { b.hidden = true; n.textContent = 'In Samsung Internet: tap the download icon in the address bar if you see one. Otherwise tap the menu (☰) at the bottom, then "Add page to" → "Home screen". Already installed? Open Trepong from your apps.'; }
+  else if (/Android/i.test(navigator.userAgent)) { b.hidden = true; n.textContent = 'In Chrome: tap the menu (⋮) at the top right, then "Install app" or "Add to Home screen". The install button can also show up here after you have played for a little while.'; }
+  else { b.hidden = true; n.textContent = 'In Chrome or Edge, open the browser menu and pick "Install Trepong". Already installed? Open it from your apps.'; }
 }
 if (TI) {
   TI.onChange(syncInstall); syncInstall();

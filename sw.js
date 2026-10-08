@@ -1,6 +1,6 @@
 // Trepong service worker: makes the game installable and playable offline.
 // The page itself is fetched network-first so new versions show up right away; everything else is cache-first.
-const CACHE = 'trepong-v1';
+const CACHE = 'trepong-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
   'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'];
 self.addEventListener('install', e => {
