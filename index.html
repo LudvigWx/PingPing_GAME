@@ -4225,7 +4225,7 @@ function pushTrails(g) {
 }
 function hostTick(dt) {
   const targets = [], slack = [];
-  st.padSpeed = st.pads.map((_, i) => st.boss && i === st.boss.s ? bossSpeed(st) : bots[i] ? 2.3*(botSkill[i] || 1) : Infinity);
+  st.padSpeed = st.pads.map((_, i) => st.boss && i === st.boss.s ? bossSpeed(st) : bots[i] ? 2.3*(0.7 + 0.3*(botSkill[i] || 1)) : Infinity);
   const guestPeers = mode === 'host' ? findPeers() : null;
   for (let i = 0; i < st.n; i++) {
     if (i === mySeat) targets[i] = myTarget();
@@ -5815,7 +5815,7 @@ const CHAR = {
 };
 const WORLDS = [
   { id: 'harbor', n: 'Neon Harbor', no: 'World 1', col: '#3EE6FF', col2: '#FF4F8B', scene: 'harborbg',
-    ars: ['classic', 'retro'], muts: ['wind', 'storm', 'giant'], sk: [0.6, 0.92], rally: [350, 850], bossAr: 'classic', bossMut: null,
+    ars: ['classic', 'retro'], muts: ['wind', 'storm', 'giant'], sk: [0.95, 1.2], rally: [350, 850], bossAr: 'classic', bossMut: null,
     foes: ['Dockhand Dex', 'Neon Nell', 'Barnacle Bo', 'Gull', 'Tidal Tess', 'Rusty'], champ: 'First Mate Marlo',
     look: { cs: ['#3EE6FF', '#4FFFC4', '#7FD8FF', '#FF4F8B', '#4A7BFF'], hs: ['cap', 'shark', 'duck', 'viking', 'propeller'], fs: ['eyes', 'angry', 'shades', 'mustache'], ss: ['solid', 'wood', 'zebra'] },
     boss: [{ n: 'Captain Riptide', c: '#4FFFC4', h: 'pirate', f: 'eyepatch', t: 'waves', s: 'neonwave', atk: ['wall', 'laser', 'multi'], rate: 1.05, spd: 1.0, err: 1.18, hpAbs: 30, cards: ['wide'] }],
@@ -5834,7 +5834,7 @@ const WORLDS = [
              ['me', 'Then I\'ll bring a warm paddle.']]
     } },
   { id: 'frost', n: 'Frostpeak', no: 'World 2', col: '#9FF3FF', col2: '#F3F0FF', scene: 'frostbg', unlock: 'harbor',
-    ars: ['ice'], muts: ['wind', 'giant', 'tiny'], sk: [0.82, 1.15], rally: [600, 1150], bossAr: 'ice', bossMut: null,
+    ars: ['ice'], muts: ['wind', 'giant', 'tiny'], sk: [1.08, 1.32], rally: [600, 1150], bossAr: 'ice', bossMut: null,
     foes: ['Yeti Jr.', 'Icicle Ida', 'Sledge', 'Flurry', 'Snowball', 'Avalanche Al'], champ: 'Glacier Greta',
     look: { cs: ['#F3F0FF', '#7FD8FF', '#C9D6F2', '#3EE6FF', '#4A7BFF'], hs: ['bunny', 'viking', 'astro', 'cat', 'beanie'], fs: ['eyes', 'sleepy', 'angry', 'frozen'], ss: ['solid', 'zebra', 'galaxy'] },
     boss: [{ n: 'Sleet', c: '#F3F0FF', h: 'beanie', f: 'frozen', t: 'snow', s: 'icecrystal', atk: ['freeze', 'wall'], rate: 1.05, spd: 1.0, err: 1.2, hpAbs: 15, cards: ['wide'] },
@@ -5853,7 +5853,7 @@ const WORLDS = [
              ['me', 'Good. Saves me the trip.']]
     } },
   { id: 'rift', n: 'The Rift', no: 'World 3', col: '#B57CFF', col2: '#FF4F8B', scene: 'riftbg', unlock: 'frost',
-    ars: ['hole', 'classic'], muts: ['portal', 'upside', 'invis', 'dark'], sk: [0.98, 1.26], rally: [800, 1400], bossAr: 'hole', bossMut: null,
+    ars: ['hole', 'classic'], muts: ['portal', 'upside', 'invis', 'dark'], sk: [1.15, 1.38], rally: [800, 1400], bossAr: 'hole', bossMut: null,
     foes: ['Static', 'Glitch', 'Null', 'Shade', 'Flicker', 'Hollow'], champ: 'The Void Knight',
     look: { cs: ['#9B4DFF', '#B57CFF', '#FF4F8B', '#4A7BFF', '#F3F0FF'], hs: ['horns', 'halo', 'antenna', 'wizard', 'voidhorns'], fs: ['robot', 'laser', 'angry', 'voideyes'], ss: ['matrix', 'galaxy', 'rift'] },
     boss: [{ n: 'The Hollow Emperor', c: '#9B4DFF', h: 'emperor', f: 'voideyes', t: 'void', s: 'rift', atk: ['ghost', 'laser', 'wall'], rate: 1.05, spd: 1.05, err: 1.25, hpAbs: 16, cards: ['wide', 'shieldgen'] },
@@ -5872,7 +5872,7 @@ const WORLDS = [
              ['me', 'Rally on.']]
     } },
   { id: 'pumpkin', n: 'Pumpkin Night', no: 'Event world', col: '#FF7518', col2: '#B57CFF', scene: 'moon', event: true,
-    ars: ['classic', 'hole'], muts: ['dark', 'invis', 'lava', 'portal'], sk: [0.85, 1.22], rally: [600, 1200], bossAr: 'classic', bossMut: 'dark',
+    ars: ['classic', 'hole'], muts: ['dark', 'invis', 'lava', 'portal'], sk: [1.08, 1.36], rally: [600, 1200], bossAr: 'classic', bossMut: 'dark',
     foes: ['Ghoul', 'Mummy Max', 'Skelly', 'Witchy Wren', 'Count Clack', 'Boo'], champ: 'The Scarecrow',
     look: { cs: ['#FF7518', '#B57CFF', '#7CFF3A', '#E8E2CC', '#B3001B'], hs: ['witch', 'horns', 'bat', 'wizard', 'candycorn'], fs: ['vampire', 'skeleton', 'stitch', 'ghostface'], ss: ['web', 'bones', 'pumpkin'] },
     boss: [{ n: 'The Headless Hitter', c: '#FF7518', h: 'none', f: 'none', t: 'candy', s: 'pumpkin', atk: ['multi', 'wall', 'ghost'], rate: 1.0, spd: 1.05, err: 1.15, hpAbs: 18, cards: ['wide'] },
