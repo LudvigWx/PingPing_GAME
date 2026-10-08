@@ -4,6 +4,7 @@ The only real difference: online play goes through PeerJS (peerroom.js) instead 
 import sys, pathlib
 here = pathlib.Path(__file__).resolve().parent
 src = (here / 'trepong.html').read_text(encoding='utf-8')
+src = src.replace('<meta charset="utf-8">\n', '', 1)
 adapter = (here / 'peerroom.js').read_text(encoding='utf-8') + '\n' + (here / 'voice.js').read_text(encoding='utf-8')
 
 def rep(a, b):
@@ -28,22 +29,22 @@ rep("""  roomCode = String(Math.floor(1000 + Math.random()*9000));
     net = await joinNet(roomCode);
     if (net && !net.isHub()) { await net.leave(); net = null; }   // code already in use somewhere: pick another
   }
-  if (!net) { btn.disabled = false; btn.textContent = 'Skapa rum'; toast('Kunde inte skapa ett rum. Kolla internet och försök igen.'); return; }""")
+  if (!net) { btn.disabled = false; btn.textContent = 'Create room'; toast('Could not create a room. Check your internet and try again.'); return; }""")
 rep("""  roomCode = code; net = await joinNet(code);""", """  roomCode = code; net = await joinNet(code);
-  if (net && net.isHub()) { await net.leave(); net = null; btn.disabled = false; btn.textContent = 'Gå med'; toast('Hittade inget rum med koden ' + code + '.'); return; }
-  if (!net) { btn.disabled = false; btn.textContent = 'Gå med'; toast('Kunde inte ansluta. Kolla internet och försök igen.'); return; }""")
+  if (net && net.isHub()) { await net.leave(); net = null; btn.disabled = false; btn.textContent = 'Join'; toast('No room found with code ' + code + '.'); return; }
+  if (!net) { btn.disabled = false; btn.textContent = 'Join'; toast('Could not connect. Check your internet and try again.'); return; }""")
 # 2) texts that mention Claude
-rep("note.textContent = 'Online-spel funkar bara när sidan är öppen inloggad i Claude. Träningsläget funkar ändå.';",
-    "note.textContent = 'Kunde inte ladda online-delen. Kolla internet och ladda om sidan. Träningsläget funkar ändå.';")
-rep("p.textContent = 'Topplistan syns när sidan är öppen inloggad i Claude.';",
-    "p.textContent = 'Den delade topplistan finns i Claude-versionen. Din bästa tid sparas här på enheten.';")
+rep("note.textContent = 'Online play only works when the page is open while signed in to Claude. Practice still works.';",
+    "note.textContent = 'Could not load online play. Check your internet and reload the page. Practice still works.';")
+rep("p.textContent = 'The leaderboard shows when the page is open while signed in to Claude.';",
+    "p.textContent = 'The shared leaderboard lives in the Claude version. Your best time is saved on this device.';")
 
 head = """<!doctype html>
-<html lang="sv">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Trepong – neon-pingis för 2–6 spelare. Spela online med kompisar eller mot datorn, direkt i webbläsaren.">
+<meta name="description" content="Trepong – neon ping pong for 2–6 players. Play online with friends or against bots, right in your browser.">
 <meta name="theme-color" content="#0C0A1C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
