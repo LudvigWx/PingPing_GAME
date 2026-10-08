@@ -30,7 +30,7 @@ window.TrepongVoice = (function () {
     const c = actx(); if (!c) return null;
     const d = c.createMediaStreamDestination(); S.silent = d.stream; return S.silent;
   }
-  function applyTrack() { if (S.stream) S.stream.getAudioTracks().forEach(t => { t.enabled = S.open && !S.pttMuted; }); }
+  function applyTrack() { if (S.stream) S.stream.getAudioTracks().forEach(t => { t.enabled = (S.open && !S.pttMuted) || testing; }); }
   function meter(id, stream) {
     const c = actx(); if (!c || !stream || !stream.getAudioTracks().length) return;
     try {
@@ -70,7 +70,7 @@ window.TrepongVoice = (function () {
   async function outStream() { try { return await getStream(); } catch (e) { S.permission = 'denied'; return silentStream(); } }
   // Called by the game every frame: net = room (or null), between = true while in lobby/card pick/after a match, ids = peer ids in the room
   async function update(net, between, ids) {
-    if (!supported || !S.enabled || !net || !net.media) { if (S.net) teardown(); if (!net) stopMic(); return; }
+    if (!supported || !S.enabled || !net || !net.media) { if (S.net) teardown(); if (!net && !testing) stopMic(); return; }
     if (net !== S.net) {
       teardown(); S.net = net;
       S.offCall = net.media.onCall(async call => {

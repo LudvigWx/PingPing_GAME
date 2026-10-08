@@ -170,7 +170,7 @@ window.TrepongVoice = (function () {
     const c = actx(); if (!c) return null;
     const d = c.createMediaStreamDestination(); S.silent = d.stream; return S.silent;
   }
-  function applyTrack() { if (S.stream) S.stream.getAudioTracks().forEach(t => { t.enabled = S.open && !S.pttMuted; }); }
+  function applyTrack() { if (S.stream) S.stream.getAudioTracks().forEach(t => { t.enabled = (S.open && !S.pttMuted) || testing; }); }
   function meter(id, stream) {
     const c = actx(); if (!c || !stream || !stream.getAudioTracks().length) return;
     try {
@@ -210,7 +210,7 @@ window.TrepongVoice = (function () {
   async function outStream() { try { return await getStream(); } catch (e) { S.permission = 'denied'; return silentStream(); } }
   // Called by the game every frame: net = room (or null), between = true while in lobby/card pick/after a match, ids = peer ids in the room
   async function update(net, between, ids) {
-    if (!supported || !S.enabled || !net || !net.media) { if (S.net) teardown(); if (!net) stopMic(); return; }
+    if (!supported || !S.enabled || !net || !net.media) { if (S.net) teardown(); if (!net && !testing) stopMic(); return; }
     if (net !== S.net) {
       teardown(); S.net = net;
       S.offCall = net.media.onCall(async call => {
@@ -603,12 +603,14 @@ select{font:600 15px var(--body);color:var(--ink);background:var(--void);border:
 .bpcell.can{border-color:var(--gold);box-shadow:0 0 14px -6px var(--gold)}
 .bpcell.can small{color:var(--gold)}
 .bpcell.got{opacity:.5}
-body.desk .advpanel{width:min(100%,1100px)}
+body.desk .panel.advpanel{width:min(100%,1100px)}
+body.desk .advbanner{max-height:200px;width:auto;max-width:100%;margin:0 auto}
 body.desk .advmain{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start}
-body.desk .bppanel{width:min(100%,720px)}
+body.desk .panel.bppanel{width:min(100%,720px)}
 .advmain,.advleft,.advright{display:flex;flex-direction:column;gap:12px;min-width:0}
 body.desk .advmain{display:grid}
 /* ----- desktop layout ----- */
+.panel,.sbox,#hud,#toast,.voicebar,#smashBtn,#heroBtn,#emoteBtn,#emoteTray{zoom:var(--uiz,1)}
 body.desk .panel{width:min(100%,560px)}
 body.desk .menupanel{width:min(100%,1180px);display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"head head head" "you1 play hero" "you2 play hero";grid-template-rows:auto min-content 1fr;gap:18px 28px;padding:26px 30px;align-items:start}
 body.desk .mhead{grid-area:head;flex-direction:row;align-items:baseline;gap:18px;border-bottom:1px solid var(--edge);padding-bottom:14px}
@@ -797,6 +799,8 @@ body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.d
       <button type="button" data-l="auto">Auto</button><button type="button" data-l="mobile">Mobile</button><button type="button" data-l="desk">Desktop</button>
     </div>
     <p class="note" id="layoutNote"></p>
+    <label>Interface size</label>
+    <div class="seg four" id="uizSeg" role="group" aria-label="Interface size"><button type="button" data-z="auto">Auto</button><button type="button" data-z="1">100%</button><button type="button" data-z="1.25">125%</button><button type="button" data-z="1.5">150%</button></div>
     <label>Sound effects</label>
     <div class="seg" id="sfxSeg" role="group" aria-label="Sound effects"><button type="button" data-o="1">On</button><button type="button" data-o="0">Off</button></div>
     <label>Music</label>
@@ -6655,12 +6659,18 @@ function wantDesk() {
   let fine = false; try { fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches; } catch (e) {}
   return innerWidth >= 980 && (fine || innerWidth >= 1200);
 }
+let uiSize = ['auto', '1', '1.25', '1.5'].includes(store('trepong-uiz')) ? store('trepong-uiz') : 'auto';
 function applyLayout() {
   const d = wantDesk(); document.body.classList.toggle('desk', d);
+  const autoZ = d ? clamp(Math.min((innerWidth - 80)/1180, innerHeight/800), 1, 1.5) : 1;
+  const z = uiSize === 'auto' ? autoZ : +uiSize;
+  document.documentElement.style.setProperty('--uiz', String(Math.round(z*100)/100));
+  setSeg($('#uizSeg'), uiSize, 'z');
   setSeg($('#layoutSeg'), layoutPref, 'l');
   $('#layoutNote').textContent = layoutPref === 'auto' ? 'Auto picks desktop layout on wide screens with a mouse, otherwise mobile. Right now: ' + (d ? 'desktop' : 'mobile') + '.' : (d ? 'Desktop layout: the menu in three columns.' : 'Mobile layout: everything in one column.');
 }
 addEventListener('resize', applyLayout);
+$('#uizSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; uiSize = b.dataset.z; store('trepong-uiz', uiSize); applyLayout(); });
 applyLayout();
 function syncSettings() {
   applyLayout();
