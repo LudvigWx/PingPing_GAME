@@ -205,6 +205,37 @@ button.ghost{border-color:transparent;color:var(--mute)}
 #emoteTray{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);display:grid;grid-template-columns:repeat(3,52px);gap:6px;padding:8px;border-radius:16px;background:color-mix(in srgb,var(--deck) 92%,transparent);border:1px solid var(--edge);z-index:5}
 #emoteTray button{height:46px;padding:0;font-size:22px;border-radius:12px}
 #emoteTray button.txt{font-size:13px;font-family:var(--display)}
+.mhead{position:relative;display:flex;flex-direction:column;gap:6px}
+.gear{position:absolute;top:-6px;right:-4px;width:40px;height:40px;padding:0;border-radius:50%;font-size:20px;line-height:1;color:var(--mute)}
+.mg{display:flex;flex-direction:column;gap:12px;min-width:0}
+.mtitle{display:none}
+.ctrls{display:flex;flex-direction:column;gap:8px}
+.ctrls div{border:1px solid var(--edge);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.ctrls span{font-size:13px;color:var(--mute);line-height:1.45}
+/* ----- desktop layout ----- */
+body.desk .panel{width:min(100%,560px)}
+body.desk .menupanel{width:min(100%,1180px);display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"head head head" "you1 play hero" "you2 play hero";grid-template-rows:auto min-content 1fr;gap:18px 28px;padding:26px 30px;align-items:start}
+body.desk .mhead{grid-area:head;flex-direction:row;align-items:baseline;gap:18px;border-bottom:1px solid var(--edge);padding-bottom:14px}
+body.desk .mhead .logo{text-align:left;font-size:46px}
+body.desk .mhead .tag{text-align:left;font-size:15px}
+body.desk .gear{top:2px;right:0}
+body.desk .you1{grid-area:you1}
+body.desk .play{grid-area:play;border-left:1px solid var(--edge);border-right:1px solid var(--edge);padding:0 26px}
+body.desk .hero{grid-area:hero}
+body.desk .you2{grid-area:you2;align-self:start}
+body.desk .mtitle{display:block;font-family:var(--display);font-size:16px;letter-spacing:.06em}
+body.desk .lookbtn{grid-template-columns:110px 1fr;padding:12px 16px 12px 10px}
+body.desk .lookbtn canvas{width:110px;height:67px}
+body.desk .profbtn canvas{width:84px;height:112px}
+body.desk .herocard canvas{aspect-ratio:600/460}
+body.desk #profile .panel,body.desk #custom .panel{width:min(100%,1000px);display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:14px 28px;align-items:start}
+body.desk #profile .panel>*,body.desk #custom .panel>*{grid-column:2}
+body.desk #profile .toprow,body.desk #custom .toprow{grid-column:1/-1}
+body.desk #profile .panel>#cardCv,body.desk #custom .panel>#preview{grid-column:1;grid-row:2/span 8;position:sticky;top:0}
+body.desk #preview{height:auto;aspect-ratio:640/260}
+body.desk .pchips{grid-template-columns:repeat(4,minmax(0,1fr))}
+body.desk #custom .chips{grid-template-columns:repeat(5,minmax(0,1fr))}
+body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.desk #cup .panel{width:min(100%,680px)}
 @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.08)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -212,12 +243,19 @@ button.ghost{border-color:transparent;color:var(--mute)}
 <canvas id="game" aria-label="Spelplan"></canvas>
 
 <div id="menu" class="screen">
-  <div class="panel">
-    <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
-    <p class="tag">Pingis i en triangel. Kort, power-ups och kaos.</p>
-    <div class="field"><label for="name">Ditt namn</label><input id="name" maxlength="12" autocomplete="off" placeholder="Ludvig"></div>
-    <button id="btnLook" class="lookbtn" type="button"><canvas id="menuLook" width="144" height="88"></canvas><span>Din planka och butik<small><span class="coin" id="menuCoins">0</span><span>mynt</span></small></span></button>
-    <label>Spelare</label>
+  <div class="panel menupanel">
+    <div class="mhead">
+      <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
+      <p class="tag">Pingis i en triangel. Kort, power-ups och kaos.</p>
+      <button id="btnSettings" class="gear" type="button" aria-label="Inställningar">⚙</button>
+    </div>
+    <section class="mg you1">
+      <div class="field"><label for="name">Ditt namn</label><input id="name" maxlength="12" autocomplete="off" placeholder="Ludvig"></div>
+      <button id="btnLook" class="lookbtn" type="button"><canvas id="menuLook" width="144" height="88"></canvas><span>Din planka och butik<small><span class="coin" id="menuCoins">0</span><span>mynt</span></small></span></button>
+    </section>
+    <section class="mg play">
+      <div class="mtitle">Spela</div>
+      <label>Spelare</label>
     <div class="seg five" id="modeSeg" role="group" aria-label="Antal spelare">
       <button type="button" data-n="2" aria-pressed="false">2</button>
       <button type="button" data-n="3" aria-pressed="true">3</button>
@@ -225,40 +263,45 @@ button.ghost{border-color:transparent;color:var(--mute)}
       <button type="button" data-n="5" aria-pressed="false">5</button>
       <button type="button" data-n="6" aria-pressed="false">6</button>
     </div>
-    <div class="seg five" id="fmtSeg" role="group" aria-label="Format">
+      <label>Läge</label>
+      <div class="seg five" id="fmtSeg" role="group" aria-label="Format">
       <button type="button" data-f="serie" aria-pressed="true">Serie</button>
       <button type="button" data-f="snabb" aria-pressed="false">Snabb</button>
       <button type="button" data-f="boss" aria-pressed="false">Boss</button>
       <button type="button" data-f="torn" aria-pressed="false">Torn</button>
       <button type="button" data-f="cup" aria-pressed="false">Cup</button>
     </div>
-    <p class="note" id="fmtNote"></p>
-    <div class="seg" id="chaosSeg" role="group" aria-label="Kaoshjulet">
+      <p class="note" id="fmtNote"></p>
+      <div class="seg" id="chaosSeg" role="group" aria-label="Kaoshjulet">
       <button type="button" data-c="0" aria-pressed="true">Kaoshjul av</button>
       <button type="button" data-c="1" aria-pressed="false">Kaoshjul på</button>
     </div>
-    <label>Hjälte</label>
+      <label>Arena</label>
+    <div class="seg four" id="arenaSeg" role="group" aria-label="Arena"></div>
+      <button id="btnHost" class="primary" type="button" disabled>Skapa rum</button>
+    <div class="joinrow">
+      <input id="code" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="KOD" aria-label="Rumskod">
+      <button id="btnJoin" type="button" disabled>Gå med</button>
+    </div>
+      <button id="btnPractice" type="button">Träna mot datorn</button>
+      <p id="netNote" class="note">Kollar online-läget…</p>
+      <p id="keysNote" class="note" hidden>På datorn: styr med musen eller piltangenterna. Mellanslag = supersmash, Q = hjältekraft.</p>
+    </section>
+    <section class="mg hero">
+      <label>Hjälte</label>
     <div class="herocard" id="heroCard">
       <canvas id="heroArt" width="600" height="420" aria-hidden="true"></canvas>
       <div class="herotext"><span class="htitle" id="heroTitle"></span><b id="heroName"></b><div class="hlv"><span id="heroLv"></span><i><b id="heroXp"></b></i></div><p id="heroNote"></p><div class="seg three" id="heroVar" role="group" aria-label="Variant"></div></div>
     </div>
     <div class="seg three" id="heroSeg" role="group" aria-label="Hjälte"></div>
-    <div class="seg" id="voiceSeg" role="group" aria-label="Hjälteröster"><button type="button" data-v="1" aria-pressed="true">Röster på</button><button type="button" data-v="0" aria-pressed="false">Röster av</button></div>
-    <label>Arena</label>
-    <div class="seg four" id="arenaSeg" role="group" aria-label="Arena"></div>
-    <button id="btnHost" class="primary" type="button" disabled>Skapa rum</button>
-    <div class="joinrow">
-      <input id="code" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="KOD" aria-label="Rumskod">
-      <button id="btnJoin" type="button" disabled>Gå med</button>
-    </div>
-    <button id="btnPractice" type="button">Träna mot datorn</button>
-    <button id="btnQuests" class="questbtn" type="button"><span>Utmaningar och prestationer</span><span class="badge" id="questBadge" hidden>0</span></button>
-    <div class="duo">
+    </section>
+    <section class="mg you2">
+      <button id="btnQuests" class="questbtn" type="button"><span>Utmaningar och prestationer</span><span class="badge" id="questBadge" hidden>0</span></button>
+      <div class="duo">
       <button id="btnProfile" class="profbtn" type="button"><canvas id="menuCard" width="120" height="160"></canvas><span>Profilkort</span></button>
       <button id="btnChests" class="profbtn" type="button"><canvas id="menuChest" width="160" height="160"></canvas><span>Kistor <span class="badge" id="chestBadge" hidden>0</span></span></button>
     </div>
-    <p id="netNote" class="note">Kollar online-läget…</p>
-    <p id="keysNote" class="note" hidden>På datorn: styr med musen eller piltangenterna. Mellanslag = supersmash, Q = hjältekraft.</p>
+    </section>
   </div>
 </div>
 
@@ -344,6 +387,29 @@ button.ghost{border-color:transparent;color:var(--mute)}
     <button id="btnCupGo" class="primary" type="button">Spela</button>
     <div id="cupTree" class="cuptree"></div>
     <p class="note">Varje match spelas en mot en med 3 liv. Motståndarna blir bättre för varje runda. Vinsten ger 150 mynt.</p>
+  </div>
+</div>
+
+<div id="settings" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnSetBack" class="backbtn" type="button">‹ Tillbaka</button></div>
+    <div class="winner">Inställningar</div>
+    <label>Layout</label>
+    <div class="seg three" id="layoutSeg" role="group" aria-label="Layout">
+      <button type="button" data-l="auto">Auto</button><button type="button" data-l="mobile">Mobil</button><button type="button" data-l="desk">Dator</button>
+    </div>
+    <p class="note" id="layoutNote"></p>
+    <label>Ljudeffekter</label>
+    <div class="seg" id="sfxSeg" role="group" aria-label="Ljudeffekter"><button type="button" data-o="1">På</button><button type="button" data-o="0">Av</button></div>
+    <label>Musik</label>
+    <div class="seg" id="musicSeg" role="group" aria-label="Musik"><button type="button" data-o="1">På</button><button type="button" data-o="0">Av</button></div>
+    <label>Hjälteröster</label>
+    <div class="seg" id="voiceSeg" role="group" aria-label="Hjälteröster"><button type="button" data-v="1" aria-pressed="true">På</button><button type="button" data-v="0" aria-pressed="false">Av</button></div>
+    <label>Kontroller</label>
+    <div class="ctrls">
+      <div><b>Mobil</b><span>Dra med fingret för att flytta plankan. Två fingrar samtidigt ger supersmash. Hjältekraft och emotes har egna knappar.</span></div>
+      <div><b>Dator</b><span>Mus eller piltangenter (A och D funkar också). Mellanslag ger supersmash och Q hjältekraft.</span></div>
+    </div>
   </div>
 </div>
 
@@ -1526,10 +1592,10 @@ function myName() { return cleanName($('#name').value) || 'Spelare'; }
 function colOf(i, lk) { const l = (lk || looks)[i]; return l ? l.c : SEAT_DEFAULT[i]; }
 
 // ---------- screens ----------
-const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup'];
+const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings'];
 function showScreen(name) {
   SCREENS.forEach(id => $('#' + id).hidden = id !== name);
-  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup'].includes(name);
+  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings'].includes(name);
   curScreen = name;
   if (name && $('#' + name)) $('#' + name).scrollTop = 0;
 }
@@ -3976,6 +4042,29 @@ $('#btnCardClose').addEventListener('click', () => { $('#cardView').hidden = tru
 setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v');
 $('#voiceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; voicesOn = b.dataset.v === '1'; store('trepong-voices', voicesOn ? '1' : '0'); setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v'); if (voicesOn && myHero !== 'none') heroSay(myHero, 'use'); });
 syncChestBadge();
+let layoutPref = ['auto', 'mobile', 'desk'].includes(store('trepong-layout')) ? store('trepong-layout') : 'auto';
+function wantDesk() {
+  if (layoutPref === 'desk') return true;
+  if (layoutPref === 'mobile') return false;
+  let fine = false; try { fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches; } catch (e) {}
+  return innerWidth >= 980 && (fine || innerWidth >= 1200);
+}
+function applyLayout() {
+  const d = wantDesk(); document.body.classList.toggle('desk', d);
+  setSeg($('#layoutSeg'), layoutPref, 'l');
+  $('#layoutNote').textContent = layoutPref === 'auto' ? 'Auto väljer datorlayout på breda skärmar med mus, annars mobillayout. Just nu: ' + (d ? 'dator' : 'mobil') + '.' : (d ? 'Datorlayout: menyn i tre kolumner.' : 'Mobillayout: allt i en kolumn.');
+}
+addEventListener('resize', applyLayout);
+applyLayout();
+function syncSettings() {
+  applyLayout();
+  setSeg($('#sfxSeg'), muted ? 0 : 1, 'o'); setSeg($('#musicSeg'), Music.on ? 1 : 0, 'o'); setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v');
+}
+$('#btnSettings').addEventListener('click', () => { audioOn(); syncSettings(); showScreen('settings'); });
+$('#btnSetBack').addEventListener('click', () => showScreen('menu'));
+$('#layoutSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; layoutPref = b.dataset.l; store('trepong-layout', layoutPref); applyLayout(); });
+$('#sfxSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; muted = b.dataset.o === '0'; store('trepong-mute', muted ? '1' : '0'); syncSoundBtn(); syncSettings(); });
+$('#musicSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; Music.on = b.dataset.o === '1'; store('trepong-music', Music.on ? '1' : '0'); $('#btnMusic').setAttribute('aria-pressed', String(Music.on)); audioOn(); syncSettings(); });
 EMOTES.forEach((e, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = e; if (e.length > 2) b.className = 'txt'; b.addEventListener('click', () => sendEmote(i)); $('#emoteTray').append(b); });
 $('#emoteBtn').addEventListener('click', () => { $('#emoteTray').hidden = !$('#emoteTray').hidden; });
 $('#smashBtn').addEventListener('click', doSmash);

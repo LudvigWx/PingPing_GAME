@@ -2,7 +2,7 @@
 
 Neon-pingis för 2–6 spelare, direkt i webbläsaren. Spela online med kompisar med en rumskod, eller mot datorn.
 
-**Spela:** https://ludvigwx.github.io/trepong/
+**Spela:** https://ludvigwx.github.io/PingPing_GAME/
 
 ## Lägen
 - **Serie** – fyra matcher med buff-kort mellan varje match
