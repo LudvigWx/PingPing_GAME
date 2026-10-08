@@ -338,12 +338,35 @@ select{font:600 15px var(--body);color:var(--ink);background:var(--void);border:
 .bpcell.can small{color:var(--gold)}
 .bpcell.got{opacity:.5}
 body.desk .panel.advpanel{width:min(100%,1100px)}
-body.desk .advbanner{max-height:200px;width:auto;max-width:100%;margin:0 auto}
+body.desk .advbanner{width:100%;aspect-ratio:640/160;object-fit:cover}
+body.desk .wcard canvas{aspect-ratio:4/1;object-fit:cover}
+body.desk .wcard .wno{padding-top:4px}
+body.desk .wcard small{padding-bottom:6px}
+body.desk .advpanel{gap:10px;padding:16px 22px}
+body.desk .advmain,body.desk .advleft,body.desk .advright{gap:9px}
+body.desk #advTitle{font-size:24px}
+body.desk .advpanel .card canvas{aspect-ratio:2/1;object-fit:cover}
+body.desk .advpanel .card .cd{font-size:10.5px}
+body.desk .node{padding:5px 10px}
+body.desk .advpath{gap:4px}
+body.desk .cpline{padding:0;font-size:10.5px}
+body.desk .runbox{padding:8px 12px;gap:6px}
 body.desk .advmain{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start}
 body.desk .panel.bppanel{width:min(100%,720px)}
 .advmain,.advleft,.advright{display:flex;flex-direction:column;gap:12px;min-width:0}
 body.desk .advmain{display:grid}
 /* ----- desktop layout ----- */
+.setcols,.setcol{display:flex;flex-direction:column;gap:12px;min-width:0}
+body.desk #settings .panel{width:min(100%,980px)}
+body.desk .setcols{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+body.desk .panel.bppanel{width:min(100%,1100px)}
+body.desk .bpcols{display:none}
+body.desk .bplist{flex-direction:row;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+body.desk .bprow{grid-template-columns:none;grid-template-rows:30px auto auto;flex:0 0 132px;scroll-snap-align:start}
+body.desk .bpn{min-height:30px}
+body.desk #tower .panel{width:min(100%,1000px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 28px;align-items:start}
+body.desk #tower .panel>*{grid-column:1}
+body.desk #tower .towerlist{grid-column:2;grid-row:1/span 12;max-height:640px;overflow-y:auto;padding-right:4px}
 body.desk .menupanel .mg{gap:9px}
 body.desk .menupanel .seg button{padding:8px 6px}
 body.desk .menupanel button{padding-top:10px;padding-bottom:10px}
@@ -372,7 +395,7 @@ body.desk #profile .panel>#cardCv,body.desk #custom .panel>#preview{grid-column:
 body.desk #preview{height:auto;aspect-ratio:640/260}
 body.desk .pchips{grid-template-columns:repeat(4,minmax(0,1fr))}
 body.desk #custom .chips{grid-template-columns:repeat(5,minmax(0,1fr))}
-body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.desk #cup .panel{width:min(100%,680px)}
+body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:min(100%,680px)}
 @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.08)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -533,6 +556,7 @@ body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.d
   <div class="panel">
     <div class="toprow"><button id="btnSetBack" class="backbtn" type="button">‹ Back</button></div>
     <div class="winner">Settings</div>
+    <div class="setcols"><div class="setcol">
     <label>Layout</label>
     <div class="seg three" id="layoutSeg" role="group" aria-label="Layout">
       <button type="button" data-l="auto">Auto</button><button type="button" data-l="mobile">Mobile</button><button type="button" data-l="desk">Desktop</button>
@@ -546,6 +570,7 @@ body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.d
     <div class="seg" id="musicSeg" role="group" aria-label="Music"><button type="button" data-o="1">On</button><button type="button" data-o="0">Off</button></div>
     <label>Hero voices</label>
     <div class="seg" id="voiceSeg" role="group" aria-label="Hero voices"><button type="button" data-v="1" aria-pressed="true">On</button><button type="button" data-v="0" aria-pressed="false">Off</button></div>
+    </div><div class="setcol">
     <div id="vcBox" class="setbox" hidden>
       <label>Voice chat</label>
       <p class="note left">Opens automatically between rounds online (in the lobby, during card picks and after every match) and closes when the next round starts.</p>
@@ -569,6 +594,7 @@ body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.d
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
       <div><b>Desktop</b><span>Mouse or arrow keys (A and D work too). Space = supersmash, Q = hero power.</span></div>
     </div>
+    </div></div>
   </div>
 </div>
 
@@ -5762,6 +5788,7 @@ function renderAdv() {
   // pending pick / dead state
   const pk = $('#advPick'), dead = $('#advDead');
   pk.hidden = !run.pick; dead.hidden = !run.dead;
+  $('.selbox').hidden = !!run.pick || run.dead;
   if (run.pick) { renderAdvPick(W, run); setTimeout(() => pk.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60); }
   if (run.dead) { $('#btnAdvRevive').textContent = 'Revive with 1 life (' + fmt(price) + ' coins)'; $('#btnAdvRevive').disabled = coins < price; $('#btnAdvCp').textContent = 'Restart from stage ' + (run.cp.s + 1); }
   // main button
@@ -6115,6 +6142,7 @@ function renderBp() {
     });
     list.append(row);
   });
+  if (document.body.classList.contains('desk')) { const cur = list.children[Math.max(0, Math.min(T, BP_TIERS.length - 1) - 1)]; if (cur) list.scrollLeft = cur.offsetLeft - list.offsetLeft; }
 }
 function animBpChips() {
   $('#bpList').querySelectorAll('canvas').forEach(cv => { const r = BP_TIERS[+cv.dataset.i][+cv.dataset.s]; if (r[0] !== 'pt') drawRewardChip(cv, r); });
