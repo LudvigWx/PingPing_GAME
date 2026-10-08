@@ -46,12 +46,31 @@ head = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Trepong – neon ping pong for 2–6 players. Play online with friends or against bots, right in your browser.">
 <meta name="theme-color" content="#0C0A1C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Trepong">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230C0A1C'/%3E%3Cpath d='M32 12 54 50H10Z' fill='none' stroke='%233EE6FF' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='38' r='5' fill='%23FF4F8B'/%3E%3C/svg%3E">
 <style>html,body{margin:0}body{-webkit-text-size-adjust:100%}</style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+// Install-as-app support: service worker for offline play + the browser's install prompt.
+window.TrepongInstall = (function () {
+  let deferred = null; const listeners = [];
+  const standalone = () => (window.matchMedia && matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches) || navigator.standalone === true;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; listeners.forEach(f => f()); });
+  addEventListener('appinstalled', () => { deferred = null; listeners.forEach(f => f()); });
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  return {
+    get installed() { return standalone(); }, get canPrompt() { return !!deferred; }, ios,
+    async prompt() { if (!deferred) return false; deferred.prompt(); const r = await deferred.userChoice.catch(() => null); deferred = null; listeners.forEach(f => f()); return !!(r && r.outcome === 'accepted'); },
+    onChange(f) { listeners.push(f); }
+  };
+})();
+</script>
 <script>
 """ + adapter + """
 </script>

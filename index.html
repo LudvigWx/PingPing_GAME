@@ -5,12 +5,31 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Trepong – neon ping pong for 2–6 players. Play online with friends or against bots, right in your browser.">
 <meta name="theme-color" content="#0C0A1C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Trepong">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230C0A1C'/%3E%3Cpath d='M32 12 54 50H10Z' fill='none' stroke='%233EE6FF' stroke-width='5' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='38' r='5' fill='%23FF4F8B'/%3E%3C/svg%3E">
 <style>html,body{margin:0}body{-webkit-text-size-adjust:100%}</style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+// Install-as-app support: service worker for offline play + the browser's install prompt.
+window.TrepongInstall = (function () {
+  let deferred = null; const listeners = [];
+  const standalone = () => (window.matchMedia && matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches) || navigator.standalone === true;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; listeners.forEach(f => f()); });
+  addEventListener('appinstalled', () => { deferred = null; listeners.forEach(f => f()); });
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  return {
+    get installed() { return standalone(); }, get canPrompt() { return !!deferred; }, ios,
+    async prompt() { if (!deferred) return false; deferred.prompt(); const r = await deferred.userChoice.catch(() => null); deferred = null; listeners.forEach(f => f()); return !!(r && r.outcome === 'accepted'); },
+    onChange(f) { listeners.push(f); }
+  };
+})();
+</script>
 <script>
 // PeerRoom: a drop-in replacement for the Claude `room` capability, built on PeerJS (WebRTC).
 // Star topology: the first device to claim a room code becomes the hub and relays presence to everyone else.
@@ -621,6 +640,8 @@ body.desk .advmain{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1
 body.desk .panel.bppanel{width:min(100%,720px)}
 .advmain,.advleft,.advright{display:flex;flex-direction:column;gap:12px;min-width:0}
 body.desk .advmain{display:grid}
+.installtop{position:absolute;top:-4px;right:44px;padding:7px 12px;font-size:12px;border-radius:999px;border-color:var(--c0);color:var(--c0)}
+body.desk .installtop{top:6px;right:52px}
 /* ----- desktop layout ----- */
 .setcols,.setcol{display:flex;flex-direction:column;gap:12px;min-width:0}
 body.desk #settings .panel{width:min(100%,980px)}
@@ -674,6 +695,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
       <p class="tag">Ping pong in a triangle. Cards, power-ups and chaos.</p>
       <button id="btnSettings" class="gear" type="button" aria-label="Settings">⚙</button>
+      <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
     </div>
     <section class="mg you1">
       <div class="field"><label for="name">Your name</label><input id="name" maxlength="12" autocomplete="off" placeholder="Ludvig"></div>
@@ -837,6 +859,11 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
     <label>Hero voices</label>
     <div class="seg" id="voiceSeg" role="group" aria-label="Hero voices"><button type="button" data-v="1" aria-pressed="true">On</button><button type="button" data-v="0" aria-pressed="false">Off</button></div>
     </div><div class="setcol">
+    <div id="appBox" class="setbox" hidden>
+      <label>Install as app</label>
+      <p class="note left" id="appNote"></p>
+      <button id="btnInstall" class="primary" type="button">Install Trepong</button>
+    </div>
     <div id="vcBox" class="setbox" hidden>
       <label>Voice chat</label>
       <p class="note left">Opens automatically between rounds online (in the lobby, during card picks and after every match) and closes when the next round starts.</p>
@@ -6578,6 +6605,23 @@ $('#btnBpBack').addEventListener('click', () => { showScreen('menu'); syncBpBadg
 $('#btnBpPrem').addEventListener('click', buyPremium);
 $('#btnBpAll').addEventListener('click', () => { const T = bpTier(); for (let i = 0; i < T; i++) { if (!bp.cf.includes(i)) { bp.cf.push(i); grantReward(BP_TIERS[i][0]); } if (bp.prem && !bp.cp.includes(i)) { bp.cp.push(i); grantReward(BP_TIERS[i][1]); } } saveBp(); sfx.coin(); toast('All rewards claimed!'); renderBp(); });
 syncBpBadge();
+// ----- install as app (web version only) -----
+const TI = window.TrepongInstall || null;
+function syncInstall() {
+  if (!TI) return;
+  $('#appBox').hidden = false;
+  const b = $('#btnInstall'), n = $('#appNote');
+  $('#btnInstallTop').hidden = !(TI.canPrompt && !TI.installed);
+  if (TI.installed) { b.hidden = true; n.textContent = 'You are playing the installed app.'; }
+  else if (TI.canPrompt) { b.hidden = false; n.textContent = 'Put Trepong on your home screen or desktop. It opens fullscreen without the browser bar and works offline against bots.'; }
+  else if (TI.ios) { b.hidden = true; n.textContent = 'On iPhone or iPad: open the game in Safari, tap the Share button, then "Add to Home Screen".'; }
+  else { b.hidden = true; n.textContent = 'In Chrome or Edge, open the browser menu and pick "Install Trepong" (on Android: "Add to Home screen"). Already installed? Open it from your apps.'; }
+}
+if (TI) {
+  TI.onChange(syncInstall); syncInstall();
+  const doInstall = async () => { audioOn(); if (await TI.prompt()) toast('Trepong installed! Find it among your apps.'); syncInstall(); };
+  $('#btnInstall').addEventListener('click', doInstall); $('#btnInstallTop').addEventListener('click', doInstall);
+}
 // ----- save code -----
 function exportSave() {
   const data = {};

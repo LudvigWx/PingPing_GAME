@@ -355,6 +355,8 @@ body.desk .advmain{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1
 body.desk .panel.bppanel{width:min(100%,720px)}
 .advmain,.advleft,.advright{display:flex;flex-direction:column;gap:12px;min-width:0}
 body.desk .advmain{display:grid}
+.installtop{position:absolute;top:-4px;right:44px;padding:7px 12px;font-size:12px;border-radius:999px;border-color:var(--c0);color:var(--c0)}
+body.desk .installtop{top:6px;right:52px}
 /* ----- desktop layout ----- */
 .setcols,.setcol{display:flex;flex-direction:column;gap:12px;min-width:0}
 body.desk #settings .panel{width:min(100%,980px)}
@@ -408,6 +410,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
       <p class="tag">Ping pong in a triangle. Cards, power-ups and chaos.</p>
       <button id="btnSettings" class="gear" type="button" aria-label="Settings">⚙</button>
+      <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
     </div>
     <section class="mg you1">
       <div class="field"><label for="name">Your name</label><input id="name" maxlength="12" autocomplete="off" placeholder="Ludvig"></div>
@@ -571,6 +574,11 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
     <label>Hero voices</label>
     <div class="seg" id="voiceSeg" role="group" aria-label="Hero voices"><button type="button" data-v="1" aria-pressed="true">On</button><button type="button" data-v="0" aria-pressed="false">Off</button></div>
     </div><div class="setcol">
+    <div id="appBox" class="setbox" hidden>
+      <label>Install as app</label>
+      <p class="note left" id="appNote"></p>
+      <button id="btnInstall" class="primary" type="button">Install Trepong</button>
+    </div>
     <div id="vcBox" class="setbox" hidden>
       <label>Voice chat</label>
       <p class="note left">Opens automatically between rounds online (in the lobby, during card picks and after every match) and closes when the next round starts.</p>
@@ -6305,6 +6313,23 @@ $('#btnBpBack').addEventListener('click', () => { showScreen('menu'); syncBpBadg
 $('#btnBpPrem').addEventListener('click', buyPremium);
 $('#btnBpAll').addEventListener('click', () => { const T = bpTier(); for (let i = 0; i < T; i++) { if (!bp.cf.includes(i)) { bp.cf.push(i); grantReward(BP_TIERS[i][0]); } if (bp.prem && !bp.cp.includes(i)) { bp.cp.push(i); grantReward(BP_TIERS[i][1]); } } saveBp(); sfx.coin(); toast('All rewards claimed!'); renderBp(); });
 syncBpBadge();
+// ----- install as app (web version only) -----
+const TI = window.TrepongInstall || null;
+function syncInstall() {
+  if (!TI) return;
+  $('#appBox').hidden = false;
+  const b = $('#btnInstall'), n = $('#appNote');
+  $('#btnInstallTop').hidden = !(TI.canPrompt && !TI.installed);
+  if (TI.installed) { b.hidden = true; n.textContent = 'You are playing the installed app.'; }
+  else if (TI.canPrompt) { b.hidden = false; n.textContent = 'Put Trepong on your home screen or desktop. It opens fullscreen without the browser bar and works offline against bots.'; }
+  else if (TI.ios) { b.hidden = true; n.textContent = 'On iPhone or iPad: open the game in Safari, tap the Share button, then "Add to Home Screen".'; }
+  else { b.hidden = true; n.textContent = 'In Chrome or Edge, open the browser menu and pick "Install Trepong" (on Android: "Add to Home screen"). Already installed? Open it from your apps.'; }
+}
+if (TI) {
+  TI.onChange(syncInstall); syncInstall();
+  const doInstall = async () => { audioOn(); if (await TI.prompt()) toast('Trepong installed! Find it among your apps.'); syncInstall(); };
+  $('#btnInstall').addEventListener('click', doInstall); $('#btnInstallTop').addEventListener('click', doInstall);
+}
 // ----- save code -----
 function exportSave() {
   const data = {};
