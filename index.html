@@ -28,6 +28,8 @@
     const hubId = PREFIX + String(name).replace(/[^a-z0-9-]/gi, '').toLowerCase();
     let peer = null, isHub = false, myId = null, hubConn = null, open = false, closed = false;
     const conns = new Map();               // hub only: peerId -> DataConnection
+    const callHandlers = new Set();
+    function wireCalls(pr) { pr.on('call', call => callHandlers.forEach(fn => { try { fn(call); } catch (e) { console.error(e); } })); }
     let table = new Map();                 // peerId -> presence object
     let pending = null, sendTimer = null, snapshot = Object.freeze([]), listeners = new Set(), notifyQueued = false;
     function rebuild() {
@@ -81,14 +83,14 @@
     }
     function start(resolve, reject) {
       // Try to become the hub; if the id is taken, someone else hosts this code, so connect to them.
-      peer = new Peer(hubId, { debug: 0 });
+      peer = new Peer(hubId, { debug: 0 }); wireCalls(peer);
       let settled = false;
       peer.on('open', id => { isHub = true; myId = id; open = true; table.set(myId, table.get(myId) || {}); notify(); settled = true; resolve(api); });
       peer.on('connection', c => { if (isHub) hubAccept(c); else c.close(); });
       peer.on('error', err => {
         if (!settled && err && err.type === 'unavailable-id') {
           try { peer.destroy(); } catch (e) {}
-          peer = new Peer(rid(), { debug: 0 });
+          peer = new Peer(rid(), { debug: 0 }); wireCalls(peer);
           peer.on('open', id => { isHub = false; myId = id; table.set(myId, {}); notify(); spokeConnect(); settled = true; resolve(api); });
           peer.on('error', e2 => { if (!settled) { settled = true; reject(e2); } else if (e2 && e2.type === 'peer-unavailable') { open = false; } });
           peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
@@ -100,6 +102,11 @@
     const api = {
       name,
       isHub() { return isHub; },
+      myId() { return myId; },
+      media: {
+        call(id, stream) { try { return peer ? peer.call(id, stream) : null; } catch (e) { return null; } },
+        onCall(fn) { callHandlers.add(fn); return () => callHandlers.delete(fn); }
+      },
       presence(patch) {
         if (closed) return Promise.resolve();
         if (!patch || typeof patch !== 'object') return Promise.resolve();
@@ -128,6 +135,130 @@
   window.PeerRoom = {
     available() { return typeof window.Peer === 'function'; },
     join(name) { return makeRoom(name); }
+  };
+})();
+
+// TrepongVoice: lobby-style voice chat that opens between rounds. Audio goes peer to peer over WebRTC (PeerJS calls).
+window.TrepongVoice = (function () {
+  'use strict';
+  const ls = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const ss = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const S = {
+    enabled: ls('trepong-vc', '1') === '1', micId: ls('trepong-mic', ''), spkId: ls('trepong-spk', ''), pttMuted: false,
+    stream: null, silent: null, net: null, offCall: null, calls: new Map(), audios: new Map(), meters: new Map(),
+    open: false, ctx: null, permission: 'unknown', lastSync: 0
+  };
+  const supported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.RTCPeerConnection);
+  const sinkSupported = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype;
+  function actx() { if (!S.ctx) { try { S.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (S.ctx && S.ctx.state === 'suspended') S.ctx.resume().catch(() => {}); return S.ctx; }
+  function constraints() {
+    const base = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+    return { audio: S.micId ? Object.assign({ deviceId: { exact: S.micId } }, base) : base, video: false };
+  }
+  async function getStream() {
+    if (S.stream && S.stream.getAudioTracks().some(t => t.readyState === 'live')) return S.stream;
+    try {
+      S.stream = await navigator.mediaDevices.getUserMedia(constraints());
+    } catch (e) {
+      if (S.micId) { S.micId = ''; S.stream = await navigator.mediaDevices.getUserMedia(constraints()); } else throw e;
+    }
+    S.permission = 'granted'; applyTrack(); meter('me', S.stream);
+    return S.stream;
+  }
+  function silentStream() {
+    if (S.silent) return S.silent;
+    const c = actx(); if (!c) return null;
+    const d = c.createMediaStreamDestination(); S.silent = d.stream; return S.silent;
+  }
+  function applyTrack() { if (S.stream) S.stream.getAudioTracks().forEach(t => { t.enabled = S.open && !S.pttMuted; }); }
+  function meter(id, stream) {
+    const c = actx(); if (!c || !stream || !stream.getAudioTracks().length) return;
+    try {
+      const old = S.meters.get(id); if (old) { try { old.src.disconnect(); } catch (e) {} }
+      const src = c.createMediaStreamSource(stream), an = c.createAnalyser(); an.fftSize = 512; src.connect(an);
+      S.meters.set(id, { src, an, buf: new Uint8Array(an.fftSize), lvl: 0 });
+    } catch (e) {}
+  }
+  function level(id) {
+    const m = S.meters.get(id); if (!m) return 0;
+    m.an.getByteTimeDomainData(m.buf); let peak = 0;
+    for (let i = 0; i < m.buf.length; i += 4) peak = Math.max(peak, Math.abs(m.buf[i] - 128));
+    m.lvl = Math.max(peak/60, m.lvl*0.85); return Math.min(1, m.lvl);
+  }
+  function attach(id, remote) {
+    let a = S.audios.get(id);
+    if (!a) { a = document.createElement('audio'); a.autoplay = true; a.setAttribute('playsinline', ''); a.style.display = 'none'; document.body.appendChild(a); S.audios.set(id, a); }
+    a.srcObject = remote; a.muted = !S.open;
+    if (S.spkId && sinkSupported) a.setSinkId(S.spkId).catch(() => {});
+    a.play().catch(() => {});
+    meter(id, remote);
+  }
+  function hook(id, call) {
+    S.calls.set(id, call);
+    call.on('stream', remote => attach(id, remote));
+    const end = () => { if (S.calls.get(id) === call) S.calls.delete(id); const a = S.audios.get(id); if (a) { a.srcObject = null; a.remove(); S.audios.delete(id); } S.meters.delete(id); };
+    call.on('close', end); call.on('error', end);
+  }
+  function teardown() {
+    for (const c of S.calls.values()) { try { c.close(); } catch (e) {} }
+    S.calls.clear(); for (const a of S.audios.values()) { a.srcObject = null; a.remove(); } S.audios.clear();
+    for (const [id] of S.meters) if (id !== 'me') S.meters.delete(id);
+    if (S.offCall) { S.offCall(); S.offCall = null; }
+    S.net = null; S.open = false; applyTrack();
+  }
+  function stopMic() { if (S.stream) { S.stream.getTracks().forEach(t => t.stop()); S.stream = null; S.meters.delete('me'); } }
+  async function outStream() { try { return await getStream(); } catch (e) { S.permission = 'denied'; return silentStream(); } }
+  // Called by the game every frame: net = room (or null), between = true while in lobby/card pick/after a match, ids = peer ids in the room
+  async function update(net, between, ids) {
+    if (!supported || !S.enabled || !net || !net.media) { if (S.net) teardown(); if (!net) stopMic(); return; }
+    if (net !== S.net) {
+      teardown(); S.net = net;
+      S.offCall = net.media.onCall(async call => {
+        if (!S.enabled) { try { call.close(); } catch (e) {} return; }
+        const st = await outStream(); call.answer(st || undefined); hook(call.peer, call);
+      });
+    }
+    const now = performance.now();
+    if (now - S.lastSync > 700) {
+      S.lastSync = now;
+      const me = net.myId && net.myId();
+      if (me) {
+        for (const id of ids) if (id !== me && !S.calls.has(id) && me < id) {
+          const st = await outStream(); if (!st || S.net !== net || S.calls.has(id)) continue;
+          const call = net.media.call(id, st); if (call) hook(id, call);
+        }
+        for (const id of [...S.calls.keys()]) if (!ids.includes(id)) { try { S.calls.get(id).close(); } catch (e) {} }
+      }
+    }
+    if (between !== S.open) {
+      S.open = between; applyTrack();
+      S.audios.forEach(a => { a.muted = !S.open; if (S.open) a.play().catch(() => {}); });
+    }
+  }
+  async function devices() {
+    if (!supported || !navigator.mediaDevices.enumerateDevices) return { mics: [], spks: [] };
+    const list = await navigator.mediaDevices.enumerateDevices();
+    return { mics: list.filter(d => d.kind === 'audioinput'), spks: list.filter(d => d.kind === 'audiooutput') };
+  }
+  async function requestMic() { try { await getStream(); return true; } catch (e) { S.permission = 'denied'; return false; } }
+  function setMic(id) { S.micId = id || ''; ss('trepong-mic', S.micId); stopMic(); if (S.net || testing) getStream().then(st => { for (const c of S.calls.values()) { try { const snd = c.peerConnection.getSenders().find(x => x.track && x.track.kind === 'audio'); if (snd) snd.replaceTrack(st.getAudioTracks()[0]); } catch (e) {} } }).catch(() => {}); }
+  function setSpk(id) { S.spkId = id || ''; ss('trepong-spk', S.spkId); if (sinkSupported) S.audios.forEach(a => a.setSinkId(S.spkId).catch(() => {})); }
+  function setEnabled(on) { S.enabled = !!on; ss('trepong-vc', on ? '1' : '0'); if (!on) { teardown(); stopMic(); } }
+  function setMuted(m) { S.pttMuted = !!m; applyTrack(); }
+  let testing = false;
+  async function startTest() { testing = true; try { const c0 = actx(); if (c0 && c0.state === 'suspended') await c0.resume().catch(()=>{}); await getStream(); if (!S.meters.has('me')) meter('me', S.stream); S.stream.getAudioTracks().forEach(t => t.enabled = true); return true; } catch (e) { return false; } }
+  function stopTest() { testing = false; if (!S.net) stopMic(); else applyTrack(); }
+  function testSpeaker() {
+    const c = actx(); if (!c) return;
+    const dst = c.createMediaStreamDestination(), o = c.createOscillator(), g = c.createGain();
+    o.frequency.value = 660; g.gain.setValueAtTime(0.0001, c.currentTime); g.gain.exponentialRampToValueAtTime(0.2, c.currentTime + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.6);
+    o.connect(g).connect(dst); o.start(); o.stop(c.currentTime + 0.65);
+    const a = document.createElement('audio'); a.srcObject = dst.stream; if (S.spkId && sinkSupported) a.setSinkId(S.spkId).catch(() => {}); a.play().catch(() => {}); setTimeout(() => a.remove(), 1200);
+  }
+  return {
+    supported, sinkSupported, update, devices, requestMic, setMic, setSpk, setEnabled, setMuted, startTest, stopTest, testSpeaker, level,
+    get enabled() { return S.enabled; }, get micId() { return S.micId; }, get spkId() { return S.spkId; }, get open() { return S.open; },
+    get muted() { return S.pttMuted; }, get permission() { return S.permission; }, connectedIds() { return [...S.calls.keys()]; }
   };
 })();
 
@@ -346,6 +477,24 @@ button.ghost{border-color:transparent;color:var(--mute)}
 .mg{display:flex;flex-direction:column;gap:12px;min-width:0}
 .mtitle{display:none}
 .ctrls{display:flex;flex-direction:column;gap:8px}
+.note.left{text-align:left}
+.setbox{display:flex;flex-direction:column;gap:10px;border:1px solid var(--edge);border-radius:14px;padding:12px}
+select{font:600 15px var(--body);color:var(--ink);background:var(--void);border:1px solid var(--edge);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+.vctest{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.vctest button{padding:9px 12px;font-size:13px}
+.vmeter{height:10px;border-radius:5px;background:var(--void);border:1px solid var(--edge);overflow:hidden}
+.vmeter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7CFFB2,#FFE34A,#FF4F8B);transition:width .05s}
+.savebox{display:flex;flex-direction:column;gap:8px}
+.savebox textarea{font:12px ui-monospace,Menlo,monospace;color:var(--ink);background:var(--void);border:1px solid var(--edge);border-radius:12px;padding:10px;resize:vertical;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text;word-break:break-all}
+.voicebar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 58px);z-index:15;display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-radius:999px;background:color-mix(in srgb,var(--deck) 94%,transparent);border:1px solid #7CFFB2;box-shadow:0 0 24px -8px #7CFFB2;max-width:calc(100% - 32px);box-sizing:border-box}
+.voicebar .vtitle{font-weight:700;font-size:13px;color:#7CFFB2;white-space:nowrap}
+.voicebar .vpeople{display:flex;flex-wrap:wrap;gap:4px 6px;min-width:0}
+@media (max-width:520px){.voicebar .vtitle .vtx{display:none}.voicebar{gap:8px}}
+.voicebar .vp{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--void);white-space:nowrap}
+.voicebar .vp i{width:8px;height:8px;border-radius:50%;background:var(--edge)}
+.voicebar .vp.talk i{background:#7CFFB2;box-shadow:0 0 8px #7CFFB2}
+.voicebar button{padding:6px 12px;font-size:12px;border-radius:999px;white-space:nowrap;flex:none}
+.voicebar button.off{background:#FF4A5E;border-color:#FF4A5E;color:#fff}
 .ctrls div{border:1px solid var(--edge);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
 .ctrls span{font-size:13px;color:var(--mute);line-height:1.45}
 /* ----- desktop layout ----- */
@@ -541,6 +690,24 @@ body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.d
     <div class="seg" id="musicSeg" role="group" aria-label="Musik"><button type="button" data-o="1">På</button><button type="button" data-o="0">Av</button></div>
     <label>Hjälteröster</label>
     <div class="seg" id="voiceSeg" role="group" aria-label="Hjälteröster"><button type="button" data-v="1" aria-pressed="true">På</button><button type="button" data-v="0" aria-pressed="false">Av</button></div>
+    <div id="vcBox" class="setbox" hidden>
+      <label>Röstchatt</label>
+      <p class="note left">Öppnas automatiskt mellan rundorna i onlinespel, alltså i lobbyn, vid kortvalet och efter varje match, och stängs när nästa runda börjar.</p>
+      <div class="seg" id="vcSeg" role="group" aria-label="Röstchatt"><button type="button" data-o="1">På</button><button type="button" data-o="0">Av</button></div>
+      <button id="btnMicGrant" type="button">Ge mikrofontillgång</button>
+      <div class="field"><label for="micSel">Mikrofon</label><select id="micSel"></select></div>
+      <div class="field" id="spkField"><label for="spkSel">Högtalare / hörlurar</label><select id="spkSel"></select></div>
+      <div class="vctest"><button id="btnMicTest" type="button">Testa mikrofon</button><div class="vmeter"><i id="micLvl"></i></div><button id="btnSpkTest" type="button">Testa ljud</button></div>
+      <p class="note left" id="vcNote"></p>
+    </div>
+    <label>Sparkod</label>
+    <p class="note left">Flytta mynt, kosmetika och all progression till en annan enhet eller webbläsare. Spara koden någonstans säkert.</p>
+    <div class="duo"><button id="btnExport" type="button">Exportera</button><button id="btnImport" type="button">Importera</button></div>
+    <div id="saveBox" class="savebox" hidden>
+      <textarea id="saveCode" rows="4" spellcheck="false" aria-label="Sparkod"></textarea>
+      <div class="duo"><button id="btnSaveAct" class="primary" type="button">Kopiera</button><button id="btnSaveClose" type="button">Stäng</button></div>
+      <p class="note" id="saveMsg"></p>
+    </div>
     <label>Kontroller</label>
     <div class="ctrls">
       <div><b>Mobil</b><span>Dra med fingret för att flytta plankan. Två fingrar samtidigt ger supersmash. Hjältekraft och emotes har egna knappar.</span></div>
@@ -631,6 +798,7 @@ body.desk #chests .panel,body.desk #tower .panel,body.desk #quests .panel,body.d
 <button id="emoteBtn" type="button" hidden aria-label="Emotes">😀</button>
 <button id="heroBtn" type="button" hidden>KRAFT</button>
 <div id="emoteTray" hidden></div>
+<div id="voiceBar" class="voicebar" hidden><span class="vtitle">🎙<span class="vtx"> Röstchatt</span></span><span id="vcPeople" class="vpeople"></span><button id="btnVcMute" type="button">Mic på</button></div>
 <div id="toast" hidden></div>
 
 <script>
@@ -4110,6 +4278,7 @@ function frame(now) {
   if (!$('#custom').hidden) { drawPreview(); if (Math.floor(clock*10) % 3 === 0) $('#shopGrid').querySelectorAll('button').forEach(b => drawChip(b.querySelector('canvas'), shopTab, b.dataset.id)); }
   drawVictory(dt);
   drawHeroPop(dt);
+  if (typeof voiceTick === 'function') voiceTick();
   if (curScreen === 'profile') { drawCard($('#cardCv').getContext('2d'), previewCardData(), clock); if (Math.floor(clock*10) % 2 === 0) { const k = PROF_TABS[profTab][0]; $('#profGrid').querySelectorAll('button').forEach(b => { const cv3 = b.querySelector('canvas'); if (cv3) drawProfChip(cv3, k, b.dataset.id, clock); }); } }
   if (curScreen === 'chests') drawChestStage(dt);
   if (!$('#cardView').hidden && viewCard) drawCard($('#viewCv').getContext('2d'), viewCard, clock);
@@ -4185,6 +4354,113 @@ $('#btnCardClose').addEventListener('click', () => { $('#cardView').hidden = tru
 setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v');
 $('#voiceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; voicesOn = b.dataset.v === '1'; store('trepong-voices', voicesOn ? '1' : '0'); setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v'); if (voicesOn && myHero !== 'none') heroSay(myHero, 'use'); });
 syncChestBadge();
+// ----- save code -----
+function exportSave() {
+  const data = {};
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('trepong-') && !['trepong-mic', 'trepong-spk'].includes(k)) data[k] = localStorage.getItem(k); } } catch (e) {}
+  const json = JSON.stringify({ v: 1, t: Date.now(), d: data });
+  return 'TREPONG1-' + btoa(unescape(encodeURIComponent(json)));
+}
+function parseSave(code) {
+  code = String(code || '').trim().replace(/\s+/g, '');
+  if (!code.startsWith('TREPONG1-')) throw new Error('Koden ska börja med TREPONG1-.');
+  let obj; try { obj = JSON.parse(decodeURIComponent(escape(atob(code.slice(9))))); } catch (e) { throw new Error('Koden är trasig. Kopiera hela koden och försök igen.'); }
+  if (!obj || obj.v !== 1 || typeof obj.d !== 'object') throw new Error('Det här är ingen Trepong-sparkod.');
+  const keys = Object.keys(obj.d).filter(k => k.startsWith('trepong-') && typeof obj.d[k] === 'string');
+  if (!keys.length) throw new Error('Koden innehåller ingen progression.');
+  return { obj, keys };
+}
+function importSave(code) {
+  const { obj, keys } = parseSave(code);
+  try { const old = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('trepong-') && !['trepong-mic', 'trepong-spk'].includes(k)) old.push(k); } old.forEach(k => localStorage.removeItem(k)); keys.forEach(k => localStorage.setItem(k, obj.d[k])); }
+  catch (e) { throw new Error('Webbläsaren tillåter inte att spelet sparar här (är det inkognitoläge?).'); }
+  return keys.length;
+}
+let saveMode = null, importArmed = false;
+function openSaveBox(m) {
+  saveMode = m; importArmed = false; $('#saveBox').hidden = false; $('#saveMsg').textContent = '';
+  const ta = $('#saveCode');
+  if (m === 'export') { ta.value = exportSave(); ta.readOnly = true; $('#btnSaveAct').textContent = 'Kopiera'; $('#saveMsg').textContent = 'Klistra in koden under Importera på den andra enheten.'; ta.focus(); ta.select(); }
+  else { ta.value = ''; ta.readOnly = false; ta.placeholder = 'Klistra in din sparkod här'; $('#btnSaveAct').textContent = 'Importera'; ta.focus(); }
+}
+$('#btnExport').addEventListener('click', () => openSaveBox('export'));
+$('#btnImport').addEventListener('click', () => openSaveBox('import'));
+$('#btnSaveClose').addEventListener('click', () => { $('#saveBox').hidden = true; saveMode = null; });
+$('#btnSaveAct').addEventListener('click', () => {
+  const ta = $('#saveCode'), msg = $('#saveMsg');
+  if (saveMode === 'export') {
+    const done = () => { msg.textContent = 'Kopierat! Spara koden någonstans säkert.'; };
+    try { navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); msg.textContent = 'Markera texten och kopiera den själv (Ctrl+C).'; }); } catch (e) { ta.select(); msg.textContent = 'Markera texten och kopiera den själv (Ctrl+C).'; }
+    return;
+  }
+  if (!importArmed) {
+    if (!ta.value.trim()) { msg.textContent = 'Klistra in en sparkod först.'; return; }
+    try { parseSave(ta.value); } catch (e) { msg.textContent = e.message; return; }
+    importArmed = true; $('#btnSaveAct').textContent = 'Ja, ersätt min progression';
+    msg.textContent = 'Allt du har på den här enheten ersätts med innehållet i koden. Tryck igen för att bekräfta.'; return;
+  }
+  try { const n = importSave(ta.value); msg.textContent = 'Klart! ' + n + ' saker importerade. Laddar om…'; setTimeout(() => location.reload(), 900); }
+  catch (e) { importArmed = false; $('#btnSaveAct').textContent = 'Importera'; msg.textContent = e.message; }
+});
+// ----- voice chat (web version only) -----
+const TV = window.TrepongVoice || null;
+let vcBusy = false, vcTesting = false;
+async function fillDevices() {
+  if (!TV) return;
+  const { mics, spks } = await TV.devices().catch(() => ({ mics: [], spks: [] }));
+  const fill = (sel, list, cur, def) => {
+    sel.textContent = '';
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = def; sel.append(o0);
+    list.forEach((d, i) => { if (d.deviceId === 'default' || d.deviceId === 'communications') return; const o = document.createElement('option'); o.value = d.deviceId; o.textContent = d.label || ('Enhet ' + (i + 1)); sel.append(o); });
+    sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
+  };
+  fill($('#micSel'), mics, TV.micId, 'Standardmikrofon');
+  fill($('#spkSel'), spks, TV.spkId, 'Standardhögtalare');
+  const named = mics.some(d => d.label);
+  $('#btnMicGrant').hidden = named;
+  $('#vcNote').textContent = !named ? 'Tryck på "Ge mikrofontillgång" en gång. Webbläsaren kommer ihåg det, så röstchatten startar direkt sen.'
+    : TV.sinkSupported ? 'Klart! Dina val sparas och används automatiskt när röstchatten öppnas.' : 'Klart! Den här webbläsaren låter inte sidor välja högtalare, så ljudet går till systemets standardenhet.';
+}
+function syncVoiceSettings() {
+  if (!TV || !TV.supported) { $('#vcBox').hidden = true; return; }
+  $('#vcBox').hidden = false; setSeg($('#vcSeg'), TV.enabled ? 1 : 0, 'o'); $('#spkField').hidden = !TV.sinkSupported;
+  fillDevices();
+}
+if (TV) {
+  $('#vcSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; TV.setEnabled(b.dataset.o === '1'); syncVoiceSettings(); });
+  $('#btnMicGrant').addEventListener('click', async () => { const ok = await TV.requestMic(); if (!vcTesting) TV.stopTest(); if (!ok) $('#vcNote').textContent = 'Mikrofonen blockerades. Klicka på låset vid adressfältet och tillåt mikrofon för sidan.'; fillDevices(); });
+  $('#micSel').addEventListener('change', e => TV.setMic(e.target.value));
+  $('#spkSel').addEventListener('change', e => TV.setSpk(e.target.value));
+  $('#btnMicTest').addEventListener('click', async () => {
+    if (vcTesting) { vcTesting = false; TV.stopTest(); $('#btnMicTest').textContent = 'Testa mikrofon'; $('#micLvl').style.width = '0'; return; }
+    const ok = await TV.startTest(); if (!ok) { $('#vcNote').textContent = 'Kunde inte starta mikrofonen. Tillåt mikrofon för sidan och försök igen.'; return; }
+    vcTesting = true; $('#btnMicTest').textContent = 'Stoppa test'; fillDevices();
+  });
+  $('#btnSpkTest').addEventListener('click', () => TV.testSpeaker());
+  $('#btnVcMute').addEventListener('click', () => { TV.setMuted(!TV.muted); syncVoiceBar(true); });
+}
+let vbKey = '';
+function syncVoiceBar(force) {
+  const bar = $('#voiceBar');
+  if (!TV || !TV.open || !net) { if (!bar.hidden) bar.hidden = true; return; }
+  bar.hidden = false;
+  const btn = $('#btnVcMute'); btn.textContent = TV.muted ? 'Mic av' : 'Mic på'; btn.classList.toggle('off', TV.muted);
+  const ps = findPeers(), me = myPeer();
+  const ppl = ps.map(p => ({ id: p.peer, n: p.sameTab ? 'Du' : (cleanName(p.presence.name) || 'Gäst'), lvl: TV.level(p.sameTab ? 'me' : p.peer), on: p.sameTab || TV.connectedIds().includes(p.peer) }));
+  const key = ppl.map(p => p.id + p.n + p.on).join('|');
+  const box = $('#vcPeople');
+  if (key !== vbKey || force) { vbKey = key; box.textContent = ''; ppl.forEach(p => { const s = document.createElement('span'); s.className = 'vp'; s.dataset.id = p.id; s.append(document.createElement('i'), document.createTextNode(p.n + (p.on ? '' : ' …'))); box.append(s); }); }
+  ppl.forEach(p => { const s = box.querySelector('[data-id="' + CSS.escape(p.id) + '"]'); if (s) s.classList.toggle('talk', p.lvl > 0.12); });
+}
+function voiceTick() {
+  if (!TV) return;
+  if (vcTesting && curScreen === 'settings') $('#micLvl').style.width = Math.round(TV.level('me')*100) + '%';
+  else if (vcTesting && curScreen !== 'settings') { vcTesting = false; TV.stopTest(); $('#btnMicTest').textContent = 'Testa mikrofon'; }
+  const online = (mode === 'host' || mode === 'guest') && net;
+  const between = !!online && ['over', 'pick', 'lobby'].includes(curScreen) && !replay;
+  if (!vcBusy) { vcBusy = true; TV.update(online ? net : null, between, online ? findPeers().map(p => p.peer) : []).catch(() => {}).finally(() => { vcBusy = false; }); }
+  syncVoiceBar(false);
+}
 let layoutPref = ['auto', 'mobile', 'desk'].includes(store('trepong-layout')) ? store('trepong-layout') : 'auto';
 function wantDesk() {
   if (layoutPref === 'desk') return true;
@@ -4201,6 +4477,7 @@ addEventListener('resize', applyLayout);
 applyLayout();
 function syncSettings() {
   applyLayout();
+  syncVoiceSettings(); $('#saveBox').hidden = true;
   setSeg($('#sfxSeg'), muted ? 0 : 1, 'o'); setSeg($('#musicSeg'), Music.on ? 1 : 0, 'o'); setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v');
 }
 $('#btnSettings').addEventListener('click', () => { audioOn(); syncSettings(); showScreen('settings'); });

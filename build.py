@@ -4,7 +4,7 @@ The only real difference: online play goes through PeerJS (peerroom.js) instead 
 import sys, pathlib
 here = pathlib.Path(__file__).resolve().parent
 src = (here / 'trepong.html').read_text(encoding='utf-8')
-adapter = (here / 'peerroom.js').read_text(encoding='utf-8')
+adapter = (here / 'peerroom.js').read_text(encoding='utf-8') + '\n' + (here / 'voice.js').read_text(encoding='utf-8')
 
 def rep(a, b):
     global src

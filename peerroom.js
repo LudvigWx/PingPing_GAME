@@ -14,6 +14,8 @@
     const hubId = PREFIX + String(name).replace(/[^a-z0-9-]/gi, '').toLowerCase();
     let peer = null, isHub = false, myId = null, hubConn = null, open = false, closed = false;
     const conns = new Map();               // hub only: peerId -> DataConnection
+    const callHandlers = new Set();
+    function wireCalls(pr) { pr.on('call', call => callHandlers.forEach(fn => { try { fn(call); } catch (e) { console.error(e); } })); }
     let table = new Map();                 // peerId -> presence object
     let pending = null, sendTimer = null, snapshot = Object.freeze([]), listeners = new Set(), notifyQueued = false;
     function rebuild() {
@@ -67,14 +69,14 @@
     }
     function start(resolve, reject) {
       // Try to become the hub; if the id is taken, someone else hosts this code, so connect to them.
-      peer = new Peer(hubId, { debug: 0 });
+      peer = new Peer(hubId, { debug: 0 }); wireCalls(peer);
       let settled = false;
       peer.on('open', id => { isHub = true; myId = id; open = true; table.set(myId, table.get(myId) || {}); notify(); settled = true; resolve(api); });
       peer.on('connection', c => { if (isHub) hubAccept(c); else c.close(); });
       peer.on('error', err => {
         if (!settled && err && err.type === 'unavailable-id') {
           try { peer.destroy(); } catch (e) {}
-          peer = new Peer(rid(), { debug: 0 });
+          peer = new Peer(rid(), { debug: 0 }); wireCalls(peer);
           peer.on('open', id => { isHub = false; myId = id; table.set(myId, {}); notify(); spokeConnect(); settled = true; resolve(api); });
           peer.on('error', e2 => { if (!settled) { settled = true; reject(e2); } else if (e2 && e2.type === 'peer-unavailable') { open = false; } });
           peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
@@ -86,6 +88,11 @@
     const api = {
       name,
       isHub() { return isHub; },
+      myId() { return myId; },
+      media: {
+        call(id, stream) { try { return peer ? peer.call(id, stream) : null; } catch (e) { return null; } },
+        onCall(fn) { callHandlers.add(fn); return () => callHandlers.delete(fn); }
+      },
       presence(patch) {
         if (closed) return Promise.resolve();
         if (!patch || typeof patch !== 'object') return Promise.resolve();
