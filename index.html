@@ -765,6 +765,22 @@ body.desk .lrow{padding:3px 10px 3px 4px;grid-template-columns:62px 1fr auto}bod
 body.desk .raidopts{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
 body.desk .rcard canvas{aspect-ratio:16/5}
 #forgeReveal:not([hidden]) ~ .forgehide{display:none}
+.gear.gift{right:40px;font-size:18px}
+body.desk .gear.gift{right:44px}
+.redeempanel{width:min(100%,460px)}
+.redeempanel .toprow .eyebrow{flex:1;text-align:center}
+.redeemcv{width:100%;aspect-ratio:600/260;display:block;border-radius:14px;border:1px solid var(--edge)}
+.redeempanel.got>.winner,.redeempanel.got>.winner+.note{display:none}
+body.desk .redeempanel.got .redeemcv{aspect-ratio:600/150}
+.redeemrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+#redeemIn{letter-spacing:.18em;text-align:center;text-transform:uppercase;font-weight:700}
+#redeemMsg.bad{color:#FF6A8A} #redeemMsg.good{color:#7CFFB2;font-weight:700}
+.redeemgot{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.rgitem{display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid var(--edge);border-radius:12px;padding:6px 8px;min-width:96px;animation:pop .6s ease-out}
+.rgitem canvas{width:88px;height:60px}
+.rgitem span{font-size:11px;font-weight:700;text-align:center}
+.redeemcard{display:flex;justify-content:center;animation:pop .8s ease-out}
+.redeemcard canvas{width:min(100%,240px);height:auto;aspect-ratio:3/4;filter:drop-shadow(0 0 24px rgba(181,124,255,.55))}
 .ptsrow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 .ptsrow span{font-size:11px;font-weight:700;border:1px solid var(--edge);border-radius:999px;padding:3px 8px}
 .ptsrow span.r{color:#4FA8FF;border-color:#4FA8FF} .ptsrow span.e{color:#C59BFF;border-color:#C59BFF} .ptsrow span.l{color:#FFB23E;border-color:#FFB23E} .ptsrow span.m{color:#FF4F8B;border-color:#FF4F8B} .ptsrow span.s{color:#3EE6FF;border-color:#3EE6FF}
@@ -824,6 +840,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
       <p class="tag">Ping pong in a triangle. Cards, power-ups and chaos.</p>
       <button id="btnSettings" class="gear" type="button" aria-label="Settings">⚙</button>
+      <button id="btnRedeem" class="gear gift" type="button" aria-label="Redeem code" title="Redeem code">🎁</button>
       <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
     </div>
     <section class="mg you1">
@@ -1074,6 +1091,21 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
   </div>
 </div>
 
+<div id="redeem" class="screen" hidden>
+  <div class="panel redeempanel">
+    <div class="toprow"><button id="btnRedeemBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Redeem code</span><span class="coin" id="redeemCoins">0</span></div>
+    <canvas id="redeemCv" class="redeemcv" width="600" height="260"></canvas>
+    <div class="winner">Got a code?</div>
+    <p class="note">Codes hide in clues during events, in patch notes and wherever the creator feels like it. Each code works once per player.</p>
+    <div class="redeemrow"><input id="redeemIn" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ENTER CODE" aria-label="Code"><button id="btnRedeemGo" class="primary" type="button">Redeem</button></div>
+    <p class="note" id="redeemMsg"></p>
+    <div id="redeemCard" class="redeemcard" hidden><canvas id="redeemCardCv" width="600" height="800"></canvas></div>
+    <div id="redeemGot" class="redeemgot" hidden></div>
+    <label>Redeemed</label>
+    <p class="note left" id="redeemList"></p>
+  </div>
+</div>
+
 <div id="raid" class="screen" hidden>
   <div class="panel raidpanel">
     <div class="toprow"><button id="btnRaidBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Raids · rotation changes every 3 days</span><span class="coin" id="raidCoins">0</span></div>
@@ -1280,6 +1312,198 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
 
 <script>
 'use strict';
+// ===================== CREATOR EXCLUSIVES (redeem-code only) =====================
+// drawCreatorBorder(c, t, W, H)  "Architect's Prism" border
+// drawCreatorBg(c, t, W, H)      "Genesis" live background (the first rally ever played)
+// drawCreatorOverlay(c, t, W, H) sparkles + holo sweep drawn above the card's dark shade
+const CRE_COLS = ['#3EE6FF', '#FF4F8B', '#FFB23E'];
+function cre_s(W, H) { return Math.max(0.5, Math.min(1.4, Math.min(W/300, H/300))); }
+function cre_holo(c, cx, cy, t, a) {
+  if (c.createConicGradient) {
+    const g = c.createConicGradient(t*0.9, cx, cy);
+    ['#3EE6FF', '#7CFFB2', '#FFE34A', '#FFB23E', '#FF4F8B', '#B57CFF', '#3EE6FF'].forEach((col, i, A) => g.addColorStop(i/(A.length - 1), col));
+    return g;
+  }
+  const g = c.createLinearGradient(cx - 200*Math.cos(t), cy - 200*Math.sin(t), cx + 200*Math.cos(t), cy + 200*Math.sin(t));
+  ['#3EE6FF', '#FFE34A', '#FF4F8B', '#B57CFF'].forEach((col, i, A) => g.addColorStop(i/(A.length - 1), col));
+  return g;
+}
+function cre_tri(c, x, y, r, rot) { poly(c, [0, 1, 2].map(k => [x + Math.cos(rot + k*TAU/3 - Math.PI/2)*r, y + Math.sin(rot + k*TAU/3 - Math.PI/2)*r])); }
+
+function drawCreatorBorder(c, t, W, H) {
+  t = +t || 0; const s = cre_s(W, H), pad = 5*s, x = pad, y = pad, w = W - 2*pad, h = H - 2*pad, R = 20*s;
+  c.save(); c.lineJoin = 'round';
+  // outer glow
+  c.shadowColor = 'hsl(' + ((t*60) % 360) + ',100%,65%)'; c.shadowBlur = 18*s;
+  c.strokeStyle = cre_holo(c, W/2, H/2, t, 1); c.lineWidth = 9*s; rr(c, x, y, w, h, R); c.stroke();
+  c.shadowBlur = 0;
+  // dark channel + engraved inner lines
+  c.strokeStyle = 'rgba(12,8,30,0.85)'; c.lineWidth = 3*s; rr(c, x, y, w, h, R); c.stroke();
+  c.strokeStyle = cre_holo(c, W/2, H/2, -t*1.3, 1); c.lineWidth = 1.2*s; rr(c, x, y, w, h, R); c.stroke();
+  c.strokeStyle = 'rgba(255,216,74,0.9)'; c.lineWidth = 1.5*s; rr(c, x + 7*s, y + 7*s, w - 14*s, h - 14*s, Math.max(4, R - 6*s)); c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = 1; rr(c, x - 4*s, y - 4*s, w + 8*s, h + 8*s, R + 4*s); c.stroke();
+  // little triangle studs along the gold line
+  c.fillStyle = 'rgba(255,230,140,0.9)';
+  for (let k = 0; k < 28; k++) { const [px, py, nx, ny] = perim(k/28, x + 7*s, y + 7*s, w - 14*s, h - 14*s); cre_tri(c, px, py, 2.2*s, Math.atan2(ny, nx) + Math.PI/2); c.fill(); }
+  // three comets (the three player colours) racing round the frame
+  for (let q = 0; q < 3; q++) {
+    const col = CRE_COLS[q];
+    for (let k = 14; k >= 0; k--) {
+      const u = t*0.16 + q/3 - k*0.0045, [px, py] = perim(u, x, y, w, h);
+      c.globalAlpha = (1 - k/15)*0.9; c.fillStyle = k ? col : '#FFFFFF';
+      c.beginPath(); c.arc(px, py, (k ? 3.2 - k*0.17 : 3.6)*s, 0, TAU); c.fill();
+    }
+    const [hx, hy] = perim(t*0.16 + q/3, x, y, w, h);
+    c.globalAlpha = 1; c.shadowColor = col; c.shadowBlur = 16*s; c.fillStyle = '#FFFFFF'; star4(c, hx, hy, 6*s); c.shadowBlur = 0;
+  }
+  c.globalAlpha = 1;
+  // lightning arcs that crawl along the edges now and then
+  const tick = Math.floor(t*7), rnd = seeded(tick*7919 + 13);
+  if (rnd() < 0.55) {
+    const u0 = rnd(), len = 0.04 + rnd()*0.06, col = CRE_COLS[Math.floor(rnd()*3)];
+    c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = 10*s; c.lineWidth = 1.4*s; c.beginPath();
+    for (let k = 0; k <= 10; k++) { const [px, py, nx, ny] = perim(u0 + len*k/10, x, y, w, h), j = (rnd() - 0.5)*9*s; k ? c.lineTo(px + nx*j, py + ny*j) : c.moveTo(px, py); }
+    c.stroke(); c.shadowBlur = 0;
+  }
+  // corner crests: spinning prism triangles inside rune rings
+  [[x + 14*s, y + 14*s], [x + w - 14*s, y + 14*s], [x + w - 14*s, y + h - 14*s], [x + 14*s, y + h - 14*s]].forEach(([cx, cy], k) => {
+    c.save(); c.translate(cx, cy);
+    c.fillStyle = 'rgba(12,8,30,0.9)'; c.beginPath(); c.arc(0, 0, 12*s, 0, TAU); c.fill();
+    c.strokeStyle = cre_holo(c, 0, 0, t*2 + k, 1); c.lineWidth = 2*s; c.beginPath(); c.arc(0, 0, 12*s, 0, TAU); c.stroke();
+    c.strokeStyle = 'rgba(255,216,74,0.8)'; c.lineWidth = 1; c.setLineDash([2*s, 3*s]); c.lineDashOffset = -t*12; c.beginPath(); c.arc(0, 0, 9*s, 0, TAU); c.stroke(); c.setLineDash([]);
+    const rot = t*(k % 2 ? -1.2 : 1.2);
+    c.shadowColor = CRE_COLS[k % 3]; c.shadowBlur = 10*s; c.fillStyle = cre_holo(c, 0, 0, -t*3, 1); cre_tri(c, 0, 0, 7*s, rot); c.fill();
+    c.shadowBlur = 0; c.fillStyle = '#FFFFFF'; cre_tri(c, 0, 0, 2.6*s, rot + Math.PI); c.fill();
+    c.restore();
+  });
+  // the crown plaque: CREATOR between two spinning prism crests, three player-colour gems on top
+  { const cx = W/2, cy = y + 1*s;
+    c.save(); c.translate(cx, cy);
+    c.fillStyle = 'rgba(12,8,30,0.95)'; rr(c, -44*s, -6*s, 88*s, 15*s, 7*s); c.fill();
+    c.shadowColor = '#FFFFFF'; c.shadowBlur = 8*s*(0.5 + 0.5*Math.sin(t*3));
+    c.strokeStyle = cre_holo(c, 0, 0, t*1.5, 1); c.lineWidth = 1.6*s; rr(c, -44*s, -6*s, 88*s, 15*s, 7*s); c.stroke(); c.shadowBlur = 0;
+    [-36, 36].forEach((dx, k) => { c.fillStyle = cre_holo(c, dx*s, 1.5*s, -t*3, 1); cre_tri(c, dx*s, 1.8*s, 5*s, t*(k ? -2 : 2)); c.fill(); });
+    c.fillStyle = '#FFE58A'; c.font = '700 ' + (8*s) + 'px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('CREATOR', 0, 1.8*s);
+    c.restore(); }
+  // bottom plaque
+  { const cx = W/2, cy = y + h;
+    c.save(); c.translate(cx, cy);
+    c.fillStyle = 'rgba(12,8,30,0.95)'; rr(c, -46*s, -7*s, 92*s, 14*s, 7*s); c.fill();
+    c.strokeStyle = 'rgba(255,216,74,0.9)'; c.lineWidth = 1.2*s; rr(c, -46*s, -7*s, 92*s, 14*s, 7*s); c.stroke();
+    const tg = c.createLinearGradient(-40*s, 0, 40*s, 0), o = (t*0.35) % 1;
+    tg.addColorStop(0, '#FFD84A'); tg.addColorStop(Math.max(0, o - 0.1), '#FFD84A'); tg.addColorStop(o, '#FFFFFF'); tg.addColorStop(Math.min(1, o + 0.1), '#FFD84A'); tg.addColorStop(1, '#FFD84A');
+    c.fillStyle = tg; c.font = '700 ' + (7*s) + 'px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('★ MADE TREPONG ★', 0, 0.5*s);
+    c.restore(); }
+  // orbiting sparkles
+  for (let k = 0; k < 10; k++) {
+    const [px, py, nx, ny] = perim(k/10 - t*0.05, x, y, w, h), off = (6 + 4*Math.sin(t*2 + k))*s, a = 0.5 + 0.5*Math.sin(t*5 + k*1.7);
+    c.globalAlpha = a; c.fillStyle = k % 2 ? '#FFFFFF' : '#FFE58A'; star4(c, px - nx*off, py - ny*off, (2 + 2*a)*s);
+  }
+  c.restore(); c.globalAlpha = 1; c.shadowBlur = 0;
+}
+
+// The first rally: three paddles on a spinning neon triangle, passing the ball round forever.
+function cre_rally(t) { const leg = 0.75, k = Math.floor(t/leg), f = (t/leg) - k; return { from: ((k % 3) + 3) % 3, to: ((k + 1) % 3 + 3) % 3, f }; }
+function drawCreatorBg(c, t, W, H) {
+  t = +t || 0; const s = cre_s(W, H);
+  // deep space that slowly drifts through hues
+  const hue = (t*6) % 360, g = c.createLinearGradient(0, 0, W*0.4, H);
+  g.addColorStop(0, 'hsl(' + (250 + 20*Math.sin(t*0.2)) + ',70%,8%)'); g.addColorStop(0.55, 'hsl(' + (285 + 25*Math.sin(t*0.15)) + ',75%,12%)'); g.addColorStop(1, 'hsl(' + (215 + 20*Math.sin(t*0.25)) + ',80%,10%)');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  // nebula clouds
+  [[0.2, 0.25, '255,79,139'], [0.85, 0.35, '62,230,255'], [0.5, 0.85, '181,124,255'], [0.1, 0.8, '255,178,62']].forEach(([fx, fy, rgb], k) => {
+    const cx = W*fx + Math.sin(t*0.3 + k*2)*W*0.06, cy = H*fy + Math.cos(t*0.25 + k)*H*0.04, r = Math.max(W, H)*(0.42 + 0.06*Math.sin(t*0.5 + k));
+    const ng = c.createRadialGradient(cx, cy, 0, cx, cy, r); ng.addColorStop(0, 'rgba(' + rgb + ',0.32)'); ng.addColorStop(1, 'rgba(' + rgb + ',0)'); c.fillStyle = ng; c.fillRect(0, 0, W, H);
+  });
+  // blueprint grid in perspective: the creator's drafting table
+  c.save(); c.strokeStyle = 'rgba(62,230,255,0.12)'; c.lineWidth = 1;
+  const hz = H*0.55;
+  for (let k = -10; k <= 10; k++) { c.beginPath(); c.moveTo(W/2 + k*W*0.04, hz); c.lineTo(W/2 + k*W*0.22, H); c.stroke(); }
+  const off = (t*0.25) % 1;
+  for (let k = 0; k < 9; k++) { const p = Math.pow((k + off)/9, 2), yy = hz + p*(H - hz); c.globalAlpha = 0.25 + p*0.75; c.beginPath(); c.moveTo(0, yy); c.lineTo(W, yy); c.stroke(); }
+  c.restore();
+  // twinkling stars + a shooting star every few seconds
+  for (let k = 0; k < 90; k++) { const sx = (k*97.31) % W, sy = (k*53.77) % (H*0.9), a = 0.25 + 0.75*Math.abs(Math.sin(t*(0.8 + (k % 7)*0.3) + k)); c.fillStyle = 'rgba(255,255,255,' + a.toFixed(3) + ')'; c.fillRect(sx, sy, k % 9 ? 1.2*s : 2.2*s, k % 9 ? 1.2*s : 2.2*s); }
+  { const per = 4.5, k = Math.floor(t/per), f = (t % per)/0.9;
+    if (f < 1) { const r = seeded(k*31 + 7), sx = W*(0.1 + r()*0.6), sy = H*(0.05 + r()*0.25), dx = W*0.45, dy = H*0.18;
+      const hx = sx + dx*f, hy = sy + dy*f, lg = c.createLinearGradient(hx - dx*0.3, hy - dy*0.3, hx, hy); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(1, 'rgba(255,255,255,' + (1 - f) + ')');
+      c.strokeStyle = lg; c.lineWidth = 2*s; c.beginPath(); c.moveTo(hx - dx*0.3, hy - dy*0.3); c.lineTo(hx, hy); c.stroke(); } }
+  cre_arena(c, t, W, H, s);
+}
+function cre_arena(c, t, W, H, s) {
+  // the arena
+  const cx = W/2, cy = H*0.6, R = Math.min(W, H)*0.36, rot = t*0.12;
+  const V = [0, 1, 2].map(k => [cx + Math.cos(rot + k*TAU/3 - Math.PI/2)*R, cy + Math.sin(rot + k*TAU/3 - Math.PI/2)*R]);
+  const rally = cre_rally(t);
+  // shockwave rings each time the ball is hit
+  for (let q = 0; q < 3; q++) {
+    const age = rally.f*0.75 + q*0.75; if (age > 2.2) continue;
+    c.strokeStyle = 'rgba(255,255,255,' + (0.35*(1 - age/2.2)) + ')'; c.lineWidth = 1.5*s; cre_tri(c, cx, cy, R*(1 + age*0.5), rot); c.stroke();
+  }
+  c.save(); c.shadowColor = '#B57CFF'; c.shadowBlur = 22*s;
+  c.strokeStyle = cre_holo(c, cx, cy, t, 1); c.lineWidth = 3*s; poly(c, V); c.stroke();
+  c.shadowBlur = 0; c.fillStyle = 'rgba(181,124,255,0.07)'; poly(c, V); c.fill();
+  c.strokeStyle = 'rgba(255,255,255,0.18)'; c.lineWidth = 1; cre_tri(c, cx, cy, R*0.55, rot + Math.PI); c.stroke();
+  c.restore();
+  // paddle on each wall (midpoint of the side opposite each vertex), sliding toward the ball
+  const side = k => { const a = V[(k + 1) % 3], b = V[(k + 2) % 3]; return [a, b]; };
+  const padPos = (k, u) => { const [a, b] = side(k); return [a[0] + (b[0] - a[0])*u, a[1] + (b[1] - a[1])*u]; };
+  const hitU = n => 0.3 + 0.4*seeded(n*977 + 3)();
+  const n0 = Math.floor(t/0.75), from = padPos(rally.from, hitU(n0)), to = padPos(rally.to, hitU(n0 + 1));
+  const ball = f => [from[0] + (to[0] - from[0])*f, from[1] + (to[1] - from[1])*f];
+  for (let k = 0; k < 3; k++) {
+    const [a, b] = side(k), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    let u = 0.5; if (k === rally.to) u = 0.5 + (hitU(n0 + 1) - 0.5)*Math.min(1, rally.f*1.6); else if (k === rally.from) u = hitU(n0) + (0.5 - hitU(n0))*Math.min(1, rally.f*1.4);
+    const [px, py] = padPos(k, u), nx = cx - px, ny = cy - py, nl = Math.hypot(nx, ny) || 1;
+    c.save(); c.translate(px + nx/nl*4*s, py + ny/nl*4*s); c.rotate(ang);
+    c.shadowColor = CRE_COLS[k]; c.shadowBlur = 14*s; c.fillStyle = CRE_COLS[k]; rr(c, -14*s, -3*s, 28*s, 6*s, 3*s); c.fill();
+    c.shadowBlur = 0; c.fillStyle = 'rgba(255,255,255,0.7)'; rr(c, -10*s, -1.5*s, 20*s, 2*s, 1*s); c.fill(); c.restore();
+  }
+  // ball + trail in the colour of whoever hit it
+  const col = CRE_COLS[rally.from];
+  for (let k = 12; k >= 1; k--) { const f = rally.f - k*0.03; if (f < 0) continue; const [bx, by] = ball(f); c.globalAlpha = (1 - k/13)*0.7; c.fillStyle = col; c.beginPath(); c.arc(bx, by, (4.5 - k*0.25)*s, 0, TAU); c.fill(); }
+  c.globalAlpha = 1; const [bx, by] = ball(rally.f);
+  c.shadowColor = col; c.shadowBlur = 16*s; c.fillStyle = '#FFFFFF'; c.beginPath(); c.arc(bx, by, 4.5*s, 0, TAU); c.fill(); c.shadowBlur = 0;
+  // hit flash
+  if (rally.f < 0.18) { const a = 1 - rally.f/0.18; c.globalAlpha = a; c.fillStyle = CRE_COLS[rally.from]; for (let k = 0; k < 8; k++) { const an = k*TAU/8 + n0, d = (6 + 18*(1 - a))*s; c.fillRect(from[0] + Math.cos(an)*d, from[1] + Math.sin(an)*d, 2*s, 2*s); } c.globalAlpha = 1; }
+}
+let cre_off = null;
+function drawCreatorOverlay(c, t, W, H) {
+  t = +t || 0; const s = cre_s(W, H);
+  c.save();
+  try { // the rally keeps going faintly over the dark lower half of the card
+    if (!cre_off) cre_off = document.createElement('canvas');
+    const sc = 2; if (cre_off.width !== W*sc) { cre_off.width = W*sc; cre_off.height = H*sc; }
+    const o = cre_off.getContext('2d'); o.setTransform(sc, 0, 0, sc, 0, 0); o.clearRect(0, 0, W, H); cre_arena(o, t, W, H, s);
+    c.globalAlpha = 0.42; c.drawImage(cre_off, 0, 0, W, H); c.globalAlpha = 1;
+  } catch (e) {}
+  // embers rising through the lower half
+  for (let k = 0; k < 26; k++) {
+    const sp = 18 + (k % 5)*7, yy = H - ((t*sp + k*61.3) % (H*0.62)), xx = (k*47.9 + Math.sin(t*0.9 + k)*10) % W, a = Math.min(1, (H - yy)/(H*0.2))*(1 - (H - yy)/(H*0.62));
+    c.globalAlpha = Math.max(0, a)*0.8; c.fillStyle = CRE_COLS[k % 3]; c.fillRect(xx, yy, 1.8*s, 1.8*s);
+  }
+  // holographic sweep across the whole card every 5 s
+  const per = 5, f = (t % per)/1.2;
+  if (f < 1) {
+    const bx = -W*0.5 + f*W*2, g = c.createLinearGradient(bx - 40*s, 0, bx + 40*s, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.45, 'rgba(62,230,255,0.10)'); g.addColorStop(0.5, 'rgba(255,255,255,0.22)'); g.addColorStop(0.55, 'rgba(255,79,139,0.10)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.globalAlpha = 1; c.fillStyle = g; c.save(); c.translate(bx, H/2); c.transform(1, 0, -0.35, 1, 0, 0); c.translate(-bx, -H/2); c.fillRect(bx - 40*s, 0, 80*s, H); c.restore();
+  }
+  c.restore(); c.globalAlpha = 1;
+}
+function drawCandyCorn(c, x, y, r) { // event emblem: a candy-corn triangle (it's a triangle game after all)
+  c.save(); c.translate(x, y);
+  const T = [[0, -r], [r*0.9, r*0.85], [-r*0.9, r*0.85]];
+  c.save(); poly(c, T); c.clip();
+  c.fillStyle = '#FFD12A'; c.fillRect(-r, r*0.25, 2*r, r);
+  c.fillStyle = '#FF8A1E'; c.fillRect(-r, -r*0.3, 2*r, r*0.56);
+  c.fillStyle = '#FFF4DA'; c.fillRect(-r, -r*1.1, 2*r, r*0.81);
+  c.fillStyle = 'rgba(255,255,255,0.5)'; c.beginPath(); c.ellipse(-r*0.22, r*0.05, r*0.09, r*0.4, 0.45, 0, TAU); c.fill();
+  c.restore();
+  c.strokeStyle = 'rgba(90,40,0,0.55)'; c.lineWidth = Math.max(1, r*0.08); c.lineJoin = 'round'; poly(c, T); c.stroke();
+  c.restore();
+}
+
 // ================= extra cosmetics =================
 // =====================================================================
 // RAID LOOT FX (raid_fx.js) - mythic ball skins + paddle auras
@@ -5918,10 +6142,10 @@ function myName() { return cleanName($('#name').value) || 'Player'; }
 function colOf(i, lk) { const l = (lk || looks)[i]; return l ? l.c : SEAT_DEFAULT[i]; }
 
 // ---------- screens ----------
-const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas'];
+const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem'];
 function showScreen(name) {
   SCREENS.forEach(id => $('#' + id).hidden = id !== name);
-  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas'].includes(name);
+  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem'].includes(name);
   curScreen = name;
   if (name && $('#' + name)) $('#' + name).scrollTop = 0;
 }
@@ -7752,6 +7976,8 @@ function profSourceText(it) {
   if (it[3] === 'chest') return 'Only in chests';
   if (it[3].startsWith('adv:')) return 'Adventure reward: ' + worldById(it[3].slice(4)).n;
   if (it[3] === 'bp') return 'Battle pass reward';
+  if (it[3] === 'code') return 'Secret redeem code';
+  if (it[3] === 'creator') return 'Only the creator of Trepong has this';
   if (it[3].startsWith('raid:')) return 'Raid loot: ' + RAIDS[it[3].slice(5)].n;
   if (it[3].startsWith('tower:')) return 'Clear floor ' + it[3].slice(6) + ' of the Tower';
   if (it[3].startsWith('ach:')) { const a = ACH.find(x => x[0] === it[3].slice(4)); return 'Achievement: ' + (a ? a[1] : '?'); }
@@ -7793,6 +8019,7 @@ function perim(u, x, y, w, h) { // point + inward normal along a rectangle's per
   return [x, y + h - d, 1, 0];
 }
 function drawEmblem(c, id, x, y, r) {
+  if (id === 'candycorn') { drawCandyCorn(c, x, y, r); return; }
   if (drawEmblem2(c, id, x, y, r)) return;
   c.save(); c.translate(x, y); c.lineJoin = 'round';
   if (id === 'star') { c.fillStyle = '#FFD84A'; c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI/2 + k*Math.PI/5, rr2 = k % 2 ? r*0.45 : r; c.lineTo(Math.cos(a)*rr2, Math.sin(a)*rr2); } c.closePath(); c.fill(); }
@@ -7806,6 +8033,7 @@ function drawEmblem(c, id, x, y, r) {
   c.restore();
 }
 function drawCardBg(c, id, t, W, H) {
+  if (id === 'creator') { drawCreatorBg(c, t, W, H); return; }
   if (drawCardBg3(c, id, t, W, H) || drawCardBg2(c, id, t, W, H)) return;
   const lin = (stops) => { const g = c.createLinearGradient(0, 0, W*0.3, H); stops.forEach((s, i) => g.addColorStop(i/(stops.length - 1), s)); return g; };
   if (id === 'sunset') { c.fillStyle = lin(['#FF8A3D', '#FF4F8B', '#4A1A6A']); c.fillRect(0, 0, W, H); }
@@ -7837,6 +8065,7 @@ function drawCardBg(c, id, t, W, H) {
   else { const g = c.createRadialGradient(W/2, H*0.35, 10, W/2, H*0.35, H); g.addColorStop(0, '#2A2060'); g.addColorStop(1, '#0C0A1C'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
 }
 function drawCardBorder(c, id, t, W, H, accent) {
+  if (id === 'creator') { drawCreatorBorder(c, t, W, H); return; }
   if (drawCardBorder3(c, id, t, W, H, accent) || drawCardBorder2(c, id, t, W, H, accent)) return;
   const pad = 5, x = pad, y = pad, w = W - pad*2, h = H - pad*2, R = 20;
   const stroke = (col, lw) => { c.strokeStyle = col; c.lineWidth = lw; rr(c, x, y, w, h, R); c.stroke(); };
@@ -7871,6 +8100,7 @@ function drawCard(c, d, t) {
   drawCardBg(c, d.pg, t, CW, CH);
   const shade = c.createLinearGradient(0, 150, 0, CH); shade.addColorStop(0, 'rgba(8,6,20,0)'); shade.addColorStop(0.25, 'rgba(8,6,20,0.72)'); shade.addColorStop(1, 'rgba(8,6,20,0.9)');
   c.fillStyle = shade; c.fillRect(0, 150, CW, CH - 150);
+  if (d.pg === 'creator') drawCreatorOverlay(c, t, CW, CH);
   // hero portrait window
   drawHero(heroCardCv.getContext('2d'), d.he, 520, 300, t, 0, d.hv);
   c.save(); rr(c, 22, 22, 256, 148, 14); c.clip(); c.drawImage(heroCardCv, 22, 22, 256, 148); c.restore();
@@ -7890,7 +8120,7 @@ function drawCard(c, d, t) {
   const nm = d.n.toUpperCase(), nw = c.measureText(nm).width;
   c.fillStyle = '#F0ECFF'; c.fillText(nm, 150 + (d.pe !== 'none' ? 12 : 0), 204);
   if (d.pe !== 'none') drawEmblem(c, d.pe, 150 - nw/2 - 4, 196, 10);
-  const ti = profItem('pt', d.pt); c.font = '700 12px "Chakra Petch", system-ui'; c.fillStyle = RAR6[ti[2]][1]; c.fillText(ti[1].toUpperCase(), 150, 222);
+  const ti = profItem('pt', d.pt); c.font = '700 12px "Chakra Petch", system-ui'; c.fillStyle = d.pt === 'creator' ? cre_holo(c, 150, 218, t*1.5, 1) : RAR6[ti[2]][1]; c.fillText(ti[1].toUpperCase(), 150, 222);
   // xp bar
   c.fillStyle = 'rgba(255,255,255,0.12)'; rr(c, 40, 232, 220, 6, 3); c.fill();
   const xg = c.createLinearGradient(40, 0, 260, 0); xg.addColorStop(0, '#3EE6FF'); xg.addColorStop(1, '#FFD84A'); c.fillStyle = xg; rr(c, 40, 232, Math.max(6, 220*d.xf), 6, 3); c.fill();
@@ -9718,6 +9948,116 @@ function setRaidTab(t) {
   fitPanel($('#raid .panel'));
 }
 
+// ---------- redeem codes ----------
+// Codes live here only as SHA-256 hashes of 'trepong:' + the code (upper case, letters and digits only),
+// so reading the source doesn't give them away. Make new ones with make_code.py.
+const CODES = {
+  '91d980becc16bbdcad14d30ce28dfd70cf0db22cba9ea07d90c8645791a77b41': { n: 'Welcome to Trepong', r: [['coins', 250], ['chest', 'wood']] },
+  '46532d99f79b700069b83c07e7eb3c54c677dfc5455b05867226df55eb801965': { n: 'Pumpkin Night secret', r: [['pe', 'candycorn'], ['pt', 'codebreaker'], ['coins', 300]], end: ADV_EVENT_END },
+  '2bc15f89d763b69932b54df3a71aae3d54195cf72a1e6e2ab8986419368cb118': { n: 'The Creator', r: [['pb', 'creator'], ['pg', 'creator'], ['pt', 'creator']], eq: 1, big: 1 }
+};
+PROF.pb.push(['creator', 'Architect\'s Prism', 'm', 'creator', 1]);
+PROF.pg.push(['creator', 'Genesis', 'm', 'creator', 1]);
+PROF.pt.push(['creator', 'Creator of Trepong', 'm', 'creator'], ['codebreaker', 'Code Breaker', 'e', 'code']);
+PROF.pe.push(['candycorn', 'Candy corn', 'e', 'code']);
+let redeemed = (() => { const a = storeJSON('trepong-codes', []); return Array.isArray(a) ? a.filter(h => typeof h === 'string') : []; })();
+function saveRedeemed() { store('trepong-codes', JSON.stringify(redeemed)); }
+function normCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+async function codeHash(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('trepong:' + s));
+  return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');
+}
+let redeemFails = [], redeemBusy = false, redeemAnim = null, redeemShow = null;
+function openRedeem(pre) {
+  mode = 'menu'; st = null; series = null; special = null; resetFx();
+  showScreen('redeem'); $('#redeemMsg').textContent = ''; $('#redeemMsg').className = 'note';
+  if (pre) $('#redeemIn').value = pre;
+  renderRedeem();
+}
+function renderRedeem() {
+  syncCoinUI(); $('#redeemCoins').textContent = fmt(coins);
+  const list = $('#redeemList'); list.textContent = '';
+  const names = redeemed.map(h => CODES[h] ? CODES[h].n : null).filter(Boolean);
+  list.textContent = names.length ? names.join(' · ') : 'Nothing yet.';
+  $('#redeem .panel').classList.toggle('got', !!redeemShow);
+  const got = $('#redeemGot'); got.hidden = !redeemShow; got.textContent = '';
+  $('#redeemCard').hidden = !(redeemShow && redeemShow.big);
+  if (redeemShow) for (const r of redeemShow.r) {
+    const d = document.createElement('div'); d.className = 'rgitem';
+    const cv = document.createElement('canvas'); cv.width = 88; cv.height = 60; cv.dataset.r = JSON.stringify(r);
+    d.append(cv, Object.assign(document.createElement('span'), { textContent: rewardName(r) }));
+    got.append(d);
+  }
+  fitPanel($('#redeem .panel'));
+}
+function redeemMsg(t, cls) { const m = $('#redeemMsg'); m.textContent = t; m.className = 'note ' + (cls || ''); }
+async function redeemCode() {
+  if (redeemBusy) return;
+  const raw = normCode($('#redeemIn').value);
+  if (!raw) { redeemMsg('Type a code first.', 'bad'); return; }
+  const now = Date.now(); redeemFails = redeemFails.filter(x => now - x < 60000);
+  if (redeemFails.length >= 6) { redeemMsg('Too many tries. Wait a minute and try again.', 'bad'); return; }
+  if (!(window.crypto && crypto.subtle)) { redeemMsg('Codes need a secure (https) connection. Open the game from its normal web address.', 'bad'); return; }
+  redeemBusy = true;
+  let h = ''; try { h = await codeHash(raw); } catch (e) { h = ''; }
+  redeemBusy = false;
+  const C = CODES[h];
+  if (!C) { redeemFails.push(now); redeemAnim = { kind: 'no', t: 0 }; tone(140, 0.25, 'square', 0.05, 0.6); buzz([60]); redeemMsg('That code doesn\'t work. Check the spelling, or the clue.', 'bad'); return; }
+  if (redeemed.includes(h)) { redeemAnim = { kind: 'no', t: 0 }; redeemMsg('You have already redeemed "' + C.n + '".', 'bad'); return; }
+  if (C.end && now > C.end) { redeemAnim = { kind: 'no', t: 0 }; redeemMsg('"' + C.n + '" has expired. Keep an eye out for the next one!', 'bad'); return; }
+  for (const r of C.r) grantReward(r, true);
+  if (C.eq) { for (const r of C.r) if (['pb', 'pg', 'pt', 'pe'].includes(r[0])) myProf[r[0]] = r[1]; myProf = validProf(myProf); saveProf(); }
+  redeemed.push(h); saveRedeemed(); track('codes');
+  redeemShow = { r: C.r, big: !!C.big, n: C.n };
+  redeemAnim = { kind: 'yes', t: 0, big: !!C.big, n: C.n };
+  $('#redeemIn').value = '';
+  redeemMsg(C.big ? 'Welcome home, creator. Everything is equipped.' : 'Code redeemed: ' + C.n + '!', 'good');
+  sfx.win(); buzz(C.big ? [40, 30, 80, 30, 200] : [40, 30, 80]);
+  startVictory(C.big ? 'supernova' : 'confetti');
+  renderRedeem();
+}
+let redeemParts = [];
+function drawRedeemStage(dt) {
+  const cv = $('#redeemCv'); if (!cv) return;
+  const c = cv.getContext('2d'), w = cv.width, h = cv.height;
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
+  const bg = c.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#120A2A'); bg.addColorStop(1, '#0C0A1C'); c.fillStyle = bg; c.fillRect(0, 0, w, h);
+  for (let k = 0; k < 50; k++) { c.fillStyle = 'rgba(255,255,255,' + (0.2 + 0.6*Math.abs(Math.sin(clock*(0.6 + k % 5*0.2) + k))) + ')'; c.fillRect((k*97.3) % w, (k*41.9) % h, 1.5, 1.5); }
+  const A = redeemAnim; if (A) A.t += dt;
+  let open = 0, shakeX = 0;
+  if (A && A.kind === 'no') { shakeX = Math.sin(A.t*60)*8*Math.max(0, 1 - A.t*2.5); if (A.t > 0.5) redeemAnim = null; }
+  if (A && A.kind === 'yes') {
+    open = Math.min(1, A.t*1.6);
+    if (!A.burst) { A.burst = true; for (let k = 0; k < (A.big ? 160 : 70); k++) { const a = Math.random()*TAU, sp = 80 + Math.random()*(A.big ? 380 : 220); redeemParts.push({ x: w/2, y: h/2, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp, life: 1 + Math.random()*1.2, col: A.big ? CRE_COLS[k % 3] : ['#FFD84A', '#3EE6FF', '#FF4F8B'][k % 3] }); } }
+    if (A.t > 6) { redeemAnim = null; }
+  }
+  const cx = w/2 + shakeX, cy = h/2, R = h*0.32, rot = clock*0.5;
+  // rune rings
+  c.save(); c.translate(cx, cy);
+  for (let k = 0; k < 3; k++) { c.strokeStyle = 'rgba(' + ['62,230,255', '255,79,139', '255,178,62'][k] + ',' + (0.35 + 0.25*Math.sin(clock*2 + k)) + ')'; c.lineWidth = 2; c.setLineDash([6 + k*3, 8]); c.lineDashOffset = clock*(k % 2 ? 30 : -30); c.beginPath(); c.arc(0, 0, R*(1.05 + k*0.18) + open*R*0.5*(k + 1), 0, TAU); c.stroke(); }
+  c.setLineDash([]);
+  // the triangle lock: three shards that slide apart when the code is right
+  for (let k = 0; k < 3; k++) {
+    const a = rot + k*TAU/3 - Math.PI/2, push = open*R*0.9;
+    c.save(); c.rotate(a + Math.PI/2); c.translate(0, -push);
+    c.shadowColor = SEAT_DEFAULT[k]; c.shadowBlur = 16; c.fillStyle = SEAT_DEFAULT[k];
+    poly(c, [[0, -R], [R*0.866*0.55, -R*0.05], [-R*0.866*0.55, -R*0.05]]); c.fill();
+    c.restore();
+  }
+  c.shadowBlur = 0;
+  if (open < 1) { c.fillStyle = '#0C0A1C'; c.beginPath(); c.arc(0, 0, R*0.2*(1 - open), 0, TAU); c.fill(); c.fillStyle = '#FFD84A'; c.font = '700 ' + Math.round(R*0.22) + 'px "Rubik Mono One", monospace'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.globalAlpha = 1 - open; c.fillText('?', 0, 2); c.globalAlpha = 1; }
+  else { const g = c.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.globalAlpha = 0.5 + 0.3*Math.sin(clock*4); c.fillStyle = g; c.beginPath(); c.arc(0, 0, R, 0, TAU); c.fill(); c.globalAlpha = 1; }
+  c.restore();
+  const keep = []; for (const q of redeemParts) { q.x += q.vx*dt; q.y += q.vy*dt; q.vy += 160*dt; q.vx *= 0.99; q.life -= dt; if (q.life > 0) { keep.push(q); c.globalAlpha = Math.min(1, q.life); c.fillStyle = q.col; c.fillRect(q.x, q.y, 3, 3); } }
+  c.globalAlpha = 1; redeemParts = keep;
+  if (A && A.kind === 'yes' && A.t < 3.5) { c.globalAlpha = Math.min(1, A.t*2, (3.5 - A.t)*2); c.fillStyle = '#FFFFFF'; c.font = '700 ' + Math.round(h*0.09) + 'px "Rubik Mono One", monospace'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(A.big ? 'HELLO, CREATOR' : 'UNLOCKED', w/2, h*0.88); c.globalAlpha = 1; }
+  // reward chips + the creator card preview
+  if (redeemShow) {
+    $('#redeemGot').querySelectorAll('canvas').forEach(x => { try { drawRewardChip(x, JSON.parse(x.dataset.r)); } catch (e) {} });
+    if (redeemShow.big) { const cc = $('#redeemCardCv'); drawCard(cc.getContext('2d'), myCardData(), clock); }
+  }
+}
+
 // ---------- main loop ----------
 function stepDemo(dt) {
   if (!demo || demo.ph === 'ov') { demo = newGame(3, 99); demo.t = 0.6; demoLooks = [0, 1, 2].map(i => ({ c: SEAT_DEFAULT[i], h: ['crown', 'wizard', 'propeller'][i], f: 'eyes', t: 'std' })); }
@@ -9768,6 +10108,7 @@ function frame(now) {
   if (curScreen === 'build') drawBuilder();
   if (curScreen === 'arenas' && Math.floor(clock*10) % 5 === 0) $('#arenaList').querySelectorAll('canvas').forEach((cv, i) => { const all = myArenas.concat(LV_EXAMPLES); if (all[i]) drawArenaThumb(cv, all[i]); });
   if (curScreen === 'raid' && raidTab === 'raids' && Math.floor(clock*30) % 2 === 0) drawRaidScreen();
+  if (curScreen === 'redeem') drawRedeemStage(dt);
   if (curScreen === 'raid' && raidTab === 'forge') { drawForgeStage(dt); if (Math.floor(clock*10) % 3 === 0) document.querySelectorAll('#forgeStash canvas, #forgeColl canvas').forEach(cv => { if (cv.dataset.k === 'shard') drawShardChip(cv); else drawLootCv(cv, cv.dataset.k, cv.dataset.id); }); }
   if (curScreen === 'over' && raidRes && !$('#overRewards').hidden) $('#overRewards').querySelectorAll('canvas').forEach(cv => drawLootCv(cv, cv.dataset.k, cv.dataset.id));
   if (curScreen === 'adv' && Math.floor(clock*30) % 2 === 0) drawWorldCards();
@@ -9892,6 +10233,11 @@ document.querySelectorAll('#build .stepper button').forEach(b => b.addEventListe
 }));
 addEventListener('keydown', e => { if (curScreen !== 'build' || !ed || e.target.tagName === 'INPUT') return; if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? edRedo() : edUndo(); } else if (e.key === 'Delete' || e.key === 'Backspace') { if (ed.sel >= 0) { edSnapshot(); ed.L.objs.splice(ed.sel, 1); ed.sel = -1; renderBuilder(); } } });
 // opening a shared arena link: ?arena=CODE
+$('#btnRedeem').addEventListener('click', () => { audioOn(); redeemShow = null; openRedeem(); });
+$('#btnRedeemBack').addEventListener('click', () => { redeemShow = null; showScreen('menu'); });
+$('#btnRedeemGo').addEventListener('click', () => { audioOn(); redeemCode(); });
+$('#redeemIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); audioOn(); redeemCode(); } });
+try { const q = new URLSearchParams(location.search).get('code'); if (q) { setTimeout(() => openRedeem(normCode(q)), 400); history.replaceState(null, '', location.pathname); } } catch (e) {}
 try { const q = new URLSearchParams(location.search).get('arena'); if (q) { const L = parseLevelCode('TPA1-' + q); myArenas.unshift(L); saveArenas(); setTimeout(() => { openArenas(); toast('Arena "' + L.name + '" added to your arenas!'); }, 400); history.replaceState(null, '', location.pathname); } } catch (e) {}
 // ----- raids wiring -----
 $('#btnRaid').addEventListener('click', () => { audioOn(); store('trepong-raidnew', '1'); $('#raidNew').hidden = true; openRaids(); });
