@@ -725,6 +725,51 @@ body.desk .panel.arenaspanel{width:min(100%,900px)}
 body.desk .arenalist{display:grid;grid-template-columns:1fr 1fr}
 body.desk .arenalist .eyebrow,body.desk .arenalist .note{grid-column:1/-1}
 #lobbyFmt{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.rtabs{justify-content:center}
+.raidtab{display:flex;flex-direction:column;gap:12px;min-width:0}
+.lrow.nm{border-style:dashed}
+.forgemain,.forgeleft,.forgeright{display:flex;flex-direction:column;gap:10px;min-width:0}
+.forgecv{width:100%;aspect-ratio:2/1;display:block;border-radius:14px;border:1px solid color-mix(in srgb,#FF8A3D 40%,var(--edge))}
+.forgebar{display:grid;grid-template-columns:auto auto 1fr;gap:10px;align-items:center}
+.forgebar span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:700}
+.forgebar>b{font-family:var(--display);font-weight:400;font-size:15px;color:#FFB23E}
+.forgebar i{display:block;height:10px;border-radius:5px;background:var(--void);border:1px solid var(--edge);overflow:hidden}
+.forgebar i b{display:block;height:100%;width:0;background:linear-gradient(90deg,#FF8A3D,#FFD84A,#FF4F8B)}
+.forgeopen{background:linear-gradient(110deg,#FF4F8B,#B57CFF,#3EE6FF);border:0;color:#fff;font-size:16px;animation:pulse .9s ease-in-out infinite alternate}
+.sacbtn{border-color:#FF8A3D;color:#FF8A3D}
+.sacbtn.armed{background:#FF8A3D;color:var(--void)}
+.stash{display:flex;flex-direction:column;gap:6px}
+.srow{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;border:1px solid var(--edge);border-radius:12px;padding:5px 8px 5px 5px;min-width:0}
+.srow canvas{width:64px;height:44px;display:block;border-radius:8px;background:rgba(0,0,0,.25)}
+.srow b{font-size:13px;display:block} .srow small{font-size:11px;color:var(--mute);font-weight:600}
+.srow.r{border-color:color-mix(in srgb,#4FA8FF 45%,var(--edge))} .srow.e{border-color:color-mix(in srgb,#C59BFF 55%,var(--edge))} .srow.l{border-color:#FFB23E} .srow.m{border-color:#FF4F8B}
+.sctl{display:flex;align-items:center;gap:4px}
+.sctl button{padding:5px 9px;font-size:13px;border-radius:8px}
+.sctl b{min-width:22px;text-align:center}
+.coll{display:flex;flex-direction:column;gap:8px}
+.cgroup{display:flex;flex-direction:column;gap:6px}
+.cgroup .eyebrow{text-align:left}
+.cgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.citem{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--edge);border-radius:10px;padding:4px 2px 6px;min-width:0;opacity:.45}
+.citem canvas{width:100%;height:auto;aspect-ratio:88/60;display:block}
+.citem.own{opacity:1}
+.citem span{font-size:10px;font-weight:700;text-align:center;line-height:1.15;overflow-wrap:anywhere}
+.citem small{font-size:9px;color:var(--mute)}
+.citem.r{border-color:color-mix(in srgb,#4FA8FF 40%,var(--edge))} .citem.e{border-color:color-mix(in srgb,#C59BFF 50%,var(--edge))} .citem.l{border-color:color-mix(in srgb,#FFB23E 60%,var(--edge))} .citem.m{border-color:color-mix(in srgb,#FF4F8B 60%,var(--edge))}
+.citem:not(.own) canvas{filter:brightness(0) opacity(.5)}
+body.desk .forgemain{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+body.desk .cgrid{grid-template-columns:repeat(6,minmax(0,1fr))}
+body.desk .raidart{aspect-ratio:640/220}
+body.desk .lrow{padding:3px 10px 3px 4px;grid-template-columns:62px 1fr auto}body.desk .lrow canvas{width:62px;height:42px}body.desk .lootlist{gap:5px}
+.raidopts{display:flex;flex-direction:column;gap:10px}.raidopts>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+body.desk .raidopts{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+body.desk .rcard canvas{aspect-ratio:16/5}
+#forgeReveal:not([hidden]) ~ .forgehide{display:none}
+.ptsrow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.ptsrow span{font-size:11px;font-weight:700;border:1px solid var(--edge);border-radius:999px;padding:3px 8px}
+.ptsrow span.r{color:#4FA8FF;border-color:#4FA8FF} .ptsrow span.e{color:#C59BFF;border-color:#C59BFF} .ptsrow span.l{color:#FFB23E;border-color:#FFB23E} .ptsrow span.m{color:#FF4F8B;border-color:#FF4F8B} .ptsrow span.s{color:#3EE6FF;border-color:#3EE6FF}
+.ptsrow span.goal{background:linear-gradient(110deg,#FF4F8B,#B57CFF,#3EE6FF);color:#fff;border:0}
+body.desk .forgeright{max-height:calc((100vh - 200px)/var(--uiz,1));overflow-y:auto;padding-right:4px}
 /* ----- desktop layout ----- */
 .setcols,.setcol{display:flex;flex-direction:column;gap:12px;min-width:0}
 body.desk #settings .panel{width:min(100%,980px)}
@@ -1032,6 +1077,8 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
 <div id="raid" class="screen" hidden>
   <div class="panel raidpanel">
     <div class="toprow"><button id="btnRaidBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Raids · rotation changes every 3 days</span><span class="coin" id="raidCoins">0</span></div>
+    <div class="tabs qtabs rtabs"><button type="button" class="rtab" data-t="raids" aria-pressed="true">⚔ Raids</button><button type="button" class="rtab" data-t="forge" aria-pressed="false">⚒ Forge <span class="badge" id="forgeBadge" hidden>!</span></button></div>
+    <div id="raidMainTab" class="raidtab">
     <div id="raidList" class="raidlist" role="group" aria-label="Raid bosses"></div>
     <div class="raidmain">
       <div class="raidleft">
@@ -1039,8 +1086,13 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
         <div class="winner" id="raidName"></div>
         <p class="note left" id="raidLore"></p>
         <p class="note left" id="raidPhases"></p>
-        <label>Team</label>
-        <div class="seg four" id="raidTeam" role="group" aria-label="Team"><button type="button" data-p="1">Solo</button><button type="button" data-p="2">+1 bot</button><button type="button" data-p="3">+2 bots</button><button type="button" data-p="4">+3 bots</button></div>
+        <div class="raidopts">
+          <div><label>Difficulty</label>
+          <div class="seg three" id="raidModSeg" role="group" aria-label="Difficulty"><button type="button" data-m="0">Normal</button><button type="button" data-m="1">Hard</button><button type="button" data-m="2">Nightmare</button></div></div>
+          <div><label>Bots on your team</label>
+          <div class="seg four" id="raidTeam" role="group" aria-label="Team"><button type="button" data-p="1">None</button><button type="button" data-p="2">+1</button><button type="button" data-p="3">+2</button><button type="button" data-p="4">+3</button></div></div>
+        </div>
+        <p class="note left" id="raidModNote"></p>
         <button id="btnRaidGo" class="primary" type="button">Start raid</button>
         <p class="note" id="raidNote"></p>
       </div>
@@ -1049,6 +1101,29 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
         <p class="luck" id="raidLuck"></p>
         <div id="raidLoot" class="lootlist"></div>
         <p class="note left" id="raidLootNote"></p>
+      </div>
+    </div>
+    </div>
+    <div id="raidForgeTab" class="raidtab" hidden>
+      <div class="forgemain">
+        <div class="forgeleft">
+          <canvas id="forgeCv" class="forgecv" width="600" height="300"></canvas>
+          <div id="forgeReveal" class="lootreveal" hidden></div>
+          <div class="forgebar"><span>Forge points</span><b id="forgePts">0</b><i><b id="forgeBar"></b></i></div>
+          <button id="btnForgeOpen" class="primary forgeopen" type="button" hidden>Open Raid Chest</button>
+          <button id="btnForgeMake" type="button">Forge a Raid Chest</button>
+          <p class="note left forgehide" id="forgeStats"></p>
+          <label class="forgehide">Forge recipe</label>
+          <div class="ptsrow forgehide"><span class="s">Shard 5</span><span class="r">Rare 10</span><span class="e">Epic 30</span><span class="l">Legendary 100</span><span class="m">Mythic 400</span><span>→</span><span class="goal">1,000 pts = Raid Chest</span></div>
+          <p class="note left forgehide">Sacrifice raid shards and duplicate raid loot for forge points. Raid Chests only come from the Forge and can only be opened here.</p>
+        </div>
+        <div class="forgeright">
+          <div class="eyebrow">Your stash</div>
+          <div class="duo"><button id="btnSelAll" type="button">Select everything</button><button id="btnSacrifice" class="sacbtn" type="button">Sacrifice</button></div>
+          <div id="forgeStash" class="stash"></div>
+          <div class="eyebrow">Raid collection</div>
+          <div id="forgeColl" class="coll"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -4964,6 +5039,7 @@ function stepSim(st, dt, targets, opts) {
     st.obsT -= dt; if (st.obsT <= 0 && !st.lv) { st.obsT = 9 + Math.random()*6; if (st.obs.length < 2) spawnObs(st); }
     st.sinceHit += dt;
     if (st.sinceHit > 7) { const al = aliveSeats(st); st.balls.forEach(b => aimBall(st, b, pick(al), Math.max(V0, Math.hypot(b.vx, b.vy)))); st.sinceHit = 0; }
+    if (st.raid && st.boss && st.boss.heal && st.boss.weak <= 0 && st.boss.hp > 0) st.boss.hp = Math.min(st.boss.mh, st.boss.hp + st.boss.heal*dt);
     if (st.raid && st.boss) { const B = st.boss; if (B.weak > 0) B.weak = Math.max(0, B.weak - dt); else { B.wcd -= dt; if (B.wcd <= 0) { B.weak = 6; B.wcd = 10 + Math.random()*3; ev('weak', B.s, 0, 0); } } }
     if (st.boss) { st.boss.at -= dt; if (st.boss.at <= 0) { st.boss.at = (9 - 2*st.boss.rage)*(st.boss.rate || 1) + Math.random()*2; bossAttack(st, ev); } }
     for (let i = 0; i < st.n; i++) if (M[i].ce && st.alive[i] && st.balls.length) {
@@ -6223,7 +6299,7 @@ function drawGame(g, seatView, dim, lk, isLive) {
     const sm = b.sx >= 0;
     ctx.shadowColor = sm ? '#FFE34A' : tc; ctx.shadowBlur = (sm ? 34 : 22)*DPR*dim;
     const bsk = g.last >= 0 && lk[g.last] ? lk[g.last].b : 'std';
-    if (bsk && bsk !== 'std') { ctx.shadowBlur = 0; drawBallSkin(ctx, bsk, b.x, b.y, (g.br || BALL_R)*(sm ? 1.25 : 1), clock, b.vx, b.vy); }
+    if (bsk && bsk !== 'std') { ctx.shadowBlur = 0; drawBallSkinX(ctx, bsk, b.x, b.y, (g.br || BALL_R)*(sm ? 1.25 : 1), clock, b.vx, b.vy); }
     else { ctx.fillStyle = sm ? '#FFF6B0' : '#ffffff'; ctx.beginPath(); ctx.arc(b.x, b.y, (g.br || BALL_R)*(sm ? 1.25 : 1), 0, TAU); ctx.fill(); }
     ctx.shadowBlur = 0;
     if (sm) {
@@ -6630,7 +6706,7 @@ function packState(s) {
     gh: r1(s.ghost), cv: r1(s.curve), cd: s.curveDir,
     sc: Math.round(s.sc), be: s.best, to: s.tot, pk: s.pk, sh: s.sh.slice(),
     sm: s.sm.map(v => Math.round(v*100)/100), arm: s.arm.map(r1), lgs: s.lgs, ar: s.ar,
-    bs: s.boss ? [s.boss.s, Math.round(s.boss.hp*10)/10, s.boss.mh, s.boss.rage, s.boss.floor || 0, s.boss.phase || 0, s.boss.nph || 1, r1(s.boss.weak || 0)] : null, ff: s.ffs ? 1 : 0, rd: s.raid || 0, fo: s.foe.map(f => f ? 1 : 0), lv: s.lv ? 1 : 0, lb: s.lv ? s.lv.objs.map(o => o.on ? (o.hp || 1) : 0) : null, lst: s.stars,
+    bs: s.boss ? [s.boss.s, Math.round(s.boss.hp*10)/10, s.boss.mh, s.boss.rage, s.boss.floor || 0, s.boss.phase || 0, s.boss.nph || 1, r1(s.boss.weak || 0)] : null, ff: s.ffs ? 1 : 0, rd: s.raid || 0, rm: s.raidMod || 0, fo: s.foe.map(f => f ? 1 : 0), lv: s.lv ? 1 : 0, lb: s.lv ? s.lv.objs.map(o => o.on ? (o.hp || 1) : 0) : null, lst: s.stars,
     mu: s.mut, he: s.he, hl: s.hl, hv: s.hv, hc: s.hc.map(v => Math.round(v*100)/100), slo: r1(s.slowT), cl: s.clone.map(r1), wl: s.wall.map(r1), gv: s.grav.map(r1)
   };
 }
@@ -6747,7 +6823,7 @@ function hostSync() {
     for (const g of un) { const i = hostSeats.indexOf(null, 1); if (i < 0) break; hostSeats[i] = g.peer; }
   }
   names = seatNames(); looks = seatLooks(); if (hostPhase !== 'lobby') { if (st && st.raid && raidArms) raidArms.forEach(([i, n, l]) => { names[i] = n; looks[i] = l; bots[i] = true; }); addBossSeat(); }
-  net.presence({ seats: hostSeats, names, looks, n: lobbyN, fmt: lobbyFmt, lvl: lobbyFmt === 'arena' ? lobbyLevel : null, raid: lobbyRaid, ar: curArena(), chaos: lobbyChaos }).catch(() => {});
+  net.presence({ seats: hostSeats, names, looks, n: lobbyN, fmt: lobbyFmt, lvl: lobbyFmt === 'arena' ? lobbyLevel : null, raid: lobbyRaid, rmod: lobbyRaidMod, ar: curArena(), chaos: lobbyChaos }).catch(() => {});
   renderLobby();
 }
 function hostSetN(n) {
@@ -6792,7 +6868,7 @@ function readHostMeta(hp) {
   names = Array.isArray(hp.names) ? hp.names.map(n => String(n || '').replace(NAME_JUNK, '').trim().slice(0, 26)) : [];
   looks = Array.isArray(hp.looks) ? hp.looks.map((l, i) => validLook(l, SEAT_DEFAULT[i])) : [];
   lobbyN = clamp(+hp.n || 3, 2, 6);
-  lobbyFmt = ['snabb', 'boss', 'torn', 'raid', 'arena'].includes(hp.fmt) ? hp.fmt : 'serie'; if (RAIDS[hp.raid]) lobbyRaid = hp.raid;
+  lobbyFmt = ['snabb', 'boss', 'torn', 'raid', 'arena'].includes(hp.fmt) ? hp.fmt : 'serie'; if (RAIDS[hp.raid]) lobbyRaid = hp.raid; lobbyRaidMod = clamp(+hp.rmod || 0, 0, 2);
   if (hp.lvl && typeof hp.lvl === 'object') lobbyLevel = cleanLevel(hp.lvl);
   lobbyArena = ARENAS[hp.ar] ? hp.ar : 'classic'; lobbyChaos = !!hp.chaos;
   mySeat = hostSeats.indexOf(myPeer());
@@ -6831,7 +6907,7 @@ function applyG(g) {
     st = newGame(n, SERIES_LIVES, series ? series.cards : null, { lvl: g.lv && lobbyLevel ? lobbyLevel : null, raid: RAIDS[g.rd] ? g.rd : null, foes: Array.isArray(g.fo) ? g.fo.map((f, i) => f ? i : -1).filter(i => i >= 0) : null, boss: Array.isArray(g.bs), tower: Array.isArray(g.bs) ? +g.bs[4] || 0 : 0, ar: g.ar, mut: g.mu, mid: g.mid, heroes: g.he, heroLv: g.hl, heroVar: g.hv }); st.mid = g.mid; resetFx();
     gs.pk = Array.isArray(g.pk) ? g.pk[0] : 0;
   }
-  st.ffs = g.ff !== 0;
+  st.ffs = g.ff !== 0; st.raidMod = +g.rm || 0;
   if (st.lv && Array.isArray(g.lb)) st.lv.objs.forEach((o, i) => { const v = +g.lb[i] || 0; o.on = v > 0; if (o.t === 'brick') o.hp = v; });
   if (Array.isArray(g.lst)) st.stars = arr(g.lst, st.n, 0);
   if (st.boss && Array.isArray(g.bs)) { st.boss.hp = +g.bs[1] || 0; st.boss.mh = +g.bs[2] || 1; st.boss.rage = +g.bs[3] || 0; const ph = +g.bs[5] || 0; if (ph !== (st.boss.phase || 0) && mySeat >= 0) { st.boss.phase = ph; if (st.raid) raidPhaseFx(); } st.boss.phase = ph; st.boss.nph = +g.bs[6] || 1; st.boss.weak = +g.bs[7] || 0; st.boss.cn = st.boss.cn || (names[st.boss.s] || null); }
@@ -6951,7 +7027,7 @@ function lookCanvas(cvs, look, scale, hw) {
   drawPaddleLocal(c, look, hw || 14, clock, [0, -1], {}, 6);
 }
 function renderLobby() {
-  $('#lobbyFmtNote').textContent = FMT_TEXT[lobbyFmt] + (lobbyFmt === 'arena' && lobbyLevel ? ' Arena: ' + lobbyLevel.name + ' (' + lobbyLevel.sides + ' players).' : '') + (lobbyFmt === 'raid' && RAIDS[lobbyRaid] ? ' Raid: ' + RAIDS[lobbyRaid].full + '.' : '') + (['boss', 'torn', 'raid'].includes(lobbyFmt) && mode === 'host' ? (hardcore ? ' Hardcore: friendly fire is on.' : ' Team shield: no friendly fire.') : '') + (lobbyChaos ? ' Chaos Wheel is on.' : '') + ' Arena: ' + ARENAS[mode === 'host' ? curArena() : lobbyArena] + '.';
+  $('#lobbyFmtNote').textContent = FMT_TEXT[lobbyFmt] + (lobbyFmt === 'arena' && lobbyLevel ? ' Arena: ' + lobbyLevel.name + ' (' + lobbyLevel.sides + ' players).' : '') + (lobbyFmt === 'raid' && RAIDS[lobbyRaid] ? ' Raid: ' + RAIDS[lobbyRaid].full + ' (' + RAID_MODS[lobbyRaidMod || 0].n + ').' : '') + (['boss', 'torn', 'raid'].includes(lobbyFmt) && mode === 'host' ? (hardcore ? ' Hardcore: friendly fire is on.' : ' Team shield: no friendly fire.') : '') + (lobbyChaos ? ' Chaos Wheel is on.' : '') + ' Arena: ' + ARENAS[mode === 'host' ? curArena() : lobbyArena] + '.';
   const ul = $('#seats'); ul.textContent = '';
   const ps = findPeers();
   for (let i = 0; i < lobbyN; i++) {
@@ -7121,7 +7197,7 @@ function drawChip(cvs, kind, id) {
   else if (kind === 'v') drawVictoryChip(cvs, id);
   else if (kind === 'a') drawArenaChip(cvs, id);
   else if (kind === 'u') lookCanvas(cvs, { ...L, u: id, h: 'none' }, 2.1, 13);
-  else if (kind === 'b') { if (id === 'std' || !drawBallChip(cvs, id)) { const c = cvs.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); c.fillStyle = '#fff'; c.beginPath(); c.arc(cvs.width/2, cvs.height/2, 12, 0, TAU); c.fill(); } }
+  else if (kind === 'b') { if (id.endsWith('_g')) { const c = cvs.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); drawBallSkinX(c, id, cvs.width/2, cvs.height/2, 13, clock, 1, 0); } else if (id === 'std' || !drawBallChip(cvs, id)) { const c = cvs.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); c.fillStyle = '#fff'; c.beginPath(); c.arc(cvs.width/2, cvs.height/2, 12, 0, TAU); c.fill(); } }
 }
 function syncShop() {
   syncCoinUI();
@@ -7248,7 +7324,7 @@ function track(k, n) { ensureDaily(); n = n == null ? 1 : n; stats[k] = (stats[k
 function trackMax(k, v) { ensureDaily(); let ch = false; if (v > (stats[k] || 0)) { stats[k] = v; ch = true; } if (v > (daily.c[k] || 0)) { daily.c[k] = v; ch = true; } if (ch) { checkAch(); saveStats(); } }
 // [id, name, description, stat key, target, reward]
 const ACH = [
-  ['rd1', 'Raider', 'Clear a raid.', 'raidClears', 1, 80], ['rd10', 'Raid veteran', 'Clear 10 raids.', 'raidClears', 10, 300],
+  ['rdn1', 'Nightmare walker', 'Clear a raid on Nightmare.', 'nightmareClears', 1, 300], ['rd1', 'Raider', 'Clear a raid.', 'raidClears', 1, 80], ['rd10', 'Raid veteran', 'Clear 10 raids.', 'raidClears', 10, 300],
   ['ad1', 'Into the unknown', 'Clear an adventure stage.', 'advClears', 1, 40], ['ad25', 'Explorer', 'Clear 25 adventure stages.', 'advClears', 25, 150],
   ['adw1', 'Light bringer', 'Clear an adventure world.', 'worldsCleared', 1, 200], ['adw3', 'Savior of the Paddleverse', 'Clear 3 adventure worlds.', 'worldsCleared', 3, 400], ['adb3', 'World boss hunter', 'Defeat 3 world bosses.', 'advBosses', 3, 250],
   ['m1', 'First match', 'Play a match.', 'matches', 1, 10],
@@ -7322,7 +7398,7 @@ const ACH_CAT = {
   mode: ['cup1', 'cup5', 'wk1', 's1', 's5', 'b1', 'b5', 'tw1', 'tw5', 'tw10', 'tw15', 'ch10', 'he25', 'ep1', 'cu1', 'cw1'],
   collect: ['p25', 'p200', 'bu1', 'bu10', 'ar4', 'co1k', 'cs1', 'cs20', 'lv10', 'hm10'],
   social: ['on1', 'on3', 'em20', 'six1'],
-  adv: ['ad1', 'ad25', 'adw1', 'adw3', 'adb3', 'rd1', 'rd10']
+  adv: ['ad1', 'ad25', 'adw1', 'adw3', 'adb3', 'rd1', 'rd10', 'rdn1']
 };
 function achCat(id) { for (const k in ACH_CAT) if (ACH_CAT[k].includes(id)) return k; return 'match'; }
 function todaysChallenges() {
@@ -8941,14 +9017,14 @@ function lootKey(it) { return it[0] + ':' + it[1]; }
 function ownsLoot(it) { return it[0].startsWith('p') ? ownsProf(it[0], it[1]) : ownsItem(it[0], it[1]); }
 const LOOT_KIND = { pt: 'Title', pb: 'Card border', pg: 'Card background', h: 'Hat', u: 'Aura', b: 'Ball skin' };
 // One roll per clear, rarest first. Luck multiplies every chance and resets when something drops.
-function rollRaidLoot(id) {
-  const R = RAIDS[id], luck = raidLuck(id);
-  const order = R.loot.slice().sort((a, b) => a[3] - b[3]);
+function rollRaidLoot(id, mod) {
+  const M = RAID_MODS[mod || 0], R = RAIDS[id], luck = raidLuck(id)*M.luck;
+  const order = R.loot.filter(it => !it[4] || M.nm).sort((a, b) => a[3] - b[3]);
   for (const it of order) if (Math.random() < it[3]*luck) return it;
   return null;
 }
 // ----- starting a raid -----
-let raidSel = null, raidPlayers = 1, lobbyRaid = null, raidArms = null;
+let raidSel = null, raidPlayers = 1, lobbyRaid = null, raidArms = null, raidMod = Math.max(0, Math.min(2, +store('trepong-raidmod') || 0)), lobbyRaidMod = 0, raidModPlaying = 0;
 function startRaidMatch(id, np) {
   const R = RAIDS[id], P0 = R.phases[0];
   resetFx();
@@ -8962,19 +9038,21 @@ function startRaidMatch(id, np) {
   const armLook = validLook({ c: R.arm.c, h: R.arm.h, f: R.arm.f, s: R.arm.s, t: 'std' });
   raidArms = [];
   for (let k = 0; k < 2; k++) { bots[np + k] = true; names[np + k] = R.arm.n + (k ? ' B' : ' A'); looks[np + k] = armLook; botSkill[np + k] = R.armSkill; raidArms.push([np + k, names[np + k], armLook]); }
-  const n = np + 3, livesArr = Array.from({ length: n }, (_, i) => i < np ? BOSS_LIVES + 2 : i < np + 2 ? 2 : 1), hpMul = 1 - 0.06*(np - 1);
-  const coreCfg = ph => ({ n: R.full, c: R.core.c, h: R.core.h, f: R.core.f, s: R.core.s, t: R.core.t, atk: ph.atk, rate: ph.rate, spd: ph.spd, err: ph.err, hpAbs: Math.round(ph.hp*hpMul), regrow: ph.regrow, mut: ph.mut, say: ph.say, cards: ['wide'], ar: R.ar, hp: 1 });
-  st = newGame(n, BOSS_LIVES, null, { boss: true, raid: id, bcfg: coreCfg(P0), bossHp: Math.round(P0.hp*hpMul), bossQ: R.phases.slice(1).map(coreCfg), foes: [np, np + 1], livesArr,
+  const MOD = RAID_MODS[raidModPlaying = (mode === 'host' ? lobbyRaidMod : raidMod) || 0];
+  const n = np + 3, livesArr = Array.from({ length: n }, (_, i) => i < np ? BOSS_LIVES + 2 : i < np + 2 ? MOD.armL : 1), hpMul = 1 - 0.06*(np - 1);
+  const coreCfg = (ph, k) => ({ n: R.full, c: R.core.c, h: R.core.h, f: R.core.f, s: R.core.s, t: R.core.t, atk: ph.atk, rate: ph.rate*MOD.rate, spd: ph.spd*MOD.spd, err: ph.err*MOD.err, hpAbs: Math.round(ph.hp*hpMul), regrow: ph.regrow, mut: ph.mut, say: ph.say, cards: ['wide'], ar: R.ar, hp: 1 });
+  st = newGame(n, BOSS_LIVES, null, { boss: true, raid: id, mut: MOD.nm ? pick(['wind', 'dark', 'giant', 'storm']) : null, bcfg: coreCfg(P0), bossHp: Math.round(P0.hp*hpMul), bossQ: R.phases.slice(1).map(p => coreCfg(p)), foes: [np, np + 1], livesArr,
     ar: R.ar, heroes: heroes.concat(['none', 'none', 'none']), heroLv, heroVar, ffs: !hardcore });
+  st.raidMod = raidModPlaying; st.boss.heal = MOD.heal; st.boss.armL = MOD.armL;
   botCache = []; mySeat = 0; lastSmashN = []; lastHeroN = [];
   addBossSeat();
   raidStat(id).tries++; saveRaid();
   if (mode === 'host') {
     hostPhase = 'play';
-    net.presence({ phase: 'play', names, looks, seats: hostSeats, n: lobbyN, fmt: lobbyFmt, raid: id, series: null, g: packState(st) }).catch(() => {});
+    net.presence({ phase: 'play', names, looks, seats: hostSeats, n: lobbyN, fmt: lobbyFmt, raid: id, rmod: raidModPlaying, series: null, g: packState(st) }).catch(() => {});
   }
   showScreen(null); requestWake();
-  banner = { text: R.n.toUpperCase(), sub: 'Destroy the ' + R.arm.n.toLowerCase() + 's to expose the core', col: R.col, t: 0 };
+  banner = { text: R.n.toUpperCase() + (MOD.nm ? ' · NIGHTMARE' : raidModPlaying ? ' · HARD' : ''), sub: 'Destroy the ' + R.arm.n.toLowerCase() + 's to expose the core', col: R.col, t: 0 };
   tone(70, 1.4, 'sawtooth', 0.07, 0.5); tone(55, 1.6, 'square', 0.04, 0.6, 0.3);
 }
 // ----- end of a raid: everyone rolls their own loot -----
@@ -8988,11 +9066,14 @@ function raidResolve() {
   const S = raidStat(id);
   if (won) {
     S.clears++;
-    const it = rollRaidLoot(id);
-    res.coins = 150 + 10*Math.min(10, S.clears);
+    const mod = st.raidMod || 0, M = RAID_MODS[mod];
+    const it = rollRaidLoot(id, mod);
+    res.coins = Math.round((150 + 10*Math.min(10, S.clears))*(1 + 0.5*mod));
+    res.shards = M.shards; stashAdd('shard', M.shards); res.mod = mod;
+    if (mod === 2) track('nightmareClears');
     if (it) {
       res.drop = it;
-      if (ownsLoot(it)) { res.dup = true; res.refund = { r: 150, e: 300, l: 600, m: 1200 }[it[2]]; }
+      if (ownsLoot(it)) { res.dup = true; stashAdd(lootKey(it), 1); }
       else { owned.add(lootKey(it)); saveWallet(); }
       S.dry = 0;
     } else S.dry++;
@@ -9016,18 +9097,18 @@ function raidOverUI() {
       const cv = document.createElement('canvas'); cv.width = 176; cv.height = 120; cv.className = 'lootcv'; cv.dataset.k = r.drop[0]; cv.dataset.id = r.drop[1];
       d.append(cv, Object.assign(document.createElement('span'), { className: 'lr', textContent: RAR_NAME[r.drop[2]] + ' ' + LOOT_KIND[r.drop[0]] }),
         Object.assign(document.createElement('b'), { textContent: lootName(r.drop) }),
-        Object.assign(document.createElement('small'), { textContent: r.dup ? 'You already had it: +' + r.refund + ' coins' : 'New raid loot! It is yours.' }));
-      if (r.dup) addCoins(r.refund);
+        Object.assign(document.createElement('small'), { textContent: r.dup ? 'Duplicate! The copy went to your Forge stash (' + FORGE_PTS[r.drop[2]] + ' forge points).' : 'New raid loot! It is yours.' }));
       if (r.drop[2] === 'm' || r.drop[2] === 'l') { setTimeout(() => startVictory(r.drop[2] === 'm' ? 'supernova' : 'fireworks'), 60); buzz([60, 40, 60, 40, 200]); }
     } else d.append(Object.assign(document.createElement('b'), { textContent: 'No loot this time' }), Object.assign(document.createElement('small'), { textContent: 'Luck grows: next clear has +' + Math.round((raidLuck(r.id) - 1)*100) + '% better drop chances.' }));
     box.append(d);
+    box.append(Object.assign(document.createElement('div'), { className: 'orw cp', textContent: '⚒ +' + r.shards + ' raid shard' + (r.shards > 1 ? 's' : '') + ' for the Forge' + (r.mod ? ' (' + RAID_MODS[r.mod].n + ')' : '') }));
     if (r.chest) box.append(Object.assign(document.createElement('div'), { className: 'orw', textContent: '🎁 ' + r.chest }));
   }
   $('#btnNext').hidden = true; $('#overBoard').hidden = true;
   if (mode === 'practice') { $('#btnAgain').hidden = false; $('#btnAgain').textContent = 'Raid again'; $('#btnOverMenu').textContent = 'To the raids'; }
 }
 function drawLootCv(cv, k, id) {
-  if (k === 'b') { const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); drawBallSkin(c, id, cv.width/2, cv.height/2, cv.height*0.26, clock, Math.cos(clock)*2, Math.sin(clock)*2); return; }
+  if (k === 'b') { const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); drawBallSkinX(c, id, cv.width/2, cv.height/2, cv.height*0.26, clock, Math.cos(clock)*2, Math.sin(clock)*2); return; }
   if (k === 'u') { lookCanvas(cv, { ...myLook, u: id, h: 'none' }, cv.width/40, 14); return; }
   if (k === 'h') { lookCanvas(cv, { ...myLook, h: id, f: 'none' }, cv.width/40, 9); return; }
   if (k === 'pt') { const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); c.fillStyle = '#FFD84A'; c.textAlign = 'center'; c.textBaseline = 'middle'; const txt = '“' + lootName([k, id]) + '”'; let fs = Math.round(cv.height*0.24); c.font = '700 ' + fs + 'px "Chakra Petch", sans-serif'; const tw = c.measureText(txt).width; if (tw > cv.width*0.92) { fs = Math.floor(fs*cv.width*0.92/tw); c.font = '700 ' + fs + 'px "Chakra Petch", sans-serif'; } c.fillText(txt, cv.width/2, cv.height/2); return; }
@@ -9038,9 +9119,10 @@ function openRaids(id) {
   mode = 'menu'; st = null; series = null; special = null; resetFx(); mySeat = 0;
   const act = activeRaids();
   raidSel = id || raidSel || act[0];
-  showScreen('raid'); renderRaids();
+  showScreen('raid'); renderRaids(); setRaidTab(raidTab || 'raids');
 }
 function renderRaids() {
+  { const f = forgeData(); $('#forgeBadge').hidden = !(f.chests || f.pts >= FORGE_GOAL); }
   syncCoinUI(); $('#raidCoins').textContent = fmt(coins);
   const act = activeRaids(), nx = nextRaid();
   const list = $('#raidList'); list.textContent = '';
@@ -9057,27 +9139,30 @@ function renderRaids() {
     b.addEventListener('click', () => { raidSel = id; renderRaids(); });
     list.append(b);
   }
-  const R = RAIDS[raidSel], on = act.includes(raidSel), S = raidStat(raidSel), luck = raidLuck(raidSel);
+  const R = RAIDS[raidSel], on = act.includes(raidSel), S = raidStat(raidSel), M = RAID_MODS[raidMod], luck = raidLuck(raidSel)*M.luck;
+  setSeg($('#raidModSeg'), raidMod, 'm'); $('#raidModNote').textContent = M.desc; $('#raidModNote').style.color = M.col;
   $('#raidName').textContent = R.full; $('#raidName').style.color = R.col;
   $('#raidLore').textContent = R.lore;
   $('#raidPhases').textContent = R.phases.length + ' phases · ' + R.arm.n + 's regrow each phase · arena changes: ' + R.phases.slice(1).map(p => MUTATORS[p.mut][0]).join(' → ');
-  $('#raidLuck').textContent = luck > 1 ? '🍀 Luck ×' + luck.toFixed(2) + ' (' + S.dry + ' clear' + (S.dry === 1 ? '' : 's') + ' without a drop)' : '🍀 Luck ×1.00 · every clear without a drop raises it';
+  $('#raidLuck').textContent = (raidMod ? M.n + ': chances ×' + M.luck + ' · ' : '') + (raidLuck(raidSel) > 1 ? '🍀 Luck ×' + raidLuck(raidSel).toFixed(2) + ' (' + S.dry + ' clear' + (S.dry === 1 ? '' : 's') + ' without a drop)' : '🍀 Luck ×1.00 · every clear without a drop raises it');
   const tb = $('#raidLoot'); tb.textContent = '';
   let any = 0;
   for (const it of R.loot.slice().sort((a, b) => b[3] - a[3])) {
     const row = document.createElement('div'); row.className = 'lrow ' + it[2] + (ownsLoot(it) ? ' owned' : '');
     const cv = document.createElement('canvas'); cv.width = 88; cv.height = 60; cv.className = 'lootcv'; cv.dataset.k = it[0]; cv.dataset.id = it[1];
     const mid = document.createElement('div');
-    mid.append(Object.assign(document.createElement('b'), { textContent: lootName(it) }), Object.assign(document.createElement('small'), { textContent: LOOT_KIND[it[0]] + (ownsLoot(it) ? ' · owned ✓' : '') }));
+    mid.append(Object.assign(document.createElement('b'), { textContent: lootName(it) }), Object.assign(document.createElement('small'), { textContent: LOOT_KIND[it[0]] + (it[4] ? ' · Nightmare only' : '') + (ownsLoot(it) ? ' · owned ✓' : '') }));
+    if (it[4]) row.classList.add('nm');
     const rr2 = document.createElement('div'); rr2.className = 'lch';
-    const pct = it[3]*luck*100; any += pct;
+    const pct = it[4] && !M.nm ? 0 : it[3]*luck*100; any += pct;
     rr2.append(Object.assign(document.createElement('span'), { className: 'lr', textContent: RAR_NAME[it[2]] }), Object.assign(document.createElement('b'), { textContent: (pct < 1 ? pct.toFixed(2) : pct.toFixed(1)) + '%' }));
     row.append(cv, mid, rr2); tb.append(row);
   }
-  $('#raidLootNote').textContent = 'One roll per clear, rarest item first. Chance of any loot right now: ' + Math.min(100, any).toFixed(1) + '%. Every clear also gives coins and a 25% chance of a gold chest. Duplicates turn into coins.';
+  $('#raidLootNote').textContent = 'One roll per clear, rarest item first. Chance of any loot right now: ' + Math.min(100, any).toFixed(1) + '%. Every clear also gives coins, ' + M.shards + ' raid shard' + (M.shards > 1 ? 's' : '') + ' and a 25% chance of a gold chest. Duplicates go to the Forge.';
   setSeg($('#raidTeam'), raidPlayers, 'p');
-  const go = $('#btnRaidGo'); go.disabled = !on; go.textContent = on ? 'Start raid' : 'Not active right now'; go.style.background = go.style.borderColor = on ? R.col : '';
+  const go = $('#btnRaidGo'); go.disabled = !on; go.textContent = on ? 'Start raid' + (raidMod ? ' · ' + M.n : '') : 'Not active right now'; go.style.background = go.style.borderColor = on ? R.col : '';
   $('#raidNote').textContent = on ? 'With friends: create a room, pick Raid and the host\'s selected raid is played. Up to 4 players.' : 'This raid returns when the rotation brings it back. Active now: ' + act.map(a => RAIDS[a].n).join(' and ') + '.';
+  if (raidTab === "raids") fitPanel($("#raid .panel"));
 }
 function drawRaidScreen() {
   $('#raidList').querySelectorAll('canvas').forEach(cv => { const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); drawRaidPortrait(c, cv.dataset.raid, cv.width, cv.height, clock, cv.dataset.dim ? { dim: true } : undefined); });
@@ -9440,6 +9525,199 @@ function startArenaMatch(L) {
   showScreen(null); requestWake();
   banner = { text: L.name.toUpperCase(), sub: ({ last: 'Last one standing wins', stars: 'First to ' + L.rules.goalV + ' stars wins', survive: 'Most lives after ' + L.rules.goalV + 's wins' })[L.rules.goal], col: '#3EE6FF', t: 0 };
 }
+// ---------- raid modifiers & the Raid Forge ----------
+const RAID_MODS = [
+  { n: 'Normal', col: '#7CFFB2', armL: 2, rate: 1, spd: 1, err: 1, heal: 0, luck: 1, shards: 1, desc: 'The standard raid.' },
+  { n: 'Hard', col: '#FFB23E', armL: 3, rate: 0.9, spd: 1.03, err: 1, heal: 0.15, luck: 1.5, shards: 3, desc: 'Arms have 3 lives, attacks come faster and the core slowly heals itself. Drop chances ×1.5, 3 raid shards per clear.' },
+  { n: 'Nightmare', col: '#FF2244', armL: 3, rate: 0.8, spd: 1.06, err: 0.95, heal: 0.3, luck: 2.5, shards: 8, nm: 1, desc: 'Arms have 3 lives, the core heals fast, attacks never stop and every phase twists the arena. Drop chances ×2.5, 8 shards per clear and gilded mythics that only drop here.' }
+];
+const FORGE_PTS = { shard: 5, r: 10, e: 30, l: 100, m: 400 };
+const FORGE_GOAL = 1000;
+const GILDED = { pearl: 'leviathan', core: 'colossus', sun: 'solarion', glitch: 'hydra' };
+for (const [b, id] of Object.entries(GILDED)) {
+  BALLSKINS.push([b + '_g', 'Gilded ' + BALLSKINS.find(x => x[0] === b)[1].toLowerCase()]); PRICE.b[b + '_g'] = null;
+  RAIDS[id].loot.push(['b', b + '_g', 'm', 0.004, 1]);
+}
+for (const [id, R] of Object.entries(RAIDS)) for (const it of R.loot) RAID_SRC[lootKey(it)] = R.n + (it[4] ? ' (Nightmare)' : '');
+// gilded ball skins = the base skin wrapped in molten gold and sparkles
+function drawBallSkinX(c, id, x, y, r, t, vx, vy) {
+  if (!id || !id.endsWith('_g')) return drawBallSkin(c, id, x, y, r, t, vx, vy);
+  drawBallSkin(c, id.slice(0, -2), x, y, r, t, vx, vy);
+  c.save(); const A0 = c.globalAlpha;
+  c.strokeStyle = '#FFD84A'; c.lineWidth = r*0.16; c.globalAlpha = A0*(0.75 + 0.25*Math.sin(t*6));
+  c.beginPath(); c.arc(x, y, r*1.18, 0, TAU); c.stroke();
+  c.strokeStyle = '#FFF6B0'; c.lineWidth = r*0.06; c.beginPath(); c.arc(x, y, r*1.18, t*3, t*3 + 1.2); c.stroke();
+  c.fillStyle = '#FFE58A';
+  for (let k = 0; k < 4; k++) { const a = t*2 + k*TAU/4, d = r*(1.45 + 0.12*Math.sin(t*5 + k)); c.globalAlpha = A0*(0.5 + 0.5*Math.sin(t*7 + k*2)); star4(c, x + Math.cos(a)*d, y + Math.sin(a)*d, r*0.28); }
+  c.restore(); return true;
+}
+// ----- forge state -----
+function forgeData() { const f = raidData._forge || (raidData._forge = { pts: 0, chests: 0, stash: {}, opened: 0 }); f.stash = f.stash || {}; return f; }
+function stashAdd(key, n) { const f = forgeData(); f.stash[key] = (f.stash[key] || 0) + n; }
+function stashRar(key) { if (key === 'shard') return 'shard'; for (const R of Object.values(RAIDS)) for (const it of R.loot) if (lootKey(it) === key) return it[2]; return 'r'; }
+function stashItem(key) { for (const R of Object.values(RAIDS)) for (const it of R.loot) if (lootKey(it) === key) return it; return null; }
+function allRaidLoot() { const out = []; for (const id of RAID_ORDER) for (const it of RAIDS[id].loot) out.push([id, it]); return out; }
+// Raid chest: one raid item, rarity Epic 50 / Legendary 35 / Mythic 15, prefers things you don't own.
+function rollRaidChest() {
+  const x = Math.random()*100, rar = x < 50 ? 'e' : x < 85 ? 'l' : 'm';
+  let pool = allRaidLoot().map(p => p[1]).filter(it => it[2] === rar);
+  const fresh = pool.filter(it => !ownsLoot(it));
+  const it = fresh.length && Math.random() < 0.9 ? pick(fresh) : pick(pool);
+  return it;
+}
+let forgeSel = {}, forgeArmed = false, forgeAnim = null, raidTab = 'raids';
+function renderForge() {
+  const f = forgeData();
+  $('#forgePts').textContent = fmt(f.pts) + ' / ' + fmt(FORGE_GOAL);
+  $('#forgeBar').style.width = Math.min(100, 100*f.pts/FORGE_GOAL) + '%';
+  $('#btnForgeMake').disabled = f.pts < FORGE_GOAL;
+  $('#btnForgeMake').textContent = f.pts >= FORGE_GOAL ? 'Forge a Raid Chest (−' + fmt(FORGE_GOAL) + ' pts)' : 'Need ' + fmt(FORGE_GOAL - f.pts) + ' more forge points';
+  $('#btnForgeOpen').hidden = !f.chests || !!forgeAnim; $('#btnForgeOpen').textContent = 'Open Raid Chest' + (f.chests > 1 ? ' (' + f.chests + ')' : '');
+  // stash
+  const box = $('#forgeStash'); box.textContent = '';
+  const keys = Object.keys(f.stash).filter(k => f.stash[k] > 0).sort((a, b) => (FORGE_PTS[stashRar(b)] || 0) - (FORGE_PTS[stashRar(a)] || 0));
+  let selPts = 0;
+  if (!keys.length) box.append(Object.assign(document.createElement('p'), { className: 'note', textContent: 'Nothing to sacrifice yet. Every raid clear gives raid shards, and duplicate drops land here instead of turning into coins.' }));
+  for (const k of keys) {
+    const rar = stashRar(k), it = stashItem(k), have = f.stash[k], sel = Math.min(have, forgeSel[k] || 0);
+    selPts += sel*(FORGE_PTS[rar] || 0);
+    const row = document.createElement('div'); row.className = 'srow ' + rar;
+    const cv = document.createElement('canvas'); cv.width = 88; cv.height = 60; cv.className = 'lootcv'; cv.dataset.k = it ? it[0] : 'shard'; cv.dataset.id = it ? it[1] : 'shard';
+    const mid = document.createElement('div');
+    mid.append(Object.assign(document.createElement('b'), { textContent: it ? lootName(it) : 'Raid shard' }),
+      Object.assign(document.createElement('small'), { textContent: (rar === 'shard' ? 'Shard' : RAR_NAME[rar] + ' copy') + ' · ' + FORGE_PTS[rar] + ' pts each · you have ' + have }));
+    const ctl = document.createElement('div'); ctl.className = 'sctl';
+    const mk = (t, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.addEventListener('click', () => { fn(); forgeArmed = false; renderForge(); }); return b; };
+    ctl.append(mk('−', () => forgeSel[k] = Math.max(0, sel - 1)), Object.assign(document.createElement('b'), { textContent: sel }), mk('+', () => forgeSel[k] = Math.min(have, sel + 1)), mk('All', () => forgeSel[k] = have));
+    row.append(cv, mid, ctl); box.append(row);
+  }
+  const sb = $('#btnSacrifice'); sb.hidden = !keys.length; sb.disabled = !selPts;
+  sb.textContent = forgeArmed ? 'Tap again: sacrifice for +' + fmt(selPts) + ' pts' : selPts ? 'Sacrifice selected (+' + fmt(selPts) + ' pts)' : 'Pick items to sacrifice';
+  sb.classList.toggle('armed', forgeArmed);
+  $('#btnSelAll').hidden = !keys.length;
+  // collection
+  const col = $('#forgeColl'); col.textContent = '';
+  for (const id of RAID_ORDER) {
+    const R = RAIDS[id], g = document.createElement('div'); g.className = 'cgroup';
+    g.append(Object.assign(document.createElement('div'), { className: 'eyebrow', textContent: R.n + ' · ' + R.loot.filter(ownsLoot).length + '/' + R.loot.length }));
+    const grid = document.createElement('div'); grid.className = 'cgrid';
+    for (const it of R.loot) {
+      const own = ownsLoot(it), cp = f.stash[lootKey(it)] || 0;
+      const d = document.createElement('div'); d.className = 'citem ' + it[2] + (own ? ' own' : '');
+      const cv = document.createElement('canvas'); cv.width = 88; cv.height = 60; cv.className = 'lootcv'; cv.dataset.k = it[0]; cv.dataset.id = it[1];
+      d.append(cv, Object.assign(document.createElement('span'), { textContent: own ? lootName(it) : '???' }), Object.assign(document.createElement('small'), { textContent: own ? (cp ? '+' + cp + ' copies' : 'Owned') : RAR_NAME[it[2]] + (it[4] ? ' · Nightmare' : '') }));
+      grid.append(d);
+    }
+    g.append(grid); col.append(g);
+  }
+  $('#forgeStats').textContent = 'Raid chests opened: ' + (f.opened || 0) + ' · Each chest holds one raid item: Epic 50% · Legendary 35% · Mythic 15%, and it prefers items you don\'t own yet.';
+}
+function sacrificeSelected() {
+  const f = forgeData(); let pts = 0;
+  for (const k in forgeSel) pts += Math.min(f.stash[k] || 0, forgeSel[k] || 0)*(FORGE_PTS[stashRar(k)] || 0);
+  if (!pts) return;
+  if (!forgeArmed) { forgeArmed = true; renderForge(); return; }
+  for (const k in forgeSel) { const n = Math.min(f.stash[k] || 0, forgeSel[k] || 0); if (!n) continue; f.stash[k] -= n; if (f.stash[k] <= 0) delete f.stash[k]; }
+  forgeArmed = false; f.pts += pts; forgeSel = {}; saveRaid();
+  forgeAnim = { kind: 'burn', t: 0, pts }; tone(110, 0.8, 'sawtooth', 0.06, 0.4); tone(440, 0.4, 'triangle', 0.05, 2, 0.3); buzz([30, 30, 60]);
+  toast('+' + fmt(pts) + ' forge points!'); renderForge();
+}
+function forgeMake() { const f = forgeData(); if (f.pts < FORGE_GOAL) return; f.pts -= FORGE_GOAL; f.chests++; saveRaid(); forgeAnim = { kind: 'make', t: 0 }; tone(220, 0.6, 'square', 0.05, 2); tone(660, 0.8, 'triangle', 0.05, 1.5, 0.3); renderForge(); }
+function forgeOpen() {
+  const f = forgeData(); if (!f.chests || forgeAnim) return;
+  f.chests--; f.opened = (f.opened || 0) + 1;
+  const it = rollRaidChest(), dup = ownsLoot(it);
+  if (dup) stashAdd(lootKey(it), 1); else { owned.add(lootKey(it)); saveWallet(); }
+  saveRaid();
+  forgeAnim = { kind: 'open', t: 0, it, dup };
+  $('#forgeReveal').hidden = true; renderForge();
+}
+function drawRaidChest(c, x, y, s, lid, t, glow) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  if (glow > 0) { const g = c.createRadialGradient(0, -10, 0, 0, -10, 110); g.addColorStop(0, 'rgba(255,79,139,0.55)'); g.addColorStop(0.5, 'rgba(62,230,255,0.25)'); g.addColorStop(1, 'rgba(62,230,255,0)'); c.globalAlpha = glow; c.fillStyle = g; c.fillRect(-120, -130, 240, 240); c.globalAlpha = 1; }
+  c.fillStyle = 'rgba(0,0,0,0.4)'; c.beginPath(); c.ellipse(0, 44, 58, 10, 0, 0, TAU); c.fill();
+  const body = c.createLinearGradient(0, -5, 0, 42); body.addColorStop(0, '#2A1A4A'); body.addColorStop(1, '#0E0820');
+  c.fillStyle = body; rr(c, -50, -4, 100, 46, 7); c.fill();
+  // glowing rune cracks
+  const pulse = 0.55 + 0.45*Math.sin(t*3);
+  c.strokeStyle = 'rgba(62,230,255,' + pulse + ')'; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(-40, 8); c.lineTo(-28, 18); c.lineTo(-34, 30); c.moveTo(38, 6); c.lineTo(30, 20); c.lineTo(40, 32); c.stroke();
+  c.strokeStyle = 'rgba(255,79,139,' + pulse + ')'; c.beginPath(); c.moveTo(-12, 36); c.lineTo(-4, 26); c.lineTo(6, 34); c.lineTo(14, 24); c.stroke();
+  c.fillStyle = '#FFD84A'; c.fillRect(-50, 10, 100, 5); c.fillRect(-32, -4, 6, 46); c.fillRect(26, -4, 6, 46);
+  c.save(); c.translate(-52, -4); c.rotate(-lid*1.15); c.translate(52, 0);
+  const lg = c.createLinearGradient(0, -36, 0, 0); lg.addColorStop(0, '#4A2A7A'); lg.addColorStop(1, '#1A0E36');
+  c.fillStyle = lg; c.beginPath(); c.moveTo(-52, 0); c.lineTo(-52, -20); c.quadraticCurveTo(0, -46, 52, -20); c.lineTo(52, 0); c.closePath(); c.fill();
+  c.fillStyle = '#FFD84A'; c.fillRect(-32, -31, 6, 31); c.fillRect(26, -31, 6, 31);
+  // crest: a little raid skull-eye
+  c.fillStyle = 'rgba(255,79,139,' + (0.6 + 0.4*pulse) + ')'; c.beginPath(); c.ellipse(0, -18, 10, 6, 0, 0, TAU); c.fill();
+  c.fillStyle = '#0C0A1C'; c.beginPath(); c.arc(0, -18, 3, 0, TAU); c.fill();
+  c.restore();
+  if (lid < 0.2) { c.fillStyle = '#FFD84A'; rr(c, -8, -8, 16, 18, 3); c.fill(); c.fillStyle = '#16112E'; c.beginPath(); c.arc(0, 0, 2.5, 0, TAU); c.fill(); c.fillRect(-1, 0, 2, 6); }
+  c.restore();
+}
+let forgeParts = [];
+function drawForgeStage(dt) {
+  const cv = $('#forgeCv'); if (!cv) return;
+  const c = cv.getContext('2d'), w = cv.width, h = cv.height, f = forgeData();
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
+  const bg = c.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#1A0E36'); bg.addColorStop(1, '#0C0A1C'); c.fillStyle = bg; c.fillRect(0, 0, w, h);
+  // anvil fire glow
+  const fg = c.createRadialGradient(w/2, h*0.95, 10, w/2, h*0.95, w*0.5); fg.addColorStop(0, 'rgba(255,138,61,0.45)'); fg.addColorStop(1, 'rgba(255,138,61,0)'); c.fillStyle = fg; c.fillRect(0, 0, w, h);
+  for (let k = 0; k < 14; k++) { const ph = (clock*0.4 + k*0.137) % 1; c.fillStyle = 'rgba(255,' + (140 + k*7) + ',60,' + (1 - ph) + ')'; c.fillRect(w*(0.2 + ((k*0.373) % 0.6)) + Math.sin(clock*2 + k)*8, h*(1 - ph), 3, 3); }
+  let lid = 0, shakeX = 0, glow = 0.35, sc = 1.6;
+  if (forgeAnim) {
+    const A = forgeAnim; A.t += dt;
+    if (A.kind === 'open') {
+      if (A.t < 1.4) { shakeX = Math.sin(A.t*40)*A.t*5; glow = 0.4 + A.t*0.4; if (Math.random() < 0.3) tone(300 + A.t*400, 0.05, 'square', 0.03); }
+      else { lid = Math.min(1, (A.t - 1.4)*4); glow = 1;
+        if (!A.burst) { A.burst = true; for (let k = 0; k < 90; k++) { const a = Math.random()*TAU, sp = 60 + Math.random()*240; forgeParts.push({ x: w/2, y: h*0.6, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 120, life: 1.2 + Math.random(), col: RAR_C[A.it[2]] }); } sfx.win(); buzz([40, 30, 80, 30, 160]);
+          const rv = $('#forgeReveal'); rv.hidden = false; rv.className = 'lootreveal ' + A.it[2]; rv.textContent = '';
+          const cv2 = document.createElement('canvas'); cv2.width = 176; cv2.height = 120; cv2.className = 'lootcv'; cv2.dataset.k = A.it[0]; cv2.dataset.id = A.it[1];
+          rv.append(cv2, Object.assign(document.createElement('span'), { className: 'lr', textContent: RAR_NAME[A.it[2]] + ' ' + LOOT_KIND[A.it[0]] }), Object.assign(document.createElement('b'), { textContent: lootName(A.it) }), Object.assign(document.createElement('small'), { textContent: A.dup ? 'You already had it: the copy went to your stash (' + FORGE_PTS[A.it[2]] + ' pts).' : 'New raid loot! It is yours.' }));
+          if (A.it[2] === 'm') startVictory('supernova');
+        }
+        if (A.t > 4) { forgeAnim = null; renderForge(); } }
+    } else if (A.kind === 'make' || A.kind === 'burn') {
+      glow = 0.4 + Math.sin(Math.min(1, A.t)*Math.PI)*0.8; sc = 1.6 + Math.sin(Math.min(1, A.t)*Math.PI)*0.15;
+      if (A.t < 0.6 && Math.random() < 0.7) forgeParts.push({ x: w/2 + (Math.random() - 0.5)*120, y: h*0.85, vx: (Math.random() - 0.5)*60, vy: -150 - Math.random()*150, life: 1, col: A.kind === 'make' ? '#FFD84A' : '#FF8A3D' });
+      if (A.t > 1.2) { forgeAnim = null; renderForge(); }
+    }
+  }
+  if (f.chests || (forgeAnim && forgeAnim.kind === 'open')) drawRaidChest(c, w/2 + shakeX, h*0.62, sc, lid, clock, glow);
+  else { // an anvil with the progress glow
+    c.save(); c.translate(w/2, h*0.7); c.fillStyle = '#2A2350'; c.beginPath(); c.moveTo(-90, -30); c.lineTo(90, -30); c.lineTo(70, -10); c.lineTo(30, -10); c.lineTo(40, 30); c.lineTo(-40, 30); c.lineTo(-30, -10); c.lineTo(-70, -10); c.closePath(); c.fill();
+    const p = Math.min(1, f.pts/FORGE_GOAL); c.fillStyle = 'rgba(255,' + Math.round(120 + 100*p) + ',60,' + (0.3 + 0.6*p) + ')'; c.fillRect(-90, -34, 180*p, 5);
+    c.globalAlpha = 0.25 + 0.5*p; drawRaidChest(c, 0, -62, 0.6, 0, clock, 0); c.restore();
+  }
+  const keep = [];
+  for (const q of forgeParts) { q.x += q.vx*dt; q.y += q.vy*dt; q.vy += 220*dt; q.life -= dt; if (q.life > 0) { keep.push(q); c.globalAlpha = Math.min(1, q.life); c.fillStyle = q.col; c.fillRect(q.x, q.y, 3, 3); } }
+  c.globalAlpha = 1; forgeParts = keep;
+  if (!$('#forgeReveal').hidden) $('#forgeReveal').querySelectorAll('canvas').forEach(x => drawLootCv(x, x.dataset.k, x.dataset.id));
+}
+function drawShardChip(cv) {
+  const c = cv.getContext('2d'), w = cv.width, h = cv.height; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
+  c.save(); c.translate(w/2, h/2); c.rotate(Math.sin(clock*1.5)*0.2);
+  const g = c.createLinearGradient(-12, -18, 12, 18); g.addColorStop(0, '#FF4F8B'); g.addColorStop(0.5, '#B57CFF'); g.addColorStop(1, '#3EE6FF');
+  c.fillStyle = g; c.beginPath(); c.moveTo(0, -h*0.38); c.lineTo(h*0.2, -h*0.05); c.lineTo(h*0.08, h*0.38); c.lineTo(-h*0.14, h*0.3); c.lineTo(-h*0.22, -h*0.08); c.closePath(); c.fill();
+  c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 1; c.stroke();
+  c.fillStyle = 'rgba(255,255,255,' + (0.4 + 0.4*Math.sin(clock*5)) + ')'; star4(c, h*0.08, -h*0.15, 3);
+  c.restore();
+}
+// Shrink one panel a bit on short desktop windows so it never needs to scroll.
+function fitPanel(p) {
+  if (!p) return; p.style.zoom = '';
+  if (!document.body.classList.contains('desk') || uiSize !== 'auto') return;
+  const h = p.getBoundingClientRect().height, avail = innerHeight - 34;
+  if (h > avail) { const z = +getComputedStyle(document.documentElement).getPropertyValue('--uiz') || 1; p.style.zoom = String(Math.max(0.75, Math.floor(z*avail/h*100)/100)); }
+}
+function setRaidTab(t) {
+  raidTab = t;
+  document.querySelectorAll('#raid .rtab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === t)));
+  $('#raidMainTab').hidden = t !== 'raids'; $('#raidForgeTab').hidden = t !== 'forge';
+  if (t === 'forge') { forgeArmed = false; $('#forgeReveal').hidden = true; renderForge(); }
+  fitPanel($('#raid .panel'));
+}
+
 // ---------- main loop ----------
 function stepDemo(dt) {
   if (!demo || demo.ph === 'ov') { demo = newGame(3, 99); demo.t = 0.6; demoLooks = [0, 1, 2].map(i => ({ c: SEAT_DEFAULT[i], h: ['crown', 'wizard', 'propeller'][i], f: 'eyes', t: 'std' })); }
@@ -9489,7 +9767,8 @@ function frame(now) {
   if (curScreen === 'story') drawStory(dt);
   if (curScreen === 'build') drawBuilder();
   if (curScreen === 'arenas' && Math.floor(clock*10) % 5 === 0) $('#arenaList').querySelectorAll('canvas').forEach((cv, i) => { const all = myArenas.concat(LV_EXAMPLES); if (all[i]) drawArenaThumb(cv, all[i]); });
-  if (curScreen === 'raid' && Math.floor(clock*30) % 2 === 0) drawRaidScreen();
+  if (curScreen === 'raid' && raidTab === 'raids' && Math.floor(clock*30) % 2 === 0) drawRaidScreen();
+  if (curScreen === 'raid' && raidTab === 'forge') { drawForgeStage(dt); if (Math.floor(clock*10) % 3 === 0) document.querySelectorAll('#forgeStash canvas, #forgeColl canvas').forEach(cv => { if (cv.dataset.k === 'shard') drawShardChip(cv); else drawLootCv(cv, cv.dataset.k, cv.dataset.id); }); }
   if (curScreen === 'over' && raidRes && !$('#overRewards').hidden) $('#overRewards').querySelectorAll('canvas').forEach(cv => drawLootCv(cv, cv.dataset.k, cv.dataset.id));
   if (curScreen === 'adv' && Math.floor(clock*30) % 2 === 0) drawWorldCards();
   if (curScreen === 'bp' && Math.floor(clock*20) % 3 === 0) animBpChips();
@@ -9618,6 +9897,12 @@ try { const q = new URLSearchParams(location.search).get('arena'); if (q) { cons
 $('#btnRaid').addEventListener('click', () => { audioOn(); store('trepong-raidnew', '1'); $('#raidNew').hidden = true; openRaids(); });
 if (store('trepong-raidnew') === '1') $('#raidNew').hidden = true;
 $('#btnRaidBack').addEventListener('click', () => showScreen('menu'));
+document.querySelectorAll('#raid .rtab').forEach(b => b.addEventListener('click', () => setRaidTab(b.dataset.t)));
+$('#raidModSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; raidMod = +b.dataset.m; store('trepong-raidmod', String(raidMod)); renderRaids(); });
+$('#btnForgeMake').addEventListener('click', forgeMake);
+$('#btnForgeOpen').addEventListener('click', forgeOpen);
+$('#btnSacrifice').addEventListener('click', sacrificeSelected);
+$('#btnSelAll').addEventListener('click', () => { const f = forgeData(); forgeSel = {}; for (const k in f.stash) forgeSel[k] = f.stash[k]; forgeArmed = false; renderForge(); });
 $('#raidTeam').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; raidPlayers = +b.dataset.p; setSeg($('#raidTeam'), raidPlayers, 'p'); });
 $('#btnRaidGo').addEventListener('click', () => { if (!activeRaids().includes(raidSel)) return; audioOn(); lobbyRaid = raidSel; startPractice('raid'); });
 // ----- adventure & battle pass wiring -----
@@ -9827,7 +10112,7 @@ $('#lobbyFmt').addEventListener('click', e => {
   lobbyFmt = b.dataset.f; setSeg($('#lobbyFmt'), lobbyFmt, 'f');
   if (lobbyFmt === 'torn' && lobbyN > 3) hostSetN(3);
   if (lobbyFmt === 'arena' && lobbyLevel) hostSetN(lobbyLevel.sides);
-  if (lobbyFmt === 'raid') { if (!activeRaids().includes(lobbyRaid)) lobbyRaid = activeRaids().includes(raidSel) ? raidSel : activeRaids()[0]; if (lobbyN > 4) hostSetN(4); }
+  if (lobbyFmt === 'raid') { lobbyRaidMod = raidMod; if (!activeRaids().includes(lobbyRaid)) lobbyRaid = activeRaids().includes(raidSel) ? raidSel : activeRaids()[0]; if (lobbyN > 4) hostSetN(4); }
   $('#btnStart').textContent = lobbyFmt === 'serie' ? 'Start the series' : lobbyFmt === 'boss' ? 'Start the boss fight' : lobbyFmt === 'torn' ? 'Start floor ' + towerNext() : lobbyFmt === 'raid' ? 'Start raid: ' + RAIDS[lobbyRaid].n : 'Start the match';
   hostSync();
 });
