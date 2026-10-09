@@ -295,6 +295,12 @@ body.desk .dailycard canvas{width:160px;height:120px}
 .lday.done{opacity:.85;border-color:#7CFFB2} .lday.done span{color:#7CFFB2}
 .lday.today{opacity:1;border-color:#FFD84A;box-shadow:0 0 18px -6px #FFD84A;animation:pulse .9s ease-in-out infinite alternate}
 .lday:last-child{grid-column:span 2;border-color:color-mix(in srgb,#FF4F8B 60%,var(--edge))}
+.stkgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+.stk{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;min-width:0;opacity:.45}
+.stk i{font-style:normal;font-size:22px;line-height:1.1;font-weight:700;color:var(--mute)}
+.stk small{font-size:9px;line-height:1.15;color:var(--mute);font-weight:600;text-align:center;overflow-wrap:anywhere}
+.stk.have{opacity:1} .stk.on{border-color:#7CFFB2;background:color-mix(in srgb,#7CFFB2 14%,transparent)}
+.stk.u{border-color:color-mix(in srgb,#7CFFB2 45%,var(--edge))} .stk.r{border-color:color-mix(in srgb,#4FA8FF 50%,var(--edge))} .stk.e{border-color:color-mix(in srgb,#C59BFF 60%,var(--edge))} .stk.l{border-color:#FFB23E} .stk.m{border-color:#FF4F8B;box-shadow:0 0 12px -6px #FF4F8B}
 .profsave{margin-left:10px;padding:8px 14px;font-size:14px}
 .mtools{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin:-8px -6px -4px 0}
 body.desk .mtools{position:absolute;top:0;right:0;margin:0}
@@ -841,7 +847,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 11 (Oct 9, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 12 (Oct 9, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -908,6 +914,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <div class="collhead"><b id="collPct">0%</b><small id="collCount"></small><i class="lvxp"><b id="collFill"></b></i></div>
       <label>Milestones</label><div id="collMs" class="collms"></div>
       <label>Categories</label><div id="collCats" class="collcats"></div>
+      <label>Sticker album</label><p class="note left" id="stkCount"></p><div id="stkGrid" class="stkgrid"></div>
     </div>
     <div id="lv_pres" hidden>
       <canvas id="presCv" class="prescv" width="700" height="260"></canvas>
@@ -1179,6 +1186,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
 
 <script>
 'use strict';
+var stkReady = false;
 // ----- prestige-exclusive cosmetics: a paddle skin and a card frame for every prestige -----
 function drawPrestigeSkin(c, n, L, Wd, t) {
   const col = PRESTIGE_COLS[n] || '#FFD84A';
@@ -6675,7 +6683,7 @@ function serve(st) {
   const al = aliveSeats(st);
   const seat = st.alive[st.serveTo] ? st.serveTo : pick(al);
   const b = { id: st.nid++, x: 0, y: 0, vx: 0, vy: 0, cu: 0, cd: 1, co: -1, bo: 1, sx: -1 };
-  aimBall(st, b, seat, V0); st.balls = [b]; st.sinceHit = 0;
+  aimBall(st, b, seat, V0); st.balls = [b]; st.sinceHit = 0; st.gb = !st.boss && Math.random() < 0.07 ? b.id : -1;
   const extra = st.lv ? [[], [0.5], [0.55, -0.55]][st.lv.rules.serve - 1] : st.mut === 'multi' ? [0.55, -0.55] : [];
   for (const a of extra) {
     const c = Math.cos(a), sn = Math.sin(a);
@@ -7809,6 +7817,7 @@ function fx(type, seat, x, y, ball, extra) {
   const live = mode !== 'menu';
   if (type === 'hit') {
     if (seat === mySeat) { track('hits'); if (st) trackMax('rallyHits', st.rh); }
+    if (ball && st && ball.id === st.gb && seat === mySeat && live) { goldHits++; pops.push({ x, y, txt: '+3 🪙', col: '#FFD84A', t: 0 }); tone(1568, 0.06, 'triangle', 0.04); }
     burst(x, y, colOf(seat), 16, 1);
     if (live) { sfx.hit(seat); if (seat === mySeat) buzz(12); }
     rally++;
@@ -7867,7 +7876,7 @@ function fx(type, seat, x, y, ball, extra) {
     const H0 = HEAT_INFO[extra] || HEAT_INFO[1];
     pops.push({ x, y, txt: H0[0], col: H0[1], t: -0.2, big: 1 }); burst(x, y, H0[1], 30 + extra*10, 1.2 + extra*0.3);
     if (live) { tone(300 + extra*150, 0.25, 'sawtooth', 0.04, 1.8); if (extra >= 4) { shake = 0.5; buzz([30, 30, 60]); } }
-    if (extra >= 4 && mySeat >= 0 && st && st.alive[mySeat]) unlockSecret('t', 'plasma');
+    if (mySeat >= 0 && st && st.alive[mySeat]) { trackMax('heatMax', extra); if (extra >= 4) unlockSecret('t', 'plasma'); }
   } else if (type === 'goal') {
     lastGoalPos = [x, y];
     { const by = ball && ball.lh != null ? ball.lh : -1; // revenge: score on whoever last scored on you
@@ -8183,6 +8192,7 @@ function drawGame(g, seatView, dim, lk, isLive) {
   for (const b of g.balls) {
     ctx.globalAlpha = dim * ghostA * ballA(b);
     if (gHeat && g.ph === 'pl') { drawHeatBall(ctx, b, g.br || BALL_R, gHeat, clock); ctx.globalAlpha = dim * ghostA * ballA(b); }
+    if (b.id === g.gb) { const r0 = (g.br || BALL_R); ctx.save(); ctx.strokeStyle = '#FFD84A'; ctx.lineWidth = r0*0.35; ctx.shadowColor = '#FFD84A'; ctx.shadowBlur = 18*DPR; ctx.beginPath(); ctx.arc(b.x, b.y, r0*1.45, 0, TAU); ctx.stroke(); ctx.fillStyle = '#FFF6B0'; for (let k = 0; k < 3; k++) { const a = clock*4 + k*TAU/3; star4(ctx, b.x + Math.cos(a)*r0*2, b.y + Math.sin(a)*r0*2, r0*0.45); } ctx.restore(); }
     const sm = b.sx >= 0;
     ctx.shadowColor = sm ? '#FFE34A' : tc; ctx.shadowBlur = (sm ? 34 : 22)*DPR*dim;
     const bsk = g.last >= 0 && lk[g.last] ? lk[g.last].b : 'std';
@@ -8368,7 +8378,7 @@ function keyInput(dt) {
 
 // ---------- game setup (practice + host) ----------
 function requestWake() { try { navigator.wakeLock && navigator.wakeLock.request('screen').then(w => wakeLock = w).catch(() => {}); } catch (e) {} }
-function resetFx() { pops = []; heatSeen = 0; revengeMap = {}; revengeN = 0; replay = null; rec = []; emoBubbles = []; particles = []; trails = new Map(); flash = [0, 0, 0, 0, 0, 0, 0, 0]; shake = 0; rally = 0; lastCount = -1; overShown = false; myU = 0; banner = null; }
+function resetFx() { pops = []; heatSeen = 0; revengeMap = {}; revengeN = 0; goldHits = 0; goldSeen = -1; replay = null; rec = []; emoBubbles = []; particles = []; trails = new Map(); flash = [0, 0, 0, 0, 0, 0, 0, 0]; shake = 0; rally = 0; lastCount = -1; overShown = false; myU = 0; banner = null; }
 function seatCount() { return mode === 'practice' ? menuN : lobbyN; }
 function isSeries() { return curFmt() === 'serie'; }
 function curFmt() { return mode === 'practice' ? menuFmt : lobbyFmt; }
@@ -8604,7 +8614,7 @@ function packState(s) {
     O: s.obs.map(o => [o.id, r3(o.x), r3(o.y), r3(o.r), r3(o.vx), r3(o.vy), r1(o.life), r1(o.age)]),
     F: { g: F.g.map(r1), m: F.m.map(r1), i: F.i.map(r1), r: F.r.map(r1), s: F.s.slice() },
     gh: r1(s.ghost), cv: r1(s.curve), cd: s.curveDir,
-    sc: Math.round(s.sc), rh: s.rh, cm: Math.round((s.cm || 1)*100)/100, be: s.best, to: s.tot, pk: s.pk, sh: s.sh.slice(),
+    sc: Math.round(s.sc), gb: s.gb ?? -1, rh: s.rh, cm: Math.round((s.cm || 1)*100)/100, be: s.best, to: s.tot, pk: s.pk, sh: s.sh.slice(),
     sm: s.sm.map(v => Math.round(v*100)/100), arm: s.arm.map(r1), lgs: s.lgs, ar: s.ar,
     bs: s.boss ? [s.boss.s, Math.round(s.boss.hp*10)/10, s.boss.mh, s.boss.rage, s.boss.floor || 0, s.boss.phase || 0, s.boss.nph || 1, r1(s.boss.weak || 0)] : null, ff: s.ffs ? 1 : 0, vt: s.vote ? [s.vote.r, s.vote.o, voteCounts(s.vote), s.vote.done] : null, rd: s.raid || 0, rm: s.raidMod || 0, fo: s.foe.map(f => f ? 1 : 0), lv: s.lv ? 1 : 0, lb: s.lv ? s.lv.objs.map(o => o.on ? (o.hp || 1) : 0) : null, lst: s.stars,
     mu: s.mut, he: s.he, hl: s.hl, hv: s.hv, hc: s.hc.map(v => Math.round(v*100)/100), slo: r1(s.slowT), cl: s.clone.map(r1), wl: s.wall.map(r1), gv: s.grav.map(r1)
@@ -8804,7 +8814,7 @@ function applyG(g) {
     st = newGame(n, SERIES_LIVES, series ? series.cards : null, { lvl: g.lv && lobbyLevel ? lobbyLevel : null, raid: RAIDS[g.rd] ? g.rd : null, foes: Array.isArray(g.fo) ? g.fo.map((f, i) => f ? i : -1).filter(i => i >= 0) : null, boss: Array.isArray(g.bs), tower: Array.isArray(g.bs) ? +g.bs[4] || 0 : 0, ar: g.ar, mut: g.mu, mid: g.mid, heroes: g.he, heroLv: g.hl, heroVar: g.hv }); st.mid = g.mid; resetFx();
     gs.pk = Array.isArray(g.pk) ? g.pk[0] : 0;
   }
-  st.ffs = g.ff !== 0; st.raidMod = +g.rm || 0; st.rh = +g.rh || 0; st.cm = +g.cm || 1;
+  st.ffs = g.ff !== 0; st.raidMod = +g.rm || 0; st.rh = +g.rh || 0; st.cm = +g.cm || 1; st.gb = typeof g.gb === 'number' ? g.gb : -1;
   if (Array.isArray(g.vt) && Array.isArray(g.vt[1])) { const o = g.vt[1].filter(k => BOONS[k]).slice(0, 3); if (!st.vote || st.vote.r !== g.vt[0]) st.vote = { r: +g.vt[0] || 0, o, v: {}, done: -1 }; st.vote.o = o; st.vote.c = Array.isArray(g.vt[2]) ? g.vt[2].slice(0, 3).map(x => +x || 0) : [0, 0, 0]; st.vote.done = typeof g.vt[3] === 'number' ? g.vt[3] : -1; } else if (!g.vt) st.vote = null;
   if (st.lv && Array.isArray(g.lb)) st.lv.objs.forEach((o, i) => { const v = +g.lb[i] || 0; o.on = v > 0; if (o.t === 'brick') o.hp = v; });
   if (Array.isArray(g.lst)) st.stars = arr(g.lst, st.n, 0);
@@ -8953,6 +8963,8 @@ function matchExtras(sum) {
   const ex = [], won = st.boss ? st.winner === -2 : st.winner === mySeat, today = dayKey();
   if (won && stats.fwDay !== today) { stats.fwDay = today; stats.pxp = (stats.pxp || 0) + 50; saveStats(); ex.push(['⭐ First win of the day ×2', Math.max(20, sum)]); setTimeout(() => toast('First win of the day! Double coins and +50 XP'), 900); }
   if (revengeN) { ex.push(['😈 Revenge ×' + revengeN, 5*revengeN]); track('revenges', revengeN); }
+  if (goldHits) { ex.push(['🪙 Golden ball ×' + goldHits, 3*goldHits]); track('goldHits', goldHits); }
+  stickerDrop(ex);
   if (Math.random() < 0.05) { freeChests++; saveFree(); ex.push(['🍀 Lucky drop: wooden chest', 0]); setTimeout(() => { toast('🍀 Lucky drop! A free wooden chest is waiting in Chests.'); tone(1046, 0.1, 'triangle', 0.05); tone(1318, 0.2, 'triangle', 0.05, 1, 0.1); }, 1600); }
   return ex;
 }
@@ -9698,7 +9710,8 @@ function validProf(p) {
   p = p && typeof p === 'object' ? p : {};
   const ok = (k, id, d) => profItem(k, id) ? id : d;
   return { pb: ok('pb', p.pb, 'plain'), pg: ok('pg', p.pg, 'night'), pt: ok('pt', p.pt, 'newbie'), pe: ok('pe', p.pe, 'none'),
-    sh: Array.isArray(p.sh) ? p.sh.filter(id => ACH.some(a => a[0] === id)).slice(0, 3) : [] };
+    sh: Array.isArray(p.sh) ? p.sh.filter(id => ACH.some(a => a[0] === id)).slice(0, 3) : [],
+    sk: Array.isArray(p.sk) ? p.sk.filter(id => typeof id === 'string' && (!stkReady || stickerById(id))).slice(0, 3) : [] };
 }
 myProf = validProf(myProf);
 function saveProf() { store('trepong-prof', JSON.stringify(myProf)); pushProfile(); }
@@ -9708,7 +9721,7 @@ function xpFrac(xp) { const L = xpLevel(xp), lo = 30*(L - 1)*L, hi = 30*L*(L + 1
 function myCardData() {
   return {
     n: myName(), lk: myLook, he: myHero, hv: heroVariant(myHero), hl: heroLevel(myHero), lv: myLevel(), xf: Math.round(myLvFrac()*100)/100, pr: stats.prest || 0,
-    pb: myProf.pb, pg: myProf.pg, pt: myProf.pt, pe: myProf.pe, sh: myProf.sh.slice(),
+    pb: myProf.pb, pg: myProf.pg, pt: myProf.pt, pe: myProf.pe, sh: myProf.sh.slice(), sk: (myProf.sk || []).slice(),
     s: [stats.matches || 0, stats.wins || 0, stats.rallySc || 0, towerCleared(), ACH.filter(achDone).length]
   };
 }
@@ -9847,6 +9860,7 @@ function drawCard(c, d, t) {
   else { c.fillStyle = '#6B6490'; c.font = '700 9px "Chakra Petch", system-ui'; c.fillText('No achievements showcased yet', 150, 364); }
   c.restore();
   drawCardBorder(c, d.pb, t, CW, CH, d.lk.c);
+  if (d.sk && d.sk.length) drawCardStickers(c, d.sk, t);
   c.restore();
 }
 // ----- profile screen -----
@@ -11457,7 +11471,7 @@ function dailyResolve() {
   d.plays = (d.plays || 0) + 1; const wasBest = sc > d.best; d.best = Math.max(d.best, sc);
   let got = 0; while (got < 3 && d.best >= T[got]) got++;
   const fresh = [];
-  for (let m = d.medals; m < got; m++) { const M = DAILY_MEDALS[m]; addCoins(M[2]); addBpXp(M[3], 'Daily Arena'); fresh.push(M[0]); if (m === 2) { d.golds++; if (d.golds >= 3) unlockSecret('v', 'singularity'); } }
+  for (let m = d.medals; m < got; m++) { const M = DAILY_MEDALS[m]; addCoins(M[2]); addBpXp(M[3], 'Daily Arena'); fresh.push(M[0]); if (m === 2) { d.golds++; track('dailyGolds'); if (d.golds >= 3) unlockSecret('v', 'singularity'); } }
   if (got > 0 && d.medals === 0) { d.streak = d.lastDay === prevArenaDay(today) ? d.streak + 1 : 1; d.lastDay = today; if (d.streak % 7 === 0) grantReward(['chest', 'gold']); else if (d.streak % 3 === 0) { freeChests++; saveFree(); } }
   d.medals = Math.max(d.medals, got); saveDaily(d); syncDailyBadge();
   el.hidden = false;
@@ -11939,6 +11953,7 @@ function renderLevels() {
       if (L === o.L + 1) setTimeout(() => row.scrollIntoView({ block: 'center' }), 50);
     }
   } else if (lvTab === 'coll') {
+    renderStickers();
     const S = collStats(), cl = stats.collClaim || [];
     $('#collPct').textContent = S.pct.toFixed(1) + '%'; $('#collCount').textContent = S.own + ' / ' + S.tot + ' items collected';
     $('#collFill').style.width = S.pct + '%';
@@ -11978,12 +11993,25 @@ function drawLevelsFrame() {
     const cols = 7, cw = w/cols, ch = h/2;
     for (let k = 0; k <= PRESTIGE_MAX; k++) {
       const col = k % cols, row = Math.floor(k/cols), x = cw*(col + 0.5) + (row ? cw/2 : 0), y = ch*(row + 0.45);
-      c.globalAlpha = k <= p ? 1 : k === p + 1 ? 0.75 : 0.28; drawPrestigeBadge(c, k, k === p ? myLevel() : k ? 1 : 1, x, y, cw*0.3, clock);
-      c.globalAlpha = 1; c.fillStyle = k === p ? '#FFFFFF' : k <= p ? '#A49CD0' : '#6B6490'; c.font = '700 ' + Math.round(cw*0.095) + 'px "Chakra Petch", system-ui'; c.textAlign = 'center';
-      c.fillText((k ? ROMAN[k] + ' ' : '') + PRESTIGE_NAMES[k], x, y + cw*0.47);
+      if (k <= p) drawPrestigeBadge(c, k, k === p ? myLevel() : 1, x, y, cw*0.3, clock);
+      else drawBadgeSilhouette(c, k, x, y, cw*0.3, k === p + 1);
+      c.globalAlpha = 1; c.fillStyle = k === p ? '#FFFFFF' : k <= p ? '#A49CD0' : '#4A4370'; c.font = '700 ' + Math.round(cw*0.095) + 'px "Chakra Petch", system-ui'; c.textAlign = 'center';
+      c.fillText((k ? ROMAN[k] + ' ' : '') + (k <= p + 1 ? PRESTIGE_NAMES[k] : '???'), x, y + cw*0.47);
       if (k === p) { c.strokeStyle = PRESTIGE_COLS[k]; c.lineWidth = 2; c.beginPath(); c.arc(x, y, cw*0.43, 0, TAU); c.stroke(); }
     }
   }
+}
+// a locked emblem: pitch black with only a faint outline, so you can guess the shape but not much more
+const silCv = [document.createElement('canvas'), document.createElement('canvas')];
+function drawBadgeSilhouette(c, k, x, y, r, next) {
+  const S = Math.ceil(r*3), [a, b] = silCv; for (const q of silCv) { if (q.width !== S) { q.width = S; q.height = S; } }
+  const ca = a.getContext('2d'); ca.setTransform(1, 0, 0, 1, 0, 0); ca.clearRect(0, 0, S, S); drawPrestigeBadge(ca, k, 0, S/2, S/2, r, 0);
+  ca.globalCompositeOperation = 'source-in'; ca.fillStyle = next ? '#5A4F9A' : '#3A3366'; ca.fillRect(0, 0, S, S); ca.globalCompositeOperation = 'source-over';
+  const cb = b.getContext('2d'); cb.setTransform(1, 0, 0, 1, 0, 0); cb.clearRect(0, 0, S, S); cb.drawImage(a, 0, 0);
+  cb.globalCompositeOperation = 'source-in'; cb.fillStyle = '#05030C'; cb.fillRect(0, 0, S, S); cb.globalCompositeOperation = 'source-over';
+  c.save(); if (next) { c.shadowColor = '#B57CFF'; c.shadowBlur = 8 + 4*Math.sin(clock*3); }
+  const o = Math.max(1.5, r*0.06); for (const [dx, dy] of [[-o, 0], [o, 0], [0, -o], [0, o]]) c.drawImage(a, x - S/2 + dx, y - S/2 + dy);
+  c.shadowBlur = 0; c.drawImage(b, x - S/2, y - S/2); c.restore();
 }
 function doPrestige() {
   const o = lvOf(stats.pxp), p = stats.prest || 0;
@@ -12011,7 +12039,7 @@ function loginCheck() {
 function claimLogin() {
   const idx = +$('#loginBox').dataset.idx || 0, today = arenaDay();
   if (stats.loginDay === today) { $('#loginBox').hidden = true; return; }
-  stats.loginDay = today; stats.loginIdx = idx; saveStats();
+  stats.loginDay = today; stats.loginIdx = idx; trackMax('loginStreak', idx + 1); saveStats();
   const got = LOGIN_RW[idx].map(r => grantReward(r, true)); sfx.coin(); buzz([20, 30, 60]);
   toast('Day ' + (idx + 1) + ' reward: ' + got.join(' + ')); $('#loginBox').hidden = true; syncCoinUI();
 }
@@ -12032,7 +12060,7 @@ let lvFx = null, lvQueue = [], lvParts = [];
 function startLvFx(a) { lvQueue.push(a); if (!lvFx) nextLvFx(); }
 function nextLvFx() {
   lvFx = lvQueue.shift() || null; lvParts = [];
-  const box = $('#lvFx'); box.hidden = !lvFx; if (!lvFx) { if (curScreen === 'menu') setTimeout(loginCheck, 300); return; }
+  const box = $('#lvFx'); box.hidden = !lvFx; if (!lvFx) { if (curScreen === 'menu') setTimeout(() => { if (lvFx) return; lvCheck(); if (!lvFx) loginCheck(); }, 300); return; }
   const A = lvFx; A.t = 0;
   box.className = 'lvfx ' + A.kind;
   const big = A.kind !== 'normal';
@@ -12093,6 +12121,67 @@ function drawLvFx(dt) {
   }
   if (A.kind === 'normal' && t > 3.6) nextLvFx();
 }
+
+// ----- stickers: a new kind of collectible. Random drops after matches, stick up to 3 on your profile card -----
+const STICKERS = [
+  ['ball', '🏓', 'Ping!', 'c'], ['tri', '🔺', 'Triangle', 'c'], ['fire', '🔥', 'On fire', 'c'], ['star', '⭐', 'Gold star', 'c'], ['zap', '⚡', 'Zap', 'c'], ['gg', '🤝', 'GG', 'c'],
+  ['pizza', '🍕', 'Pizza break', 'c'], ['coffee', '☕', 'Coffee', 'c'], ['dice', '🎲', 'Lucky roll', 'c'], ['music', '🎵', 'Bop', 'c'],
+  ['ghost', '👻', 'Boo', 'u'], ['alien', '👽', 'Visitor', 'u'], ['robot', '🤖', 'Beep boop', 'u'], ['cat', '🐱', 'Cat', 'u'], ['frog', '🐸', 'Frog', 'u'], ['duck', '🦆', 'Quack', 'u'],
+  ['rocket', '🚀', 'Liftoff', 'u'], ['cactus', '🌵', 'Prickly', 'u'], ['pepper', '🌶️', 'Spicy', 'u'],
+  ['crown', '👑', 'Royalty', 'r'], ['gem', '💎', 'Diamond', 'r'], ['skull', '💀', 'Wrecked', 'r'], ['ufo', '🛸', 'UFO', 'r'], ['octo', '🐙', 'Octopus', 'r'], ['shark', '🦈', 'Shark', 'r'],
+  ['rainbow', '🌈', 'Rainbow', 'r'], ['clover', '🍀', 'Four leaves', 'r'],
+  ['dragon', '🐉', 'Dragon', 'e'], ['unicorn', '🦄', 'Unicorn', 'e'], ['volcano', '🌋', 'Eruption', 'e'], ['comet', '☄️', 'Comet', 'e'], ['trophy', '🏆', 'Champion', 'e'],
+  ['moai', '🗿', 'Stone face', 'l'], ['blackhole', '🕳️', 'The void', 'l'], ['phoenix', '🐦‍🔥', 'Phoenix', 'l'],
+  ['goldtri', '🔱', 'Trident of Trepong', 'm']
+];
+const STK_W = { c: 50, u: 28, r: 14, e: 6, l: 1.8, m: 0.2 };
+stkReady = true;
+function stickerById(id) { return STICKERS.find(s => s[0] === id); }
+function myStickers() { return stats.stk || (stats.stk = {}); }
+function rollSticker() {
+  let tot = 0; for (const s of STICKERS) tot += STK_W[s[3]];
+  let x = Math.random()*tot; for (const s of STICKERS) { x -= STK_W[s[3]]; if (x <= 0) return s; } return STICKERS[0];
+}
+function stickerDrop(ex) {
+  if (Math.random() >= 0.25) return;
+  const s = rollSticker(), S = myStickers(), fresh = !S[s[0]];
+  S[s[0]] = (S[s[0]] || 0) + 1; trackMax('stickers', Object.keys(S).length); saveStats();
+  if (fresh) { ex.push([s[1] + ' New sticker: ' + s[2] + ' (' + RAR6[s[3]][0] + ')', 0]); setTimeout(() => { toast(s[1] + ' New sticker: ' + s[2] + '! Stick it on your card in Progression → Collection.'); tone(1175, 0.08, 'triangle', 0.05); tone(1568, 0.15, 'triangle', 0.05, 1, 0.08); }, 2200); }
+  else ex.push([s[1] + ' Sticker dupe', 10]);
+}
+function toggleSticker(id) {
+  const arr = (myProf.sk || []).slice(), i = arr.indexOf(id);
+  if (i >= 0) arr.splice(i, 1); else { if (arr.length >= 3) arr.shift(); arr.push(id); }
+  myProf.sk = arr; saveProf(); tone(880, 0.05, 'sine', 0.05); renderStickers();
+}
+function renderStickers() {
+  const box = $('#stkGrid'); if (!box) return; box.textContent = '';
+  const S = myStickers(), on = myProf.sk || [];
+  $('#stkCount').textContent = Object.keys(S).length + ' / ' + STICKERS.length + ' stickers · tap one to stick it on your card (max 3)';
+  for (const s of STICKERS) {
+    const have = S[s[0]] || 0, b = document.createElement('button'); b.type = 'button'; b.className = 'stk ' + s[3] + (have ? ' have' : '') + (on.includes(s[0]) ? ' on' : '');
+    b.append(Object.assign(document.createElement('i'), { textContent: have ? s[1] : '?' }), Object.assign(document.createElement('small'), { textContent: have ? s[2] + (have > 1 ? ' ×' + have : '') : RAR6[s[3]][0] }));
+    if (have) b.addEventListener('click', () => toggleSticker(s[0])); box.append(b);
+  }
+}
+function drawCardStickers(c, ids, t) {
+  const spots = [[42, 162, -0.22], [258, 162, 0.2], [264, 374, 0.15]];
+  (ids || []).slice(0, 3).forEach((id, k) => { const s = stickerById(id); if (!s) return; const [x, y, r] = spots[k];
+    c.save(); c.translate(x, y + Math.sin(t*1.5 + k)*0.8); c.rotate(r); c.font = '26px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.shadowColor = 'rgba(255,255,255,0.95)'; c.shadowBlur = 5; for (let q = 0; q < 3; q++) c.fillText(s[1], 0, 0); c.shadowBlur = 0; c.restore(); });
+}
+// ----- golden ball: now and then the serve is golden, and every hit on it pays -----
+let goldHits = 0, goldSeen = -1;
+// ----- new colours -----
+PALETTE.push(['#B6FF3A', 'Neon lime'], ['#FF2BD6', 'Hot magenta'], ['#2B6BFF', 'Electric blue'], ['#FFB8A0', 'Peach'], ['#C8B6FF', 'Lavender'], ['#1FC8B0', 'Teal'], ['#FF3355', 'Crimson'], ['#E8C88A', 'Sand']);
+Object.assign(PRICE.c, { '#B6FF3A': 90, '#FF2BD6': 120, '#2B6BFF': 90, '#FFB8A0': 70, '#C8B6FF': 70, '#1FC8B0': 80, '#FF3355': 110, '#E8C88A': 60 });
+// ----- more achievements for the new stuff -----
+ACH.push(['heat4', 'Meltdown', 'Reach max heat in a rally.', 'heatMax', 4, 150], ['rev10', 'Payback', 'Get 10 revenges.', 'revenges', 10, 120],
+  ['sec1', 'Secret keeper', 'Unlock a secret item.', 'secrets', 1, 200], ['sec6', 'Know-it-all', 'Unlock all 6 secret items.', 'secrets', 6, 1000],
+  ['stk12', 'Sticker fan', 'Collect 12 different stickers.', 'stickers', 12, 150], ['stk36', 'Full album', 'Collect every sticker.', 'stickers', STICKERS.length, 1500],
+  ['dg1', 'Golden day', 'Win a gold medal in the Daily Arena.', 'dailyGolds', 1, 150], ['pres1', 'New beginnings', 'Prestige for the first time.', 'prestige', 1, 300],
+  ['log7', 'Regular', 'Log in 7 days in a row.', 'loginStreak', 7, 300], ['gold25', 'Midas touch', 'Hit the golden ball 25 times.', 'goldHits', 25, 150]);
+ACH_CAT.skill.push('heat4', 'rev10', 'gold25'); ACH_CAT.collect.push('sec1', 'sec6', 'stk12', 'stk36'); ACH_CAT.mode.push('dg1', 'pres1'); ACH_CAT.social.push('log7');
 
 // Items from later modules (adventure, raids, forge, codes) exist now, so re-check the saved look and card.
 // Before this, unlocked borders/backgrounds/ball skins from those modules fell back to the defaults on every restart.
@@ -12168,6 +12257,7 @@ function frame(now) {
   voteUI();
   if (pops.length) { for (const p of pops) p.t += dt; pops = pops.filter(p => p.t < 1.4); }
   heatSeen = st && st.ph === 'pl' ? heatOf(st.rh || 0) : heatSeen;
+  if (st && st.ph === 'pl' && st.gb >= 0 && st.gb !== goldSeen && mySeat >= 0) { goldSeen = st.gb; banner = { text: '🪙 GOLDEN BALL', sub: 'Every hit on it is worth 3 coins', col: '#FFD84A', t: 0 }; tone(1318, 0.1, 'triangle', 0.05); tone(1760, 0.18, 'triangle', 0.05, 1, 0.1); }
   if (st && st.ph === 'pl' && mySeat >= 0 && st.alive[mySeat] && !replay) {
     if ((st.cm || 1) >= 6) unlockSecret('h', 'infinity');
     if (st.sc >= 25000) unlockSecret('b', 'eightball');
