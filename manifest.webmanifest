@@ -7,7 +7,7 @@
   "id": "./",
   "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#0C0A1C",
   "theme_color": "#0C0A1C",
   "icons": [
