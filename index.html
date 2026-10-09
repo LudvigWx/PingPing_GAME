@@ -573,6 +573,13 @@ body.desk .dailycard canvas{width:160px;height:120px}
 .lvbtns{display:flex;gap:10px;margin-top:6px}
 .lvbtns button:first-child{background:linear-gradient(110deg,#FF4F8B,#B57CFF,#3EE6FF);border:0;color:#fff}
 .lvtap{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);color:var(--mute);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;animation:pulse 1s ease-in-out infinite alternate}
+.loginpanel{width:min(100%,460px)}
+.ldays{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lday{display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid var(--edge);border-radius:12px;padding:8px 4px;text-align:center;opacity:.6}
+.lday b{font-size:12px} .lday small{font-size:10.5px;color:var(--mute);font-weight:600;line-height:1.2} .lday span{font-size:16px;min-height:18px}
+.lday.done{opacity:.85;border-color:#7CFFB2} .lday.done span{color:#7CFFB2}
+.lday.today{opacity:1;border-color:#FFD84A;box-shadow:0 0 18px -6px #FFD84A;animation:pulse .9s ease-in-out infinite alternate}
+.lday:last-child{grid-column:span 2;border-color:color-mix(in srgb,#FF4F8B 60%,var(--edge))}
 .profsave{margin-left:10px;padding:8px 14px;font-size:14px}
 .mtools{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin:-8px -6px -4px 0}
 body.desk .mtools{position:absolute;top:0;right:0;margin:0}
@@ -1119,6 +1126,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
+    <p class="note" id="buildTag">Trepong · build 11 (Oct 9, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -1192,6 +1200,15 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <p class="note" id="presInfo"></p>
       <button id="btnPrestige" class="primary prestigebtn" type="button">Prestige</button>
     </div>
+  </div>
+</div>
+
+<div id="loginBox" class="cardview" hidden>
+  <div class="panel loginpanel">
+    <div class="eyebrow">Daily reward</div><div class="winner">Welcome back!</div>
+    <div id="loginDays" class="ldays"></div>
+    <p class="note" id="loginNote"></p>
+    <button id="btnLoginClaim" class="primary" type="button">Claim</button>
   </div>
 </div>
 
@@ -1447,6 +1464,48 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
 
 <script>
 'use strict';
+// ----- prestige-exclusive cosmetics: a paddle skin and a card frame for every prestige -----
+function drawPrestigeSkin(c, n, L, Wd, t) {
+  const col = PRESTIGE_COLS[n] || '#FFD84A';
+  const g = c.createLinearGradient(L, -3, L + Wd, 3); g.addColorStop(0, '#0C0A1C'); g.addColorStop(0.5, n >= 12 ? 'hsl(' + ((t*90) % 360) + ',80%,45%)' : col); g.addColorStop(1, '#0C0A1C');
+  c.fillStyle = g; c.fillRect(L, -3, Wd, 6);
+  c.fillStyle = 'rgba(12,10,28,0.55)'; c.fillRect(L, -3, Wd, 6);
+  // chevrons marching along the bar, more of them the higher you go
+  const step = n >= 8 ? 3.2 : 4.2, off = (t*(2 + n*0.4)) % step;
+  c.strokeStyle = n >= 12 ? 'hsl(' + ((t*120) % 360) + ',95%,70%)' : col; c.lineWidth = 0.7; c.lineJoin = 'round';
+  for (let x = L - step + off; x < L + Wd + step; x += step) { c.beginPath(); c.moveTo(x - 1, -1.6); c.lineTo(x + 0.6, 0); c.lineTo(x - 1, 1.6); c.stroke(); }
+  if (n >= 4) { c.fillStyle = '#FFD84A'; c.fillRect(L, -2.2, Wd, 0.35); c.fillRect(L, 1.85, Wd, 0.35); }
+  if (n === 9 || n === 10) for (let k = 0; k < Wd/3; k++) { const x = L + ((k*7.3 + t*6) % Wd), y = 1.5 - ((t*3 + k*0.37) % 1)*4; c.fillStyle = k % 2 ? '#FF8A3D' : '#FFE34A'; c.globalAlpha = 0.8; c.fillRect(x, y, 0.6, 0.6); }
+  if (n >= 7) for (let k = 0; k < 4; k++) { const ph = (t*0.7 + k*0.25) % 1; c.globalAlpha = Math.sin(ph*Math.PI); c.fillStyle = '#FFFFFF'; star4(c, L + Wd*((k*0.29 + 0.1) % 1), (k % 2 ? -1 : 1)*0.9, 0.9); }
+  c.globalAlpha = 1;
+  const sx = L + ((t*14) % (Wd + 12)) - 6; c.fillStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.moveTo(sx, -3); c.lineTo(sx + 1.5, -3); c.lineTo(sx - 0.5, 3); c.lineTo(sx - 2, 3); c.fill();
+}
+function drawPrestigeFrame(c, n, t, W, H) {
+  const s = Math.max(0.5, Math.min(1.4, Math.min(W/300, H/300))), pad = 5*s, x = pad, y = pad, w = W - 2*pad, h = H - 2*pad, R = 20*s, col = PRESTIGE_COLS[n] || '#FFD84A';
+  c.save(); c.lineJoin = 'round';
+  c.shadowColor = col; c.shadowBlur = (8 + n*1.2)*s;
+  c.strokeStyle = n >= 12 && typeof cre_holo === 'function' ? cre_holo(c, W/2, H/2, t, 1) : col; c.lineWidth = (5 + n*0.25)*s; rr(c, x, y, w, h, R); c.stroke();
+  c.shadowBlur = 0; c.strokeStyle = 'rgba(12,8,30,0.85)'; c.lineWidth = 1.6*s; rr(c, x, y, w, h, R); c.stroke();
+  c.strokeStyle = n >= 4 ? '#FFD84A' : 'rgba(255,255,255,0.6)'; c.lineWidth = 1.1*s; rr(c, x + 7*s, y + 7*s, w - 14*s, h - 14*s, Math.max(4, R - 6*s)); c.stroke();
+  // chevron studs, one more per three prestiges
+  const per = 8 + n*2; c.fillStyle = col;
+  for (let k = 0; k < per; k++) { const [px, py, nx, ny] = perim(k/per, x + 7*s, y + 7*s, w - 14*s, h - 14*s); c.save(); c.translate(px, py); c.rotate(Math.atan2(ny, nx)); c.beginPath(); c.moveTo(-1.6*s, -2*s); c.lineTo(0.8*s, 0); c.lineTo(-1.6*s, 2*s); c.lineWidth = 1*s; c.strokeStyle = col; c.stroke(); c.restore(); }
+  // runners from prestige V up
+  if (n >= 5) for (let q = 0; q < (n >= 10 ? 3 : n >= 8 ? 2 : 1); q++) for (let k = 10; k >= 0; k--) {
+    const [px, py] = perim(t*0.14 + q/3 - k*0.004, x, y, w, h); c.globalAlpha = (1 - k/11)*0.9; c.fillStyle = k ? col : '#FFFFFF'; c.beginPath(); c.arc(px, py, (2.6 - k*0.18)*s, 0, TAU); c.fill();
+  }
+  c.globalAlpha = 1;
+  // corner triangles
+  [[x + 12*s, y + 12*s], [x + w - 12*s, y + 12*s], [x + w - 12*s, y + h - 12*s], [x + 12*s, y + h - 12*s]].forEach(([cx, cy], k) => {
+    c.save(); c.translate(cx, cy); c.rotate(n >= 6 ? t*(k % 2 ? -1 : 1) : 0); c.fillStyle = col; c.shadowColor = col; c.shadowBlur = 8*s;
+    poly(c, [0, 1, 2].map(j => [Math.cos(j*TAU/3 - Math.PI/2)*5*s, Math.sin(j*TAU/3 - Math.PI/2)*5*s])); c.fill(); c.restore();
+  });
+  // the prestige emblem on the bottom edge
+  drawPrestigeBadge(c, n, n, W/2, y + h - 3*s, 12*s, t);
+  c.restore(); c.shadowBlur = 0; c.globalAlpha = 1;
+}
+
+
 // =====================================================================
 // PRESTIGE  (prestige.js)
 //   drawPrestigeBadge(c, p, lv, x, y, r, t)   level badge for prestige p (0..12), level lv, centred at x,y
@@ -7670,6 +7729,7 @@ function drawSkin(c, look, hw, t) {
     const sx = L + ((t*20) % (Wd + 10)) - 5; c.fillStyle = 'rgba(255,255,255,0.6)'; c.beginPath(); c.moveTo(sx, -3); c.lineTo(sx + 2, -3); c.lineTo(sx - 1, 3); c.lineTo(sx - 3, 3); c.fill();
     if (s === 'tower') { c.fillStyle = '#FFF6B0'; star4(c, L + ((t*7) % Wd), 0, 1.2); }
   }
+  else if (s.startsWith('pskin')) drawPrestigeSkin(c, +s.slice(5), L, Wd, t);
   else if (!drawSkin5(c, s, look, L, Wd, t) && !drawSkin4(c, s, look, L, Wd, t)) drawSkin2(c, s, look, L, Wd, t);
   c.restore();
 }
@@ -7997,7 +8057,7 @@ function showScreen(name) {
   SCREENS.forEach(id => $('#' + id).hidden = id !== name);
   $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels'].includes(name);
   curScreen = name;
-  if (name === 'menu' && typeof lvCheck === 'function') setTimeout(() => { if (curScreen === 'menu' && !lvFx) { lvCheck(); syncLevelBar(); } }, 350);
+  if (name === 'menu' && typeof lvCheck === 'function') setTimeout(() => { if (curScreen === 'menu' && !lvFx) { lvCheck(); syncLevelBar(); if (!lvFx) loginCheck(); } }, 350);
   if (name && $('#' + name)) $('#' + name).scrollTop = 0;
 }
 function setSeg(seg, v, key) { seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(String(b.dataset[key || 'n']) === String(v)))); }
@@ -8095,6 +8155,11 @@ function fx(type, seat, x, y, ball, extra) {
     if (extra >= 4 && mySeat >= 0 && st && st.alive[mySeat]) unlockSecret('t', 'plasma');
   } else if (type === 'goal') {
     lastGoalPos = [x, y];
+    { const by = ball && ball.lh != null ? ball.lh : -1; // revenge: score on whoever last scored on you
+      if (by >= 0 && by !== seat && st && !(st.boss && (seat === st.boss.s || by === st.boss.s))) {
+        if (by === mySeat && revengeMap[mySeat] === seat) { revengeN++; revengeMap[mySeat] = -1; pops.push({ x, y, txt: 'REVENGE!', col: '#FF4F8B', t: -0.15, big: 1 }); if (live) { tone(392, 0.12, 'square', 0.05); tone(587, 0.2, 'square', 0.05, 1, 0.1); buzz([30, 30, 30]); } }
+        revengeMap[seat] = by;
+      } }
     if (heatSeen >= 3) { // meltdown: a hot ball going out is a big deal
       burst(x, y, '#FFFFFF', 40, 2.6); burst(x, y, HEAT_INFO[heatSeen][1], 70, 2.2); shake = Math.max(shake, 1);
       pops.push({ x, y, txt: 'MELTDOWN!', col: HEAT_INFO[heatSeen][1], t: -0.1, big: 1 });
@@ -8117,7 +8182,7 @@ function fx(type, seat, x, y, ball, extra) {
 }
 // ----- heat / combo visuals -----
 const HEAT_INFO = [null, ['HEATING UP', '#FFD84A'], ['ON FIRE', '#FF8A3D'], ['BLAZING', '#FF3B4A'], ['MELTDOWN MODE', '#E8D8FF']];
-let pops = [], heatSeen = 0;
+let pops = [], heatSeen = 0, revengeMap = {}, revengeN = 0;
 function heatCol(h) { return h ? HEAT_INFO[h][1] : '#FFFFFF'; }
 function drawHeatBall(c, b, r, h, t) { // glow + licking flames behind the ball, in world units
   const sp = Math.hypot(b.vx, b.vy) || 1, ux = -b.vx/sp, uy = -b.vy/sp, col = heatCol(h);
@@ -8588,7 +8653,7 @@ function keyInput(dt) {
 
 // ---------- game setup (practice + host) ----------
 function requestWake() { try { navigator.wakeLock && navigator.wakeLock.request('screen').then(w => wakeLock = w).catch(() => {}); } catch (e) {} }
-function resetFx() { pops = []; heatSeen = 0; replay = null; rec = []; emoBubbles = []; particles = []; trails = new Map(); flash = [0, 0, 0, 0, 0, 0, 0, 0]; shake = 0; rally = 0; lastCount = -1; overShown = false; myU = 0; banner = null; }
+function resetFx() { pops = []; heatSeen = 0; revengeMap = {}; revengeN = 0; replay = null; rec = []; emoBubbles = []; particles = []; trails = new Map(); flash = [0, 0, 0, 0, 0, 0, 0, 0]; shake = 0; rally = 0; lastCount = -1; overShown = false; myU = 0; banner = null; }
 function seatCount() { return mode === 'practice' ? menuN : lobbyN; }
 function isSeries() { return curFmt() === 'serie'; }
 function curFmt() { return mode === 'practice' ? menuFmt : lobbyFmt; }
@@ -9174,6 +9239,15 @@ function renderLobby() {
     lookCanvas(cvs, looks[i] || validLook(null, SEAT_DEFAULT[i]), 1.6);
   }
 }
+// little extras on top of the normal match coins (computed once per match)
+const overExtras = {};
+function matchExtras(sum) {
+  const ex = [], won = st.boss ? st.winner === -2 : st.winner === mySeat, today = dayKey();
+  if (won && stats.fwDay !== today) { stats.fwDay = today; stats.pxp = (stats.pxp || 0) + 50; saveStats(); ex.push(['⭐ First win of the day ×2', Math.max(20, sum)]); setTimeout(() => toast('First win of the day! Double coins and +50 XP'), 900); }
+  if (revengeN) { ex.push(['😈 Revenge ×' + revengeN, 5*revengeN]); track('revenges', revengeN); }
+  if (Math.random() < 0.05) { freeChests++; saveFree(); ex.push(['🍀 Lucky drop: wooden chest', 0]); setTimeout(() => { toast('🍀 Lucky drop! A free wooden chest is waiting in Chests.'); tone(1046, 0.1, 'triangle', 0.05); tone(1318, 0.2, 'triangle', 0.05, 1, 0.1); }, 1600); }
+  return ex;
+}
 function matchCoins() {
   if (special === 'adv' && advRes) return advRes.parts;
   if (st && st.raid && raidRes) return [[raidRes.won ? 'Raid cleared' : 'Raid attempt', raidRes.coins]];
@@ -9213,7 +9287,8 @@ function showOver() {
     const half = mode === 'practice' && !st.boss && special !== 'cup' && special !== 'adv' && !st.raid;
     if (half) sum = Math.round(sum/2);
     if (!awarded.has(akey)) {
-      awarded.add(akey); addCoins(sum); trackMatchEnd(sum); setTimeout(() => sfx.coin(), 500);
+      const ex = overExtras[akey] = matchExtras(sum);
+      awarded.add(akey); addCoins(sum + ex.reduce((a, p) => a + p[1], 0)); trackMatchEnd(sum); setTimeout(() => sfx.coin(), 500);
       if (st.boss && st.boss.wk && st.winner === -2) {
         const firstThisWeek = !weeklyBest(); submitWeekly(st.mt, st.n - 1); track('weeklyWins');
         if (firstThisWeek) { addCoins(150); setTimeout(() => toast('Weekly boss defeated in ' + fmtTime(st.mt) + '! +150 coins'), 1200); }
@@ -9222,8 +9297,9 @@ function showOver() {
       if (special === 'cup' && cup) { const won = st.winner === mySeat; cupOnMatchEnd(won); if (won) track('cupMatchWins'); if (cup.done && cup.ents[cup.champ].me) { track('cupWins'); addCoins(cup.size === 8 ? 150 : 80); setTimeout(() => toast('Tournament victory! +' + (cup.size === 8 ? 150 : 80) + ' coins'), 1200); } }
       if (st.boss && st.boss.floor && st.winner === -2) { const loot = towerWin(st.boss.floor); if (loot.length) setTimeout(() => toast('Exclusive reward: ' + loot.join(' + ') + '!'), 1200); }
     }
-    $('#earnAmt').textContent = '+' + sum;
-    $('#earnWhy').textContent = parts.map(p => p[0] + ' ' + p[1]).join(' · ') + (half ? ' · half coins vs bots' : '');
+    const ex = overExtras[akey] || [];
+    $('#earnAmt').textContent = '+' + (sum + ex.reduce((a, p) => a + p[1], 0));
+    $('#earnWhy').textContent = parts.map(p => p[0] + ' ' + p[1]).join(' · ') + (half ? ' · half coins vs bots' : '') + ex.map(p => ' · ' + p[0] + (p[1] ? ' +' + p[1] : '')).join('');
     earn.hidden = false;
   } else earn.hidden = true;
   updateOverSeries();
@@ -9992,6 +10068,7 @@ function drawCardBg(c, id, t, W, H) {
 }
 function drawCardBorder(c, id, t, W, H, accent) {
   if (id === 'creator') { drawCreatorBorder(c, t, W, H); return; }
+  if (id.startsWith('pframe')) { drawPrestigeFrame(c, +id.slice(6), t, W, H); return; }
   if (drawCardBorder3(c, id, t, W, H, accent) || drawCardBorder2(c, id, t, W, H, accent)) return;
   const pad = 5, x = pad, y = pad, w = W - pad*2, h = H - pad*2, R = 20;
   const stroke = (col, lw) => { c.strokeStyle = col; c.lineWidth = lw; rr(c, x, y, w, h, R); c.stroke(); };
@@ -10651,6 +10728,7 @@ for (const W of WORLDS) for (const key in W.rw) for (const r of W.rw[key]) {
   EXCL_SRC[rewardKey(r)] = where;
 }
 function exclusiveText(kind, id) {
+  if (LEVEL_SRC[kind + ':' + id] < 0) { const p = -LEVEL_SRC[kind + ':' + id]; return { short: 'Prestige ' + ROMAN[p], long: 'Prestige reward: reach Prestige ' + ROMAN[p] + ' (' + PRESTIGE_NAMES[p] + ').' }; }
   if (LEVEL_SRC[kind + ':' + id]) return { short: 'Level ' + LEVEL_SRC[kind + ':' + id], long: 'Level road reward: reach level ' + LEVEL_SRC[kind + ':' + id] + '.' };
   if (SECRETS[kind + ':' + id]) return { short: 'Secret', long: 'A secret item. Hint: "' + SECRETS[kind + ':' + id] + '"' };
   if (RAID_SRC[kind + ':' + id]) return { short: 'Raid', long: 'Raid loot from ' + RAID_SRC[kind + ':' + id] + '. Check the drop chances in Raids.' };
@@ -12070,7 +12148,15 @@ PRICE.h.laurel = null; PRICE.k.chevron = null; PRICE.u.wings = null; PRICE.b.leg
 const LEVEL_SRC = { 'h:laurel': 10, 'k:chevron': 25, 'u:wings': 45, 'b:legend': 60 };
 PROF.pt.push(['risingstar', 'Rising Star', 'r', 'level'], ['seasoned', 'Seasoned', 'e', 'level'], ['elitept', 'Elite', 'l', 'level'], ['paddlelegend', 'Paddle Legend', 'm', 'level'],
   ['curator', 'The Curator', 'e', 'coll'], ['completionist', 'Completionist', 'm', 'coll']);
-for (let p = 1; p <= PRESTIGE_MAX; p++) PROF.pt.push(['pres' + p, 'Prestige ' + ROMAN[p] + ' · ' + PRESTIGE_NAMES[p], p >= 10 ? 'm' : p >= 6 ? 'l' : 'e', 'prestige']);
+for (let p = 1; p <= PRESTIGE_MAX; p++) {
+  const rar = p >= 10 ? 'm' : p >= 6 ? 'l' : 'e';
+  PROF.pt.push(['pres' + p, 'Prestige ' + ROMAN[p] + ' · ' + PRESTIGE_NAMES[p], rar, 'prestige']);
+  PROF.pb.push(['pframe' + p, PRESTIGE_NAMES[p] + ' frame', rar, 'prestige', 1]);
+  SKINS.push(['pskin' + p, PRESTIGE_NAMES[p] + ' steel']); PRICE.k['pskin' + p] = null; LEVEL_SRC['k:pskin' + p] = -p;
+}
+function prestigeRewards(p) { return [['pt', 'pres' + p], ['k', 'pskin' + p], ['pb', 'pframe' + p], ['coins', 1000], ['chest', 'myth']]; }
+// anyone who prestiged before the prestige cosmetics existed gets them now
+for (let p = 1; p <= (stats.prest || 0); p++) for (const r of prestigeRewards(p).slice(0, 3)) owned.add(rewardKey(r));
 function levelRewards(L) {
   const r = [['coins', 40 + 4*Math.min(L, 120)]];
   if (L === 10) r.push(['h', 'laurel'], ['pt', 'risingstar'], ['chest', 'gold']);
@@ -12092,8 +12178,8 @@ const COLL_CATS = [['c', 'Colours'], ['h', 'Hats'], ['f', 'Faces'], ['k', 'Skins
   ['pb', 'Borders'], ['pg', 'Backgrounds'], ['pt', 'Titles'], ['pe', 'Emblems']];
 const COLL_MS = [[25, [['coins', 500], ['chest', 'gold']]], [50, [['coins', 1000], ['pt', 'curator']]], [75, [['coins', 2000], ['chest', 'myth']]], [100, [['coins', 5000], ['pt', 'completionist']]]];
 function collItems(k) {
-  if (k.startsWith('p')) return PROF[k].filter(it => it[3] !== 'creator').map(it => it[0]);
-  return shopList(k).map(p => p[0]);
+  if (k.startsWith('p')) return PROF[k].filter(it => it[3] !== 'creator' && it[3] !== 'prestige').map(it => it[0]);
+  return shopList(k).map(p => p[0]).filter(id => !id.startsWith('pskin'));
 }
 function collStats() {
   let own = 0, tot = 0; const cats = COLL_CATS.map(([k, n]) => { const ids = collItems(k), o = ids.filter(id => ownsAny(k, id)).length; own += o; tot += ids.length; return { k, n, o, t: ids.length }; });
@@ -12113,7 +12199,8 @@ function claimColl(key, rewards) {
 function syncLevelBar() {
   const o = lvOf(stats.pxp), p = stats.prest || 0;
   $('#lvBarTxt').textContent = 'Level ' + o.L + (p ? ' · Prestige ' + ROMAN[p] : '');
-  $('#lvBarSub').textContent = o.need ? fmt(o.into) + ' / ' + fmt(o.need) + ' XP' : (p >= PRESTIGE_MAX ? 'Max level!' : 'Prestige ready!');
+  const nx = o.need ? levelRewards(o.L + 1).filter(r => r[0] !== 'coins').map(rewardText)[0] : null;
+  $('#lvBarSub').textContent = (o.need ? fmt(o.into) + ' / ' + fmt(o.need) + ' XP' + (nx ? ' · next: ' + nx : '') : (p >= PRESTIGE_MAX ? 'Max level!' : 'Prestige ready!')) + ((stats.winStreak || 0) >= 2 ? ' · 🔥 ' + stats.winStreak + ' wins in a row' : '');
   $('#lvBarFill').style.width = (o.need ? 100*o.into/o.need : 100) + '%';
   const n = collClaimable(); $('#lvBadge').hidden = !n && !(o.L >= LV_CAP && p < PRESTIGE_MAX); $('#lvBadge').textContent = n ? n : '!';
 }
@@ -12168,7 +12255,7 @@ function renderLevels() {
     const ready = o.L >= LV_CAP && p < PRESTIGE_MAX;
     $('#presNow').textContent = p ? 'Prestige ' + ROMAN[p] + ' · ' + PRESTIGE_NAMES[p] : 'No prestige yet';
     $('#presInfo').textContent = p >= PRESTIGE_MAX ? 'Apex is the final prestige. Your level now goes all the way to 999.' :
-      'Reach level ' + LV_CAP + ' to prestige. You go back to level 1 and earn the ' + PRESTIGE_NAMES[p + 1] + ' emblem, the "Prestige ' + ROMAN[p + 1] + '" title, 1,000 coins and a Mythic chest. Coins, cosmetics and everything else stay. The level road rewards can be earned again. It is always your choice.';
+      'Reach level ' + LV_CAP + ' to prestige. You go back to level 1 and earn the ' + PRESTIGE_NAMES[p + 1] + ' emblem plus its own exclusive paddle skin and card frame, the "Prestige ' + ROMAN[p + 1] + '" title, 1,000 coins and a Mythic chest. Coins, cosmetics and everything else stay. The level road rewards can be earned again. It is always your choice.';
     const b = $('#btnPrestige'); b.hidden = p >= PRESTIGE_MAX; b.disabled = !ready;
     b.textContent = !ready ? 'Reach level ' + LV_CAP + ' first (' + o.L + '/' + LV_CAP + ')' : presArmed ? 'Tap again to prestige for real' : 'Prestige to ' + PRESTIGE_NAMES[p + 1];
     b.classList.toggle('armed', presArmed);
@@ -12196,12 +12283,30 @@ function doPrestige() {
   if (!presArmed) { presArmed = true; renderLevels(); return; }
   presArmed = false;
   stats.prest = p + 1; stats.pxp = 0; stats.lvSeen = 1; stats.readyShown = 0; saveStats();
-  const rw = [['pt', 'pres' + stats.prest], ['coins', 1000], ['chest', 'myth']], got = rw.map(r => grantReward(r, true));
+  const rw = prestigeRewards(stats.prest), got = rw.map(r => grantReward(r, true));
   trackMax('prestige', stats.prest); pushProfile(); syncLevelBar();
   startLvFx({ kind: 'prestige', p: stats.prest, from: p, lv: 1, rewards: got });
   renderLevels();
 }
 // ----- level up check (runs when you come back to the menu) -----
+// ----- daily login calendar: come back every day, the rewards grow for 7 days -----
+const LOGIN_RW = [[['coins', 50]], [['coins', 75]], [['chest', 'wood']], [['coins', 120]], [['coins', 150], ['chest', 'wood']], [['chest', 'gold']], [['coins', 300], ['chest', 'gold']]];
+function loginCheck() {
+  const today = arenaDay(); if (stats.loginDay === today || !$('#loginBox').hidden) return;
+  const idx = stats.loginDay === prevArenaDay(today) ? ((stats.loginIdx || 0) + 1) % 7 : 0;
+  const box = $('#loginDays'); box.textContent = '';
+  LOGIN_RW.forEach((rw, i) => { const d = document.createElement('div'); d.className = 'lday' + (i < idx ? ' done' : i === idx ? ' today' : '');
+    d.append(Object.assign(document.createElement('b'), { textContent: 'Day ' + (i + 1) }), Object.assign(document.createElement('small'), { textContent: rw.map(rewardText).join(' + ') }), Object.assign(document.createElement('span'), { textContent: i < idx ? '✓' : i === idx ? '🎁' : '' })); box.append(d); });
+  $('#loginNote').textContent = idx ? 'Day ' + (idx + 1) + ' in a row! Miss a day and it starts over.' : 'Come back tomorrow for a bigger reward. 7 days in a row = jackpot.';
+  $('#loginBox').hidden = false; $('#loginBox').dataset.idx = idx; tone(784, 0.1, 'triangle', 0.05); tone(1046, 0.15, 'triangle', 0.05, 1, 0.1);
+}
+function claimLogin() {
+  const idx = +$('#loginBox').dataset.idx || 0, today = arenaDay();
+  if (stats.loginDay === today) { $('#loginBox').hidden = true; return; }
+  stats.loginDay = today; stats.loginIdx = idx; saveStats();
+  const got = LOGIN_RW[idx].map(r => grantReward(r, true)); sfx.coin(); buzz([20, 30, 60]);
+  toast('Day ' + (idx + 1) + ' reward: ' + got.join(' + ')); $('#loginBox').hidden = true; syncCoinUI();
+}
 function lvCheck() {
   const o = lvOf(stats.pxp), seen = stats.lvSeen || 1;
   if (o.L > seen) {
@@ -12219,7 +12324,7 @@ let lvFx = null, lvQueue = [], lvParts = [];
 function startLvFx(a) { lvQueue.push(a); if (!lvFx) nextLvFx(); }
 function nextLvFx() {
   lvFx = lvQueue.shift() || null; lvParts = [];
-  const box = $('#lvFx'); box.hidden = !lvFx; if (!lvFx) return;
+  const box = $('#lvFx'); box.hidden = !lvFx; if (!lvFx) { if (curScreen === 'menu') setTimeout(loginCheck, 300); return; }
   const A = lvFx; A.t = 0;
   box.className = 'lvfx ' + A.kind;
   const big = A.kind !== 'normal';
@@ -12533,7 +12638,8 @@ $('#btnPrestige').addEventListener('click', () => { audioOn(); doPrestige(); });
 $('#lvFx').addEventListener('click', e => { if (e.target.closest('button')) return; closeLvFx(); });
 $('#btnLvLater').addEventListener('click', () => { lvFx.t = 9; nextLvFx(); toast('Prestige waits for you in Progression → Prestige.'); });
 $('#btnLvPres').addEventListener('click', () => { nextLvFx(); presArmed = true; doPrestige(); });
-setTimeout(() => { syncLevelBar(); if (curScreen === 'menu') lvCheck(); }, 1200);
+setTimeout(() => { syncLevelBar(); if (curScreen === 'menu') { lvCheck(); if (!lvFx) loginCheck(); } }, 1200);
+$('#btnLoginClaim').addEventListener('click', () => { audioOn(); claimLogin(); });
 $('#btnRedeem').addEventListener('click', () => { audioOn(); redeemShow = null; openRedeem(); });
 $('#btnRedeemBack').addEventListener('click', () => { redeemShow = null; showScreen('menu'); });
 $('#btnRedeemGo').addEventListener('click', () => { audioOn(); redeemCode(); });
