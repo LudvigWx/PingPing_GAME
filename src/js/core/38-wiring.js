@@ -61,10 +61,12 @@ $('#btnProfSave').addEventListener('click', () => {
 $('#btnProfBuy').addEventListener('click', buyProf);
 $('#btnChests').addEventListener('click', () => { audioOn(); openChestScreen(); });
 $('#btnChestBack').addEventListener('click', () => { if (chestAnim && chestAnim.phase !== 'reveal') return; chestAnim = null; showScreen('menu'); });
-$('#btnFreeChest').addEventListener('click', () => startChest('wood', true));
+$('#btnOpenAll').addEventListener('click', startChestAll);
+$('#chestCv').addEventListener('click', skipChestAnim);
 for (const t of Object.keys(CHESTS)) $('#buy_' + t).addEventListener('click', () => startChest(t, false));
 $('#btnUseNow').addEventListener('click', useChestItem);
-$('#btnCardClose').addEventListener('click', () => { $('#cardView').hidden = true; viewCard = null; });
+$('#btnCardClose').addEventListener('click', () => { $('#cardView').hidden = true; viewCard = null; viewFid = null; });
+$('#btnCardAdd').addEventListener('click', () => sendFriendRequestTo(viewFid, viewFn));
 setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v');
 $('#voiceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; voicesOn = b.dataset.v === '1'; store('trepong-voices', voicesOn ? '1' : '0'); setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v'); if (voicesOn && myHero !== 'none') heroSay(myHero, 'use'); });
 syncChestBadge();

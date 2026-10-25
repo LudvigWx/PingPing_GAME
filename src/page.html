@@ -185,20 +185,21 @@
       <span id="revRar" class="htitle"></span><b id="revName"></b><small id="revDup"></small>
       <button id="btnUseNow" type="button">Use now</button>
     </div>
-    <button id="btnFreeChest" class="primary" type="button">Open free wooden chest</button>
+    <button id="btnOpenAll" class="primary" type="button" hidden>Open all chests</button>
+    <div id="chestInvRow" class="chestinv"></div>
     <p class="note" id="chestNote"></p>
     <div class="chestbuys">
       <button id="buy_wood" type="button"><b>Wooden chest</b><small>Common to epic</small><span class="coin">120</span></button>
       <button id="buy_gold" type="button"><b>Gold chest</b><small>Uncommon to mythic</small><span class="coin">350</span></button>
       <button id="buy_myth" type="button"><b>Mythic chest</b><small>Rare to mythic</small><span class="coin">900</span></button>
     </div>
-    <p class="note">Duplicates turn into coins instead. Every fifth match gives a free wooden chest.</p>
+    <p class="note">Chests are fully random, so you can get something you already have. Duplicates turn into coins. Every fifth match gives a free wooden chest.</p>
   </div>
 </div>
 
 <div id="cardView" class="cardview" hidden>
   <canvas id="viewCv" class="cardcv" width="600" height="800"></canvas>
-  <button id="btnCardClose" class="primary" type="button">Close</button>
+  <div class="duo"><button id="btnCardAdd" class="primary" type="button" hidden>Add friend</button><button id="btnCardClose" type="button">Close</button></div>
 </div>
 
 <div id="cup" class="screen" hidden>
@@ -258,7 +259,7 @@
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 15 (Oct 25, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 16 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -309,7 +310,7 @@
     <div class="winner bpname">Pumpkin Night Pass</div>
     <div class="bphead"><div class="bptier"><span>TIER</span><b id="bpTierN">0</b></div><div class="bpprog"><i><b id="bpBar"></b></i><small id="bpXpTxt"></small></div></div>
     <button id="btnBpPrem" class="prembtn" type="button">Unlock premium</button>
-    <p class="note">Earn pass XP from every match, adventure stages (event stages give 50% more) and daily challenges. Premium is paid with coins only.</p>
+    <p class="note">Every point your team scores counts toward the pass (max 500k per match, +5k for a win). Adventure stages, raids, the Daily Arena and challenges add points too. Premium is paid with coins only.</p>
     <button id="btnBpAll" class="claimall" type="button" hidden>Claim all</button>
     <div class="bpcols"><span>Tier</span><span>Free</span><span>★ Premium</span></div>
     <div id="bpList" class="bplist"></div>

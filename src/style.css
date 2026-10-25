@@ -763,3 +763,12 @@ body.desk .tabbar button{padding:6px 4px}
 #menuRaid{display:block!important;width:100%;aspect-ratio:560/150}
 #menuBoss{display:block;width:100%;aspect-ratio:280/110}
 #btnRaid,#btnModeBoss{border-color:rgba(255,90,74,.5);box-shadow:0 0 26px -10px #FF5A4A,0 12px 30px -14px rgba(4,6,20,.8)}
+.chestinv{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
+.chestinv:empty{display:none}
+.invbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px}
+.invbtn small{color:var(--mute);font-size:12px}
+.inv-wood{border-color:rgba(192,128,64,.6)}.inv-gold{border-color:rgba(255,216,74,.6)}.inv-myth{border-color:rgba(255,79,139,.6)}
+#chestCv{cursor:pointer}
+.lbrow.tap,.mlrow.tap{cursor:pointer}
+.lbrow.tap:hover,.mlrow.tap:hover{background:rgba(237,230,214,.08)}
+#cardView .duo{width:min(86vw,360px)}

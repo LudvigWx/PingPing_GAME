@@ -116,7 +116,7 @@ function renderMinis(force) {
     el.append(Object.assign(document.createElement('div'), { className: 'mlhead', textContent: '🏆 ' + title }));
     if (!rows) { el.append(Object.assign(document.createElement('small'), { textContent: 'Loading…' })); continue; }
     if (!rows.length) { el.append(Object.assign(document.createElement('small'), { textContent: 'No scores yet. Be the first!' })); continue; }
-    rows.slice(0, n).forEach((r, i) => { const d = document.createElement('div'); d.className = 'mlrow' + (r.id === Live.uid ? ' me' : ''); d.append(Object.assign(document.createElement('span'), { textContent: ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' }), Object.assign(document.createElement('b'), { textContent: r.n }), Object.assign(document.createElement('span'), { className: 'mls', textContent: B[3](r.s) })); el.append(d); });
+    rows.slice(0, n).forEach((r, i) => { const d = document.createElement('div'); d.className = 'mlrow' + (r.id === Live.uid ? ' me' : ''); if (r.id && r.id !== Live.uid) { d.classList.add('tap'); d.addEventListener('click', () => openPlayer(r.id, r.n)); } d.append(Object.assign(document.createElement('span'), { textContent: ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' }), Object.assign(document.createElement('b'), { textContent: r.n }), Object.assign(document.createElement('span'), { className: 'mls', textContent: B[3](r.s) })); el.append(d); });
     if (me >= n) el.append(Object.assign(document.createElement('small'), { className: 'mlme', textContent: 'You: #' + (me + 1) + ' · ' + B[3](rows[me].s) }));
   }
 }
@@ -150,6 +150,7 @@ function renderLive() {
   if (!rows.length) { list.append(Object.assign(document.createElement('p'), { className: 'note', textContent: 'No scores yet. Be the first!' })); return; }
   rows.slice(0, 10).forEach((r, i) => {
     const el = document.createElement('div'); el.className = 'lbrow' + (r.id === Live.uid ? ' me' : '');
+    if (r.id && r.id !== Live.uid) { el.classList.add('tap'); el.title = 'Show profile'; el.addEventListener('click', () => openPlayer(r.id, r.n)); }
     el.append(Object.assign(document.createElement('span'), { className: 'pos', textContent: ['🥇', '🥈', '🥉'][i] || String(i + 1) }), Object.assign(document.createElement('span'), { className: 'nm', textContent: r.n }), Object.assign(document.createElement('span'), { className: 'tm', textContent: B[3](r.s) }));
     list.append(el);
   });

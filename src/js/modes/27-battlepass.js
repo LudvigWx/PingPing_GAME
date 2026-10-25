@@ -27,9 +27,8 @@ function renderBp() {
   const T = bpTier(), max = BP_TIERS.length;
   $('#bpEnds').textContent = bpActive() ? 'Season 1 · ends in ' + daysLeft(BP.end) : 'Season 1 has ended';
   $('#bpTierN').textContent = T;
-  const into = T >= max ? BP.tierXp : bp.xp - T*BP.tierXp;
-  $('#bpBar').style.width = Math.round(100*into/BP.tierXp) + '%';
-  $('#bpXpTxt').textContent = T >= max ? 'Max tier reached! ' + fmt(bp.xp) + ' XP' : into + ' / ' + BP.tierXp + ' XP to tier ' + (T + 1);
+  $('#bpBar').style.width = Math.round(100*bpTierFrac()) + '%';
+  $('#bpXpTxt').textContent = T >= max ? 'Max tier reached! ' + fmt(bp.pts) + ' rally points' : fmt(bp.pts) + ' / ' + fmt(BP_PTS[T]) + ' rally points to tier ' + (T + 1);
   const pb = $('#btnBpPrem');
   if (bp.prem) { pb.textContent = '★ Premium unlocked'; pb.disabled = true; pb.classList.add('on'); }
   else {
@@ -49,7 +48,7 @@ function renderBp() {
       const nm = document.createElement('span'); nm.textContent = rewardName(r);
       const stt = document.createElement('small');
       const can = i < T && !got && (!prem || bp.prem);
-      stt.textContent = got ? '✓ Claimed' : i >= T ? '🔒 Tier ' + (i + 1) : prem && !bp.prem ? '🔒 Premium' : 'Claim!';
+      stt.textContent = got ? '✓ Claimed' : i >= T ? '🔒 ' + fmtShort(BP_PTS[i]) : prem && !bp.prem ? '🔒 Premium' : 'Claim!';
       if (can) b.classList.add('can');
       b.append(cv, nm, stt);
       b.addEventListener('click', () => { if (can) bpClaim(i, prem); });
@@ -82,3 +81,5 @@ function drawMenuAdv() {
   c.save(); c.setTransform(sc, 0, 0, sc, w*0.78, h*0.74 + Math.sin(clock*2)*sc); drawPaddleLocal(c, validLook({ c: W.boss[W.boss.length - 1].c, h: W.boss[W.boss.length - 1].h, f: W.boss[W.boss.length - 1].f, s: W.boss[W.boss.length - 1].s, t: 'std' }), 14, clock, [-1, -0.3], {}, 10); c.restore();
 }
 
+
+function fmtShort(v) { return v >= 1e6 ? (Math.round(v/1e5)/10) + 'M' : v >= 1e3 ? Math.round(v/1e3) + 'k' : String(v); }

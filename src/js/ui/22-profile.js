@@ -76,7 +76,7 @@ function validCard(d) {
   return Object.assign(p, { n: cleanName(d.n) || 'Player', lk: validLook(d.lk), he: HEROES[d.he] ? d.he : 'none', hv: ['std', 'gold', 'shadow'].includes(d.hv) ? d.hv : 'std',
     hl: clamp(Math.floor(+d.hl || 1), 1, 10), lv: clamp(Math.floor(+d.lv || 1), 1, 999), pr: clamp(Math.floor(+d.pr || 0), 0, 12), xf: clamp(+d.xf || 0, 0, 1), s });
 }
-function pushProfile() { if (net) net.presence({ card: myCardData() }).catch(() => {}); if (typeof friendsPublish === 'function') { Friends.pubT = 0; friendsPublish(false); } }
+function pushProfile() { if (net) net.presence({ card: myCardData(), fid: Live.uid || null }).catch(() => {}); if (typeof friendsPublish === 'function') { Friends.pubT = 0; friendsPublish(false); } }
 // ----- drawing helpers -----
 function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function perim(u, x, y, w, h) { // point + inward normal along a rectangle's perimeter, u in 0..1
@@ -282,5 +282,6 @@ function buyProf() {
   toast(it[1] + ' is yours!'); profBuy = null; syncProf();
 }
 function previewCardData() { const d = myCardData(); if (profPreview) Object.assign(d, { pb: profPreview.pb, pg: profPreview.pg, pt: profPreview.pt, pe: profPreview.pe, sh: profPreview.sh }); return d; }
-function showCardOf(d) { viewCard = validCard(d); $('#cardView').hidden = false; }
+function showCardOf(d, fid, n) { viewCard = validCard(d); viewFid = fid || null; viewFn = n || ''; $('#cardView').hidden = false; if (typeof syncCardAdd === 'function') syncCardAdd(); }
+var viewFid = null, viewFn = '';
 

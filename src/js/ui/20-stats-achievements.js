@@ -177,7 +177,7 @@ function drawSecretChip(cv) {
 }
 function trackMatchEnd(earned) {
   if (mySeat < 0) return;
-  { const w0 = st.boss ? st.winner === -2 : st.winner === mySeat; addBpXp(10 + (w0 ? 10 : 0)); }
+  { const w0 = st.boss ? st.winner === -2 : st.winner === mySeat; addBpPts(Math.min(st.tot || 0, BP.matchCap) + (w0 ? 5000 : 0)); }
   { const w1 = st.boss ? st.winner === -2 : st.winner === mySeat, xg = 25 + (earned || 0) + (w1 ? 20 : 0); track('xp', xg); stats.pxp = (stats.pxp || 0) + xg; saveStats(); }
   if (myHero !== 'none') giveHeroXp(myHero, 5);
   if (((stats.matches || 0) + 1) % 5 === 0) { freeChests++; saveFree(); setTimeout(() => toast('You got a free wooden chest! Open it in Chests.'), 2200); }

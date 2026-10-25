@@ -165,9 +165,8 @@ function grantReward(r, quiet) {
   if (r[0] === 'coins') { addCoins(r[1]); return r[1] + ' coins'; }
   if (r[0] === 'chest') {
     if (r[1] === 'wood') { freeChests++; saveFree(); return 'Wooden chest (open it in Chests)'; }
-    const it = rollChest(r[1]);
-    if (it.dup) addCoins(it.refund); else { owned.add(it.k + ':' + it.id); saveWallet(); }
-    return CHESTS[r[1]].n + ': ' + itemLabel(it.k, it.id) + (it.dup ? ' (dupe, +' + it.refund + ' coins)' : '');
+    chestInv[r[1]] = (chestInv[r[1]] || 0) + 1; saveInv();
+    return CHESTS[r[1]].n + ' (open it in Chests)';
   }
   owned.add(rewardKey(r)); saveWallet();
   return rewardName(r);
@@ -188,7 +187,11 @@ function exclusiveText(kind, id) {
   return { short: 'Tower ' + exclusiveFloor(kind, id), long: 'Exclusive. Clear floor ' + exclusiveFloor(kind, id) + ' in the Champion Tower.' };
 }
 // ----- battle pass -----
-const BP = { id: 's1', n: 'Season 1: Pumpkin Night', end: ADV_EVENT_END, tierXp: 80, premium: 3000 };
+const BP = { id: 's1', n: 'Season 1: Pumpkin Night', end: ADV_EVENT_END, premium: 3000, matchCap: 500000, xpPts: 1000 };
+// The pass is a grind: tiers are checkpoints of TOTAL rally points (everything your team scores, summed over the season).
+// One match counts at most BP.matchCap, so a single lucky rally can't skip half the pass. Tier 30 needs 25 million.
+function bpNice(v) { const m = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / m) * m; }
+const BP_PTS = Array.from({ length: 30 }, (_, i) => bpNice(25e6 * Math.pow((i + 1) / 30, 2.3)));
 const BP_TIERS = [ // [free, premium]
   [['coins', 50], ['c', '#FF7518']], [['chest', 'wood'], ['coins', 100]], [['coins', 75], ['h', 'candycorn']], [['pe', 'bat'], ['t', 'candy']], [['chest', 'wood'], ['f', 'stitch']],
   [['coins', 75], ['c', '#7CFF3A']], [['pt', 'trickster'], ['chest', 'gold']], [['coins', 100], ['k', 'web']], [['chest', 'wood'], ['pg', 'haunted']], [['h', 'bat'], ['pb', 'cobweb']],
@@ -201,17 +204,20 @@ const BP_SRC = {};
 BP_TIERS.forEach((t, i) => t.forEach(r => { if (r[0] !== 'coins' && r[0] !== 'chest') BP_SRC[rewardKey(r)] = i + 1; }));
 let bp = storeJSON('trepong-bp', null);
 if (!bp || bp.id !== BP.id) bp = { id: BP.id, xp: 0, prem: false, cf: [], cp: [] };
+if (typeof bp.pts !== 'number') bp.pts = 0;   // build 16: progress moved from XP to rally points
 function saveBp() { store('trepong-bp', JSON.stringify(bp)); syncBpBadge(); }
 function bpActive() { return Date.now() < BP.end; }
-function bpTier() { return Math.min(BP_TIERS.length, Math.floor(bp.xp / BP.tierXp)); }
+function bpTier() { let t = 0; while (t < BP_TIERS.length && bp.pts >= BP_PTS[t]) t++; return t; }
+function bpTierFrac() { const t = bpTier(); if (t >= BP_TIERS.length) return 1; const a = t ? BP_PTS[t - 1] : 0; return (bp.pts - a) / (BP_PTS[t] - a); }
 function bpClaimable() { const t = bpTier(); let n = 0; for (let i = 0; i < t; i++) { if (!bp.cf.includes(i)) n++; if (bp.prem && !bp.cp.includes(i)) n++; } return n; }
-function addBpXp(n, why) {
-  if (!bpActive() || !n) return;
-  const before = bpTier(); bp.xp += Math.round(n); saveBp();
+function addBpXp(n, why) { addBpPts(n * BP.xpPts); }
+function addBpPts(n) {
+  if (!bpActive() || !(n > 0)) return;
+  const before = bpTier(); bp.pts += Math.round(n); saveBp();
   const after = bpTier();
   if (after > before) setTimeout(() => toast('Battle pass tier ' + after + ' reached! Claim it in the menu.'), 1600);
 }
-function syncBpBadge() { const b = $('#bpBadge'); if (!b) return; const n = bpClaimable(); b.hidden = !n; b.textContent = n; const bar = $('#bpMini'); if (bar) bar.style.width = Math.round(100*((bp.xp % BP.tierXp) / BP.tierXp)) + '%'; const lv = $('#bpLvl'); if (lv) lv.textContent = 'Tier ' + bpTier() + ' / ' + BP_TIERS.length; }
+function syncBpBadge() { const b = $('#bpBadge'); if (!b) return; const n = bpClaimable(); b.hidden = !n; b.textContent = n; const bar = $('#bpMini'); if (bar) bar.style.width = Math.round(100*bpTierFrac()) + '%'; const lv = $('#bpLvl'); if (lv) lv.textContent = 'Tier ' + bpTier() + ' / ' + BP_TIERS.length; }
 function bpClaim(i, prem) {
   if (i >= bpTier()) return;
   const list = prem ? bp.cp : bp.cf; if (list.includes(i) || (prem && !bp.prem)) return;

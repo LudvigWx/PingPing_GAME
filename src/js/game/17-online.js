@@ -37,7 +37,7 @@ async function hostCreate() {
   mode = 'host'; hostPhase = 'lobby'; lobbyN = menuN; lobbyFmt = pendingArenaHost && lobbyLevel ? 'arena' : menuFmt; if (!pendingArenaHost) lobbyLevel = null; pendingArenaHost = false; st = null; series = null; mySeat = 0; botLooks = []; bots = [];
   hostSeats = Array(lobbyN).fill(null); hostSeats[0] = 'host';
   names = seatNames(); looks = seatLooks();
-  net.presence({ app: 'trepong', code: roomCode, role: 'host', name: myName(), look: myLook, n: lobbyN, fmt: lobbyFmt, lvl: lobbyFmt === 'arena' ? lobbyLevel : null, ar: curArena(), smash: 0, emo: null, hero: myHero, chaos: lobbyChaos, card: myCardData(), seats: hostSeats, names, looks, phase: 'lobby', series: null, at: Date.now(), g: null }).catch(() => {});
+  net.presence({ app: 'trepong', code: roomCode, role: 'host', name: myName(), fid: Live.uid || null, look: myLook, n: lobbyN, fmt: lobbyFmt, lvl: lobbyFmt === 'arena' ? lobbyLevel : null, ar: curArena(), smash: 0, emo: null, hero: myHero, chaos: lobbyChaos, card: myCardData(), seats: hostSeats, names, looks, phase: 'lobby', series: null, at: Date.now(), g: null }).catch(() => {});
   offPeers = net.onPeers(() => hostSync());
   enterLobbyUI(true);
 }
@@ -91,7 +91,7 @@ async function guestJoin() {
   btn.disabled = false; btn.textContent = 'Join';
   mode = 'guest'; st = null; series = null; mySeat = -1; myPick = null;
   gs = { since: performance.now(), seen: 0, everSeen: false, lastG: null, netPads: [], sentPad: 9, pk: -1, mid: -1 };
-  net.presence({ app: 'trepong', code: roomCode, role: 'guest', name: myName(), look: myLook, at: Date.now(), pad: 0, pick: null, smash: mySmashN, emo: null, hero: myHero, abil: myHeroN, card: myCardData() }).catch(() => {});
+  net.presence({ app: 'trepong', code: roomCode, role: 'guest', name: myName(), fid: Live.uid || null, look: myLook, at: Date.now(), pad: 0, pick: null, smash: mySmashN, emo: null, hero: myHero, abil: myHeroN, card: myCardData() }).catch(() => {});
   offPeers = net.onPeers(() => guestSync());
   enterLobbyUI(false);
   $('#lobbyWait').textContent = 'Looking for the room…';

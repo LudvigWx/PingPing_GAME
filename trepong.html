@@ -769,6 +769,15 @@ body.desk .tabbar button{padding:6px 4px}
 #menuRaid{display:block!important;width:100%;aspect-ratio:560/150}
 #menuBoss{display:block;width:100%;aspect-ratio:280/110}
 #btnRaid,#btnModeBoss{border-color:rgba(255,90,74,.5);box-shadow:0 0 26px -10px #FF5A4A,0 12px 30px -14px rgba(4,6,20,.8)}
+.chestinv{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
+.chestinv:empty{display:none}
+.invbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px}
+.invbtn small{color:var(--mute);font-size:12px}
+.inv-wood{border-color:rgba(192,128,64,.6)}.inv-gold{border-color:rgba(255,216,74,.6)}.inv-myth{border-color:rgba(255,79,139,.6)}
+#chestCv{cursor:pointer}
+.lbrow.tap,.mlrow.tap{cursor:pointer}
+.lbrow.tap:hover,.mlrow.tap:hover{background:rgba(237,230,214,.08)}
+#cardView .duo{width:min(86vw,360px)}
 </style>
 
 <canvas id="game" aria-label="Arena"></canvas>
@@ -949,20 +958,21 @@ body.desk .tabbar button{padding:6px 4px}
       <span id="revRar" class="htitle"></span><b id="revName"></b><small id="revDup"></small>
       <button id="btnUseNow" type="button">Use now</button>
     </div>
-    <button id="btnFreeChest" class="primary" type="button">Open free wooden chest</button>
+    <button id="btnOpenAll" class="primary" type="button" hidden>Open all chests</button>
+    <div id="chestInvRow" class="chestinv"></div>
     <p class="note" id="chestNote"></p>
     <div class="chestbuys">
       <button id="buy_wood" type="button"><b>Wooden chest</b><small>Common to epic</small><span class="coin">120</span></button>
       <button id="buy_gold" type="button"><b>Gold chest</b><small>Uncommon to mythic</small><span class="coin">350</span></button>
       <button id="buy_myth" type="button"><b>Mythic chest</b><small>Rare to mythic</small><span class="coin">900</span></button>
     </div>
-    <p class="note">Duplicates turn into coins instead. Every fifth match gives a free wooden chest.</p>
+    <p class="note">Chests are fully random, so you can get something you already have. Duplicates turn into coins. Every fifth match gives a free wooden chest.</p>
   </div>
 </div>
 
 <div id="cardView" class="cardview" hidden>
   <canvas id="viewCv" class="cardcv" width="600" height="800"></canvas>
-  <button id="btnCardClose" class="primary" type="button">Close</button>
+  <div class="duo"><button id="btnCardAdd" class="primary" type="button" hidden>Add friend</button><button id="btnCardClose" type="button">Close</button></div>
 </div>
 
 <div id="cup" class="screen" hidden>
@@ -1022,7 +1032,7 @@ body.desk .tabbar button{padding:6px 4px}
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 15 (Oct 25, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 16 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -1073,7 +1083,7 @@ body.desk .tabbar button{padding:6px 4px}
     <div class="winner bpname">Pumpkin Night Pass</div>
     <div class="bphead"><div class="bptier"><span>TIER</span><b id="bpTierN">0</b></div><div class="bpprog"><i><b id="bpBar"></b></i><small id="bpXpTxt"></small></div></div>
     <button id="btnBpPrem" class="prembtn" type="button">Unlock premium</button>
-    <p class="note">Earn pass XP from every match, adventure stages (event stages give 50% more) and daily challenges. Premium is paid with coins only.</p>
+    <p class="note">Every point your team scores counts toward the pass (max 500k per match, +5k for a win). Adventure stages, raids, the Daily Arena and challenges add points too. Premium is paid with coins only.</p>
     <button id="btnBpAll" class="claimall" type="button" hidden>Claim all</button>
     <div class="bpcols"><span>Tier</span><span>Free</span><span>★ Premium</span></div>
     <div id="bpList" class="bplist"></div>
@@ -8931,7 +8941,7 @@ async function hostCreate() {
   mode = 'host'; hostPhase = 'lobby'; lobbyN = menuN; lobbyFmt = pendingArenaHost && lobbyLevel ? 'arena' : menuFmt; if (!pendingArenaHost) lobbyLevel = null; pendingArenaHost = false; st = null; series = null; mySeat = 0; botLooks = []; bots = [];
   hostSeats = Array(lobbyN).fill(null); hostSeats[0] = 'host';
   names = seatNames(); looks = seatLooks();
-  net.presence({ app: 'trepong', code: roomCode, role: 'host', name: myName(), look: myLook, n: lobbyN, fmt: lobbyFmt, lvl: lobbyFmt === 'arena' ? lobbyLevel : null, ar: curArena(), smash: 0, emo: null, hero: myHero, chaos: lobbyChaos, card: myCardData(), seats: hostSeats, names, looks, phase: 'lobby', series: null, at: Date.now(), g: null }).catch(() => {});
+  net.presence({ app: 'trepong', code: roomCode, role: 'host', name: myName(), fid: Live.uid || null, look: myLook, n: lobbyN, fmt: lobbyFmt, lvl: lobbyFmt === 'arena' ? lobbyLevel : null, ar: curArena(), smash: 0, emo: null, hero: myHero, chaos: lobbyChaos, card: myCardData(), seats: hostSeats, names, looks, phase: 'lobby', series: null, at: Date.now(), g: null }).catch(() => {});
   offPeers = net.onPeers(() => hostSync());
   enterLobbyUI(true);
 }
@@ -8985,7 +8995,7 @@ async function guestJoin() {
   btn.disabled = false; btn.textContent = 'Join';
   mode = 'guest'; st = null; series = null; mySeat = -1; myPick = null;
   gs = { since: performance.now(), seen: 0, everSeen: false, lastG: null, netPads: [], sentPad: 9, pk: -1, mid: -1 };
-  net.presence({ app: 'trepong', code: roomCode, role: 'guest', name: myName(), look: myLook, at: Date.now(), pad: 0, pick: null, smash: mySmashN, emo: null, hero: myHero, abil: myHeroN, card: myCardData() }).catch(() => {});
+  net.presence({ app: 'trepong', code: roomCode, role: 'guest', name: myName(), fid: Live.uid || null, look: myLook, at: Date.now(), pad: 0, pick: null, smash: mySmashN, emo: null, hero: myHero, abil: myHeroN, card: myCardData() }).catch(() => {});
   offPeers = net.onPeers(() => guestSync());
   enterLobbyUI(false);
   $('#lobbyWait').textContent = 'Looking for the room…';
@@ -9170,10 +9180,10 @@ function renderLobby() {
     else if (peer) { const p = ps.find(q => q.peer === peer); name = names[i] || (p && cleanName(p.presence.name)) || 'Guest'; tag = i === mySeat ? 'You' : 'Ready'; }
     else { name = 'Open seat'; tag = 'A bot plays here'; li.style.opacity = '0.6'; }
     nm.textContent = name; tg.textContent = tag;
-    let card = null;
-    if (peer === 'host' || (i === 0 && mode === 'host')) card = mode === 'host' ? myCardData() : (ps.find(q => q.presence.role === 'host') || {}).presence?.card;
-    else if (peer) { const p = ps.find(q => q.peer === peer); card = p && p.presence.card; if (i === mySeat) card = myCardData(); }
-    if (card) { li.classList.add('tap'); const cl = document.createElement('span'); cl.className = 'cardlink'; cl.textContent = 'Show card'; tg.textContent = tag + ' · '; tg.append(cl); li.addEventListener('click', () => showCardOf(card)); }
+    let card = null, fid = null;
+    if (peer === 'host' || (i === 0 && mode === 'host')) { const hp = (ps.find(q => q.presence.role === 'host') || {}).presence; card = mode === 'host' ? myCardData() : hp?.card; fid = mode === 'host' ? null : hp?.fid; }
+    else if (peer) { const p = ps.find(q => q.peer === peer); card = p && p.presence.card; fid = p && p.presence.fid; if (i === mySeat) { card = myCardData(); fid = null; } }
+    if (card) { li.classList.add('tap'); const cl = document.createElement('span'); cl.className = 'cardlink'; cl.textContent = fid && Live.ok && !Friends.list[fid] ? 'Card · add friend' : 'Show card'; tg.textContent = tag + ' · '; tg.append(cl); li.addEventListener('click', () => showCardOf(card, fid, name)); }
     li.append(cvs, nm, tg); ul.append(li);
     lookCanvas(cvs, looks[i] || validLook(null, SEAT_DEFAULT[i]), 1.6);
   }
@@ -9639,7 +9649,7 @@ function drawSecretChip(cv) {
 }
 function trackMatchEnd(earned) {
   if (mySeat < 0) return;
-  { const w0 = st.boss ? st.winner === -2 : st.winner === mySeat; addBpXp(10 + (w0 ? 10 : 0)); }
+  { const w0 = st.boss ? st.winner === -2 : st.winner === mySeat; addBpPts(Math.min(st.tot || 0, BP.matchCap) + (w0 ? 5000 : 0)); }
   { const w1 = st.boss ? st.winner === -2 : st.winner === mySeat, xg = 25 + (earned || 0) + (w1 ? 20 : 0); track('xp', xg); stats.pxp = (stats.pxp || 0) + xg; saveStats(); }
   if (myHero !== 'none') giveHeroXp(myHero, 5);
   if (((stats.matches || 0) + 1) % 5 === 0) { freeChests++; saveFree(); setTimeout(() => toast('You got a free wooden chest! Open it in Chests.'), 2200); }
@@ -9956,7 +9966,7 @@ function validCard(d) {
   return Object.assign(p, { n: cleanName(d.n) || 'Player', lk: validLook(d.lk), he: HEROES[d.he] ? d.he : 'none', hv: ['std', 'gold', 'shadow'].includes(d.hv) ? d.hv : 'std',
     hl: clamp(Math.floor(+d.hl || 1), 1, 10), lv: clamp(Math.floor(+d.lv || 1), 1, 999), pr: clamp(Math.floor(+d.pr || 0), 0, 12), xf: clamp(+d.xf || 0, 0, 1), s });
 }
-function pushProfile() { if (net) net.presence({ card: myCardData() }).catch(() => {}); if (typeof friendsPublish === 'function') { Friends.pubT = 0; friendsPublish(false); } }
+function pushProfile() { if (net) net.presence({ card: myCardData(), fid: Live.uid || null }).catch(() => {}); if (typeof friendsPublish === 'function') { Friends.pubT = 0; friendsPublish(false); } }
 // ----- drawing helpers -----
 function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function perim(u, x, y, w, h) { // point + inward normal along a rectangle's perimeter, u in 0..1
@@ -10162,7 +10172,8 @@ function buyProf() {
   toast(it[1] + ' is yours!'); profBuy = null; syncProf();
 }
 function previewCardData() { const d = myCardData(); if (profPreview) Object.assign(d, { pb: profPreview.pb, pg: profPreview.pg, pt: profPreview.pt, pe: profPreview.pe, sh: profPreview.sh }); return d; }
-function showCardOf(d) { viewCard = validCard(d); $('#cardView').hidden = false; }
+function showCardOf(d, fid, n) { viewCard = validCard(d); viewFid = fid || null; viewFn = n || ''; $('#cardView').hidden = false; if (typeof syncCardAdd === 'function') syncCardAdd(); }
+var viewFid = null, viewFn = '';
 
 // ---------- chests ----------
 const CHESTS = {
@@ -10187,24 +10198,44 @@ function rollChest(type) {
   for (const r of RAR_ORDER) { if (!odds[r]) continue; x -= odds[r]; if (x <= 0) { rar = r; break; } }
   let ri = RAR_ORDER.indexOf(rar), cand = [];
   while (ri >= 0 && !(cand = pool.filter(it => it.r === RAR_ORDER[ri])).length) ri--;
-  const fresh = cand.filter(it => !ownsAny(it.k, it.id));
-  const it = (fresh.length && Math.random() < 0.75 ? pick(fresh) : pick(cand));
+  const it = pick(cand);   // fully random: you can get something you already own (it turns into coins)
   const dup = ownsAny(it.k, it.id);
   return { ...it, dup, refund: dup ? Math.round((RAR6[it.r][2] || 1500)*0.4) : 0 };
 }
 let freeChests = Math.max(0, Math.floor(+store('trepong-freechest') || 0));
 let chestAnim = null;   // { type, t, phase: 'shake' | 'burst' | 'reveal', item }
 function saveFree() { store('trepong-freechest', String(freeChests)); syncChestBadge(); }
-function syncChestBadge() { const b = $('#chestBadge'); if (!b) return; b.hidden = !freeChests; b.textContent = freeChests; }
+// gold and mythic chests from rewards are stored too, so they can be opened (and opened all at once) with the cutscene
+let chestInv = storeJSON('trepong-chestinv', { gold: 0, myth: 0 });
+function saveInv() { store('trepong-chestinv', JSON.stringify(chestInv)); syncChestBadge(); }
+function invCount(t) { return t === 'wood' ? freeChests : (chestInv[t] || 0); }
+function invTotal() { return freeChests + (chestInv.gold || 0) + (chestInv.myth || 0); }
+function takeInv(t) { if (invCount(t) <= 0) return false; if (t === 'wood') { freeChests--; saveFree(); } else { chestInv[t]--; saveInv(); } return true; }
+function syncChestBadge() { const b = $('#chestBadge'); if (!b) return; const n = invTotal(); b.hidden = !n; b.textContent = n; }
 function openChestScreen() { chestAnim = null; showScreen('chests'); syncChests(); }
 function syncChests() {
   $('#chestCoins').textContent = fmt(coins);
   const left = 5 - ((stats.matches || 0) % 5);
-  $('#chestNote').textContent = freeChests ? 'You have ' + freeChests + ' free wooden chest' + (freeChests === 1 ? '' : 's') + ' to open!' : 'Next free wooden chest in ' + left + (left === 1 ? ' match.' : ' matches.');
-  $('#btnFreeChest').hidden = !freeChests;
-  for (const t in CHESTS) { const b = $('#buy_' + t); b.disabled = !!chestAnim && chestAnim.phase !== 'reveal' || coins < CHESTS[t].price; }
+  const busy = !!chestAnim && chestAnim.phase !== 'reveal', tot = invTotal();
+  $('#chestNote').textContent = (tot ? 'You have ' + tot + ' chest' + (tot === 1 ? '' : 's') + ' to open! ' : '') + 'Next free wooden chest in ' + left + (left === 1 ? ' match.' : ' matches.');
+  const row = $('#chestInvRow'); row.textContent = '';
+  for (const t of ['wood', 'gold', 'myth']) {
+    const n = invCount(t); if (!n) continue;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'invbtn inv-' + t; b.disabled = busy;
+    b.append(Object.assign(document.createElement('b'), { textContent: 'Open ' + CHESTS[t].n.toLowerCase() }), Object.assign(document.createElement('small'), { textContent: '× ' + n }));
+    b.addEventListener('click', () => startChest(t, true)); row.append(b);
+  }
+  $('#btnOpenAll').hidden = tot < 2; $('#btnOpenAll').disabled = busy; $('#btnOpenAll').textContent = 'Open all ' + tot + ' chests';
+  for (const t in CHESTS) { const b = $('#buy_' + t); b.disabled = busy || coins < CHESTS[t].price; }
   const rv = $('#chestReveal');
-  if (chestAnim && chestAnim.phase === 'reveal') {
+  if (chestAnim && chestAnim.phase === 'reveal' && chestAnim.multi) {
+    const M = chestAnim.multi, fresh = M.filter(i => !i.dup), dups = M.filter(i => i.dup), back = dups.reduce((a, i) => a + i.refund, 0);
+    const best = M[M.length - 1]; rv.hidden = false;
+    $('#revRar').textContent = M.length + ' chests opened · best: ' + RAR6[best.r][0]; $('#revRar').style.color = RAR6[best.r][1];
+    $('#revName').textContent = fresh.length + ' new item' + (fresh.length === 1 ? '' : 's') + '!';
+    $('#revDup').textContent = (fresh.length ? 'New: ' + fresh.slice().reverse().slice(0, 8).map(i => itemLabel(i.k, i.id)).join(', ') + (fresh.length > 8 ? ' and ' + (fresh.length - 8) + ' more' : '') + '. ' : '') + (dups.length ? dups.length + ' duplicate' + (dups.length === 1 ? '' : 's') + ' became ' + fmt(back) + ' coins.' : '');
+    $('#btnUseNow').hidden = true;
+  } else if (chestAnim && chestAnim.phase === 'reveal') {
     const it = chestAnim.item; rv.hidden = false;
     $('#revRar').textContent = RAR6[it.r][0] + ' · ' + KIND_NAME[it.k]; $('#revRar').style.color = RAR6[it.r][1];
     $('#revName').textContent = itemLabel(it.k, it.id);
@@ -10214,7 +10245,7 @@ function syncChests() {
 }
 function startChest(type, free) {
   if (chestAnim && chestAnim.phase !== 'reveal') return;
-  if (free) { if (!freeChests) return; freeChests--; saveFree(); }
+  if (free) { if (!takeInv(type)) return; }
   else { if (coins < CHESTS[type].price) return; coins -= CHESTS[type].price; saveWallet(); }
   audioOn(); track('chests');
   const item = rollChest(type);
@@ -10223,6 +10254,23 @@ function startChest(type, free) {
   chestAnim = { type, t: 0, phase: 'shake', item, parts: [] };
   syncChests();
 }
+const RAR_RANK = r => RAR_ORDER.indexOf(r);
+function startChestAll() {
+  if (chestAnim && chestAnim.phase !== 'reveal') return;
+  const items = [];
+  for (const t of ['wood', 'gold', 'myth']) while (invCount(t) > 0) {
+    takeInv(t); const it = rollChest(t);
+    if (it.dup) addCoins(it.refund); else owned.add(it.k + ':' + it.id);
+    items.push({ ...it, ct: t });
+  }
+  if (!items.length) return;
+  saveWallet(); audioOn(); track('chests', items.length);
+  items.sort((a, b) => RAR_RANK(a.r) - RAR_RANK(b.r) || (a.dup - b.dup));   // the best one is revealed last
+  const top = items.some(i => i.ct === 'myth') ? 'myth' : items.some(i => i.ct === 'gold') ? 'gold' : 'wood';
+  chestAnim = { type: top, t: 0, phase: 'shake', item: items[items.length - 1], multi: items, parts: [], cards: null };
+  syncChests();
+}
+function skipChestAnim() { const A = chestAnim; if (!A || !A.multi || A.phase === 'reveal') return; if (A.phase === 'shake') A.t = 1.64; else { A.t = Math.max(A.t, 99); A.skip = true; } }
 function useChestItem() {
   if (!chestAnim) return; const it = chestAnim.item;
   if (it.k.startsWith('p')) { myProf[it.k] = it.id; saveProf(); }
@@ -10250,7 +10298,7 @@ function drawChestBox(c, type, x, y, s, lid, glow) {
 function drawChestStage(dt) {
   const cv2 = $('#chestCv'), c = cv2.getContext('2d'), W = cv2.width, Hh = cv2.height;
   c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, Hh);
-  const bg = c.createRadialGradient(W/2, Hh*0.55, 10, W/2, Hh*0.55, W*0.7); bg.addColorStop(0, '#2A2060'); bg.addColorStop(1, '#0C0A1C'); c.fillStyle = bg; c.fillRect(0, 0, W, Hh);
+  const bg = c.createRadialGradient(W/2, Hh*0.55, 10, W/2, Hh*0.55, W*0.7); bg.addColorStop(0, '#2C3664'); bg.addColorStop(1, '#121831'); c.fillStyle = bg; c.fillRect(0, 0, W, Hh);
   const cx = W/2, cy = Hh*0.62, sc = W/220;
   if (!chestAnim) {
     const types = Object.keys(CHESTS);
@@ -10258,11 +10306,13 @@ function drawChestStage(dt) {
     return;
   }
   const A = chestAnim; A.t += dt;
+  if (A.multi && A.phase !== 'shake') { drawChestCards(c, W, Hh, dt); return; }
   const rar = A.item.r, rc = RAR6[rar][1];
   if (A.phase === 'shake') {
     const k = Math.floor(A.t/0.55), local = A.t % 0.55, amp = local < 0.25 ? Math.sin(local/0.25*Math.PI*4)*(4 + k*3) : 0;
     const glow = Math.min(1, A.t/1.6);
     c.save(); c.translate(amp, 0); c.rotate(amp*0.01); drawChestBox(c, A.type, cx, cy, sc, 0, glow); c.restore();
+    if (A.multi) { c.fillStyle = '#F1ECE2'; c.font = '600 ' + Math.round(26*sc/2.7) + 'px Outfit, system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('× ' + A.multi.length, cx, cy - 62*sc); }
     if (local < 0.02 && mode === 'menu') tone(200 + k*120, 0.12, 'square', 0.05);
     if (A.t > 1.65) { A.phase = 'burst'; A.t = 0; tone(523, 0.4, 'triangle', 0.07); tone(784, 0.4, 'triangle', 0.06, 0, 0.1); tone(1046, 0.5, 'triangle', 0.06, 0, 0.2); buzz([30, 30, 80]);
       for (let q = 0; q < 70; q++) { const a = Math.random()*TAU, sp = 60 + Math.random()*220; A.parts.push({ x: cx, y: cy - 20*sc, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 80, life: 1.4, col: Math.random() < 0.5 ? rc : '#FFFFFF' }); } }
@@ -10282,6 +10332,72 @@ function drawChestStage(dt) {
   }
 }
 
+
+// ----- "Open all": every chest bursts at once, then the cards flip one by one, best last -----
+function chestCardChip(it) {
+  if (it.cv) return it.cv;
+  const cv = document.createElement('canvas'); cv.width = 176; cv.height = 120;
+  if (it.k.startsWith('p')) drawProfChip(cv, it.k, it.id, clock); else { const keep = previewLook; previewLook = { ...myLook }; drawChip(cv, it.k, it.id); previewLook = keep; }
+  return (it.cv = cv);
+}
+function drawChestCards(c, W, Hh, dt) {
+  const A = chestAnim, M = A.multi, N = M.length, cx = W/2, cy = Hh*0.62, sc = W/220;
+  if (A.phase === 'burst' && !A.cards) {
+    A.t = 0; A.cards = true;
+    for (let q = 0; q < 90; q++) { const a = Math.random()*TAU, sp = 80 + Math.random()*260; A.parts.push({ x: cx, y: cy - 20*sc, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 90, life: 1.4, col: Math.random() < 0.5 ? '#E9C46A' : '#FFFFFF' }); }
+  }
+  // grid layout
+  const cols = N <= 3 ? N : N <= 8 ? 4 : N <= 15 ? 5 : N <= 24 ? 6 : 8, rows = Math.ceil(N / cols);
+  let cw = Math.min(150, (W - 30)/cols - 10), ch = cw*0.8;
+  if (rows*(ch + 10) > Hh - 24) { ch = (Hh - 24)/rows - 10; cw = ch/0.8; }
+  const gx0 = (W - cols*(cw + 10) + 10)/2, gy0 = (Hh - rows*(ch + 10) + 10)/2;
+  const step = Math.min(0.32, 3.2/N), fly = 0.45, t = A.t;
+  // rays + the open chest fading behind the cards
+  c.save(); c.translate(cx, cy - 20*sc); c.rotate(clock*0.3); c.fillStyle = 'rgba(233,196,106,0.10)';
+  for (let k = 0; k < 14; k++) { c.rotate(TAU/14); c.beginPath(); c.moveTo(0, 0); c.lineTo(-20, -W); c.lineTo(20, -W); c.fill(); } c.restore();
+  c.globalAlpha = Math.max(0, 1 - t*1.5); drawChestBox(c, A.type, cx, cy, sc, 1, 0.8); c.globalAlpha = 1;
+  let allDone = true;
+  M.forEach((it, i) => {
+    const col = i % cols, row = Math.floor(i / cols);
+    const tx = gx0 + col*(cw + 10) + cw/2, ty = gy0 + row*(ch + 10) + ch/2;
+    const fk = Math.min(1, Math.max(0, (t - i*0.015)/fly)), e = 1 - Math.pow(1 - fk, 3);
+    const x = cx + (tx - cx)*e, y = cy - 20*sc + (ty - cy + 20*sc)*e, s = 0.3 + 0.7*e;
+    const ra = fly + 0.25 + i*step, f = Math.min(1, Math.max(0, (t - ra)/0.24));
+    if (f < 1) allDone = false;
+    if (f >= 0.5 && !it.flipped) {
+      it.flipped = true; const rr6 = RAR_RANK(it.r);
+      if (!A.skip || i === N - 1) tone(400 + rr6*110, 0.1, 'triangle', 0.05);
+      if (rr6 >= 3) { buzz(rr6 >= 4 ? [40, 30, 90] : 25); for (let q = 0; q < 24 + rr6*8; q++) { const a = Math.random()*TAU, sp = 40 + Math.random()*160; A.parts.push({ x: tx, y: ty, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 60, life: 1.1, col: Math.random() < 0.6 ? RAR6[it.r][1] : '#FFFFFF' }); } }
+    }
+    const sx = Math.abs(Math.cos(f*Math.PI)) || 0.02, front = f >= 0.5, w = cw*s, h = ch*s;
+    c.save(); c.translate(x, y); c.scale(sx, 1);
+    if (!front) {
+      const C = CHESTS[it.ct]; c.fillStyle = '#1E2648'; rr(c, -w/2, -h/2, w, h, 10); c.fill();
+      c.strokeStyle = C.col; c.lineWidth = 2; c.stroke();
+      c.fillStyle = C.col; c.font = '600 ' + Math.round(h*0.42) + 'px Outfit, system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', 0, 2);
+    } else {
+      const rc = RAR6[it.r][1], hi = RAR_RANK(it.r) >= 3;
+      c.shadowColor = rc; c.shadowBlur = hi ? 18 + 6*Math.sin(clock*5) : 8; c.fillStyle = '#16112E'; rr(c, -w/2, -h/2, w, h, 10); c.fill(); c.shadowBlur = 0;
+      c.strokeStyle = rc; c.lineWidth = hi ? 3 : 2; c.stroke();
+      const cv = chestCardChip(it), iw = w*0.86, ih = iw*120/176;
+      c.globalAlpha = it.dup ? 0.45 : 1; c.drawImage(cv, -iw/2, -h/2 + 3, iw, Math.min(ih, h*0.66)); c.globalAlpha = 1;
+      if (h > 46) {
+        c.fillStyle = '#F1ECE2'; c.font = '600 ' + Math.max(9, Math.round(h*0.12)) + 'px Outfit, system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+        let nm = itemLabel(it.k, it.id); while (c.measureText(nm).width > w - 8 && nm.length > 3) nm = nm.slice(0, -2) + '…';
+        c.fillText(nm, 0, h/2 - 6);
+      }
+      c.fillStyle = it.dup ? '#E9C46A' : '#8CD3B0'; c.font = '700 ' + Math.max(8, Math.round(h*0.1)) + 'px Outfit, system-ui, sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+      c.fillText(it.dup ? '+' + it.refund : 'NEW', -w/2 + 6, -h/2 + 5);
+    }
+    c.restore();
+  });
+  for (const p of A.parts) { p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 260*dt; p.life -= dt; if (p.life > 0) { c.globalAlpha = Math.min(1, p.life); c.fillStyle = p.col; c.fillRect(p.x, p.y, 3, 3); } }
+  c.globalAlpha = 1; A.parts = A.parts.filter(p => p.life > 0);
+  if (allDone && A.phase === 'burst') {
+    A.phase = 'reveal'; syncChests();
+    const best = M[N - 1].r; if (best === 'l' || best === 'm') startVictory(best === 'm' ? 'champion' : 'fireworks');
+  }
+}
 // ---------- weekly boss ----------
 function weekId() {
   const d = new Date(), t = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()), day = (new Date(t).getUTCDay() + 6) % 7;
@@ -10664,9 +10780,8 @@ function grantReward(r, quiet) {
   if (r[0] === 'coins') { addCoins(r[1]); return r[1] + ' coins'; }
   if (r[0] === 'chest') {
     if (r[1] === 'wood') { freeChests++; saveFree(); return 'Wooden chest (open it in Chests)'; }
-    const it = rollChest(r[1]);
-    if (it.dup) addCoins(it.refund); else { owned.add(it.k + ':' + it.id); saveWallet(); }
-    return CHESTS[r[1]].n + ': ' + itemLabel(it.k, it.id) + (it.dup ? ' (dupe, +' + it.refund + ' coins)' : '');
+    chestInv[r[1]] = (chestInv[r[1]] || 0) + 1; saveInv();
+    return CHESTS[r[1]].n + ' (open it in Chests)';
   }
   owned.add(rewardKey(r)); saveWallet();
   return rewardName(r);
@@ -10687,7 +10802,11 @@ function exclusiveText(kind, id) {
   return { short: 'Tower ' + exclusiveFloor(kind, id), long: 'Exclusive. Clear floor ' + exclusiveFloor(kind, id) + ' in the Champion Tower.' };
 }
 // ----- battle pass -----
-const BP = { id: 's1', n: 'Season 1: Pumpkin Night', end: ADV_EVENT_END, tierXp: 80, premium: 3000 };
+const BP = { id: 's1', n: 'Season 1: Pumpkin Night', end: ADV_EVENT_END, premium: 3000, matchCap: 500000, xpPts: 1000 };
+// The pass is a grind: tiers are checkpoints of TOTAL rally points (everything your team scores, summed over the season).
+// One match counts at most BP.matchCap, so a single lucky rally can't skip half the pass. Tier 30 needs 25 million.
+function bpNice(v) { const m = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / m) * m; }
+const BP_PTS = Array.from({ length: 30 }, (_, i) => bpNice(25e6 * Math.pow((i + 1) / 30, 2.3)));
 const BP_TIERS = [ // [free, premium]
   [['coins', 50], ['c', '#FF7518']], [['chest', 'wood'], ['coins', 100]], [['coins', 75], ['h', 'candycorn']], [['pe', 'bat'], ['t', 'candy']], [['chest', 'wood'], ['f', 'stitch']],
   [['coins', 75], ['c', '#7CFF3A']], [['pt', 'trickster'], ['chest', 'gold']], [['coins', 100], ['k', 'web']], [['chest', 'wood'], ['pg', 'haunted']], [['h', 'bat'], ['pb', 'cobweb']],
@@ -10700,17 +10819,20 @@ const BP_SRC = {};
 BP_TIERS.forEach((t, i) => t.forEach(r => { if (r[0] !== 'coins' && r[0] !== 'chest') BP_SRC[rewardKey(r)] = i + 1; }));
 let bp = storeJSON('trepong-bp', null);
 if (!bp || bp.id !== BP.id) bp = { id: BP.id, xp: 0, prem: false, cf: [], cp: [] };
+if (typeof bp.pts !== 'number') bp.pts = 0;   // build 16: progress moved from XP to rally points
 function saveBp() { store('trepong-bp', JSON.stringify(bp)); syncBpBadge(); }
 function bpActive() { return Date.now() < BP.end; }
-function bpTier() { return Math.min(BP_TIERS.length, Math.floor(bp.xp / BP.tierXp)); }
+function bpTier() { let t = 0; while (t < BP_TIERS.length && bp.pts >= BP_PTS[t]) t++; return t; }
+function bpTierFrac() { const t = bpTier(); if (t >= BP_TIERS.length) return 1; const a = t ? BP_PTS[t - 1] : 0; return (bp.pts - a) / (BP_PTS[t] - a); }
 function bpClaimable() { const t = bpTier(); let n = 0; for (let i = 0; i < t; i++) { if (!bp.cf.includes(i)) n++; if (bp.prem && !bp.cp.includes(i)) n++; } return n; }
-function addBpXp(n, why) {
-  if (!bpActive() || !n) return;
-  const before = bpTier(); bp.xp += Math.round(n); saveBp();
+function addBpXp(n, why) { addBpPts(n * BP.xpPts); }
+function addBpPts(n) {
+  if (!bpActive() || !(n > 0)) return;
+  const before = bpTier(); bp.pts += Math.round(n); saveBp();
   const after = bpTier();
   if (after > before) setTimeout(() => toast('Battle pass tier ' + after + ' reached! Claim it in the menu.'), 1600);
 }
-function syncBpBadge() { const b = $('#bpBadge'); if (!b) return; const n = bpClaimable(); b.hidden = !n; b.textContent = n; const bar = $('#bpMini'); if (bar) bar.style.width = Math.round(100*((bp.xp % BP.tierXp) / BP.tierXp)) + '%'; const lv = $('#bpLvl'); if (lv) lv.textContent = 'Tier ' + bpTier() + ' / ' + BP_TIERS.length; }
+function syncBpBadge() { const b = $('#bpBadge'); if (!b) return; const n = bpClaimable(); b.hidden = !n; b.textContent = n; const bar = $('#bpMini'); if (bar) bar.style.width = Math.round(100*bpTierFrac()) + '%'; const lv = $('#bpLvl'); if (lv) lv.textContent = 'Tier ' + bpTier() + ' / ' + BP_TIERS.length; }
 function bpClaim(i, prem) {
   if (i >= bpTier()) return;
   const list = prem ? bp.cp : bp.cf; if (list.includes(i) || (prem && !bp.prem)) return;
@@ -11089,9 +11211,8 @@ function renderBp() {
   const T = bpTier(), max = BP_TIERS.length;
   $('#bpEnds').textContent = bpActive() ? 'Season 1 · ends in ' + daysLeft(BP.end) : 'Season 1 has ended';
   $('#bpTierN').textContent = T;
-  const into = T >= max ? BP.tierXp : bp.xp - T*BP.tierXp;
-  $('#bpBar').style.width = Math.round(100*into/BP.tierXp) + '%';
-  $('#bpXpTxt').textContent = T >= max ? 'Max tier reached! ' + fmt(bp.xp) + ' XP' : into + ' / ' + BP.tierXp + ' XP to tier ' + (T + 1);
+  $('#bpBar').style.width = Math.round(100*bpTierFrac()) + '%';
+  $('#bpXpTxt').textContent = T >= max ? 'Max tier reached! ' + fmt(bp.pts) + ' rally points' : fmt(bp.pts) + ' / ' + fmt(BP_PTS[T]) + ' rally points to tier ' + (T + 1);
   const pb = $('#btnBpPrem');
   if (bp.prem) { pb.textContent = '★ Premium unlocked'; pb.disabled = true; pb.classList.add('on'); }
   else {
@@ -11111,7 +11232,7 @@ function renderBp() {
       const nm = document.createElement('span'); nm.textContent = rewardName(r);
       const stt = document.createElement('small');
       const can = i < T && !got && (!prem || bp.prem);
-      stt.textContent = got ? '✓ Claimed' : i >= T ? '🔒 Tier ' + (i + 1) : prem && !bp.prem ? '🔒 Premium' : 'Claim!';
+      stt.textContent = got ? '✓ Claimed' : i >= T ? '🔒 ' + fmtShort(BP_PTS[i]) : prem && !bp.prem ? '🔒 Premium' : 'Claim!';
       if (can) b.classList.add('can');
       b.append(cv, nm, stt);
       b.addEventListener('click', () => { if (can) bpClaim(i, prem); });
@@ -11144,6 +11265,8 @@ function drawMenuAdv() {
   c.save(); c.setTransform(sc, 0, 0, sc, w*0.78, h*0.74 + Math.sin(clock*2)*sc); drawPaddleLocal(c, validLook({ c: W.boss[W.boss.length - 1].c, h: W.boss[W.boss.length - 1].h, f: W.boss[W.boss.length - 1].f, s: W.boss[W.boss.length - 1].s, t: 'std' }), 14, clock, [-1, -0.3], {}, 10); c.restore();
 }
 
+
+function fmtShort(v) { return v >= 1e6 ? (Math.round(v/1e5)/10) + 'M' : v >= 1e3 ? Math.round(v/1e3) + 'k' : String(v); }
 // ---------- raids ----------
 // A raid boss is a Core (the boss seat, has HP) guarded by two Arms (foe seats with lives).
 // While an arm is alive the core only takes half damage; every so often the core opens a weak point for double damage.
@@ -12532,7 +12655,7 @@ function renderMinis(force) {
     el.append(Object.assign(document.createElement('div'), { className: 'mlhead', textContent: '🏆 ' + title }));
     if (!rows) { el.append(Object.assign(document.createElement('small'), { textContent: 'Loading…' })); continue; }
     if (!rows.length) { el.append(Object.assign(document.createElement('small'), { textContent: 'No scores yet. Be the first!' })); continue; }
-    rows.slice(0, n).forEach((r, i) => { const d = document.createElement('div'); d.className = 'mlrow' + (r.id === Live.uid ? ' me' : ''); d.append(Object.assign(document.createElement('span'), { textContent: ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' }), Object.assign(document.createElement('b'), { textContent: r.n }), Object.assign(document.createElement('span'), { className: 'mls', textContent: B[3](r.s) })); el.append(d); });
+    rows.slice(0, n).forEach((r, i) => { const d = document.createElement('div'); d.className = 'mlrow' + (r.id === Live.uid ? ' me' : ''); if (r.id && r.id !== Live.uid) { d.classList.add('tap'); d.addEventListener('click', () => openPlayer(r.id, r.n)); } d.append(Object.assign(document.createElement('span'), { textContent: ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' }), Object.assign(document.createElement('b'), { textContent: r.n }), Object.assign(document.createElement('span'), { className: 'mls', textContent: B[3](r.s) })); el.append(d); });
     if (me >= n) el.append(Object.assign(document.createElement('small'), { className: 'mlme', textContent: 'You: #' + (me + 1) + ' · ' + B[3](rows[me].s) }));
   }
 }
@@ -12566,6 +12689,7 @@ function renderLive() {
   if (!rows.length) { list.append(Object.assign(document.createElement('p'), { className: 'note', textContent: 'No scores yet. Be the first!' })); return; }
   rows.slice(0, 10).forEach((r, i) => {
     const el = document.createElement('div'); el.className = 'lbrow' + (r.id === Live.uid ? ' me' : '');
+    if (r.id && r.id !== Live.uid) { el.classList.add('tap'); el.title = 'Show profile'; el.addEventListener('click', () => openPlayer(r.id, r.n)); }
     el.append(Object.assign(document.createElement('span'), { className: 'pos', textContent: ['🥇', '🥈', '🥉'][i] || String(i + 1) }), Object.assign(document.createElement('span'), { className: 'nm', textContent: r.n }), Object.assign(document.createElement('span'), { className: 'tm', textContent: B[3](r.s) }));
     list.append(el);
   });
@@ -12654,6 +12778,7 @@ function syncFriendsUI() {
   const nReq = Object.keys(Friends.reqs).length, b = $('#friendsBadge');
   $('#btnFriends').hidden = !Live.ok; b.hidden = !nReq; b.textContent = nReq;
   if (curScreen === 'friends') renderFriends();
+  if (!$('#cardView').hidden) syncCardAdd();
   if (curScreen === 'lobby') $('#btnLobbyInvite').hidden = !(Live.ok && mode === 'host' && Object.keys(Friends.list).length);
 }
 let friendsBack = 'menu';
@@ -12692,6 +12817,30 @@ function openFriendCard(f) {
 }
 function closeFriendCard() { Friends.viewing = null; $('#friendCard').hidden = true; }
 function drawFriendCard() { if (!Friends.viewing) return; const cv = $('#fcCv'); drawCard(cv.getContext('2d'), Friends.viewing.d, clock); }
+
+// ----- add friends straight from a leaderboard row or a lobby seat -----
+const sentReq = {};
+async function sendFriendRequestTo(uid, n) {
+  if (!Live.ok || !uid || uid === Live.uid) return;
+  if (Friends.list[uid]) { toast('You are already friends!'); return; }
+  if (Friends.reqs[uid]) { await acceptFriend(uid); syncCardAdd(); return; }
+  try { await fRef('requests/' + uid + '/' + Live.uid).set({ n: myName().slice(0, 16), t: fNow() }); sentReq[uid] = 1; toast('Friend request sent to ' + (cleanName(n) || 'the player') + '! ✉️'); tone(880, 0.08, 'triangle', 0.05); }
+  catch (e) { toast('Could not send the request.'); }
+  syncCardAdd();
+}
+function syncCardAdd() {
+  const b = $('#btnCardAdd'), f = viewFid; if (!b) return;
+  b.hidden = !(Live.ok && f && f !== Live.uid); if (b.hidden) return;
+  b.disabled = !!(Friends.list[f] || sentReq[f]);
+  b.textContent = Friends.list[f] ? '✓ Friends' : sentReq[f] ? '✓ Request sent' : Friends.reqs[f] ? 'Accept friend request' : 'Add friend';
+}
+async function openPlayer(uid, n) {
+  if (!Live.ok || !uid) return;
+  if (Friends.list[uid]) { openFriendCard(uid); return; }
+  let card = null;
+  try { const u = (await fRef('users/' + uid).once('value')).val(); if (u) { if (u.n) n = u.n; if (u.card) card = JSON.parse(u.card); } } catch (e) {}
+  showCardOf(card || { n: cleanName(n) || 'Player' }, uid, n);
+}
 // ----- raid boon vote (UI + host tally) -----
 let myVote = null, voteBuilt = '', voteAnnounced = '';
 function voteHumans() { return st ? alivePlayers(st).filter(i => i === mySeat || (mode === 'host' && hostSeats[i])) : []; }
@@ -12884,10 +13033,12 @@ $('#btnProfSave').addEventListener('click', () => {
 $('#btnProfBuy').addEventListener('click', buyProf);
 $('#btnChests').addEventListener('click', () => { audioOn(); openChestScreen(); });
 $('#btnChestBack').addEventListener('click', () => { if (chestAnim && chestAnim.phase !== 'reveal') return; chestAnim = null; showScreen('menu'); });
-$('#btnFreeChest').addEventListener('click', () => startChest('wood', true));
+$('#btnOpenAll').addEventListener('click', startChestAll);
+$('#chestCv').addEventListener('click', skipChestAnim);
 for (const t of Object.keys(CHESTS)) $('#buy_' + t).addEventListener('click', () => startChest(t, false));
 $('#btnUseNow').addEventListener('click', useChestItem);
-$('#btnCardClose').addEventListener('click', () => { $('#cardView').hidden = true; viewCard = null; });
+$('#btnCardClose').addEventListener('click', () => { $('#cardView').hidden = true; viewCard = null; viewFid = null; });
+$('#btnCardAdd').addEventListener('click', () => sendFriendRequestTo(viewFid, viewFn));
 setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v');
 $('#voiceSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; voicesOn = b.dataset.v === '1'; store('trepong-voices', voicesOn ? '1' : '0'); setSeg($('#voiceSeg'), voicesOn ? 1 : 0, 'v'); if (voicesOn && myHero !== 'none') heroSay(myHero, 'use'); });
 syncChestBadge();

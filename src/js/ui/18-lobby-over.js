@@ -32,10 +32,10 @@ function renderLobby() {
     else if (peer) { const p = ps.find(q => q.peer === peer); name = names[i] || (p && cleanName(p.presence.name)) || 'Guest'; tag = i === mySeat ? 'You' : 'Ready'; }
     else { name = 'Open seat'; tag = 'A bot plays here'; li.style.opacity = '0.6'; }
     nm.textContent = name; tg.textContent = tag;
-    let card = null;
-    if (peer === 'host' || (i === 0 && mode === 'host')) card = mode === 'host' ? myCardData() : (ps.find(q => q.presence.role === 'host') || {}).presence?.card;
-    else if (peer) { const p = ps.find(q => q.peer === peer); card = p && p.presence.card; if (i === mySeat) card = myCardData(); }
-    if (card) { li.classList.add('tap'); const cl = document.createElement('span'); cl.className = 'cardlink'; cl.textContent = 'Show card'; tg.textContent = tag + ' · '; tg.append(cl); li.addEventListener('click', () => showCardOf(card)); }
+    let card = null, fid = null;
+    if (peer === 'host' || (i === 0 && mode === 'host')) { const hp = (ps.find(q => q.presence.role === 'host') || {}).presence; card = mode === 'host' ? myCardData() : hp?.card; fid = mode === 'host' ? null : hp?.fid; }
+    else if (peer) { const p = ps.find(q => q.peer === peer); card = p && p.presence.card; fid = p && p.presence.fid; if (i === mySeat) { card = myCardData(); fid = null; } }
+    if (card) { li.classList.add('tap'); const cl = document.createElement('span'); cl.className = 'cardlink'; cl.textContent = fid && Live.ok && !Friends.list[fid] ? 'Card · add friend' : 'Show card'; tg.textContent = tag + ' · '; tg.append(cl); li.addEventListener('click', () => showCardOf(card, fid, name)); }
     li.append(cvs, nm, tg); ul.append(li);
     lookCanvas(cvs, looks[i] || validLook(null, SEAT_DEFAULT[i]), 1.6);
   }

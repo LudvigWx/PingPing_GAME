@@ -80,6 +80,7 @@ function syncFriendsUI() {
   const nReq = Object.keys(Friends.reqs).length, b = $('#friendsBadge');
   $('#btnFriends').hidden = !Live.ok; b.hidden = !nReq; b.textContent = nReq;
   if (curScreen === 'friends') renderFriends();
+  if (!$('#cardView').hidden) syncCardAdd();
   if (curScreen === 'lobby') $('#btnLobbyInvite').hidden = !(Live.ok && mode === 'host' && Object.keys(Friends.list).length);
 }
 let friendsBack = 'menu';
@@ -118,3 +119,27 @@ function openFriendCard(f) {
 }
 function closeFriendCard() { Friends.viewing = null; $('#friendCard').hidden = true; }
 function drawFriendCard() { if (!Friends.viewing) return; const cv = $('#fcCv'); drawCard(cv.getContext('2d'), Friends.viewing.d, clock); }
+
+// ----- add friends straight from a leaderboard row or a lobby seat -----
+const sentReq = {};
+async function sendFriendRequestTo(uid, n) {
+  if (!Live.ok || !uid || uid === Live.uid) return;
+  if (Friends.list[uid]) { toast('You are already friends!'); return; }
+  if (Friends.reqs[uid]) { await acceptFriend(uid); syncCardAdd(); return; }
+  try { await fRef('requests/' + uid + '/' + Live.uid).set({ n: myName().slice(0, 16), t: fNow() }); sentReq[uid] = 1; toast('Friend request sent to ' + (cleanName(n) || 'the player') + '! ✉️'); tone(880, 0.08, 'triangle', 0.05); }
+  catch (e) { toast('Could not send the request.'); }
+  syncCardAdd();
+}
+function syncCardAdd() {
+  const b = $('#btnCardAdd'), f = viewFid; if (!b) return;
+  b.hidden = !(Live.ok && f && f !== Live.uid); if (b.hidden) return;
+  b.disabled = !!(Friends.list[f] || sentReq[f]);
+  b.textContent = Friends.list[f] ? '✓ Friends' : sentReq[f] ? '✓ Request sent' : Friends.reqs[f] ? 'Accept friend request' : 'Add friend';
+}
+async function openPlayer(uid, n) {
+  if (!Live.ok || !uid) return;
+  if (Friends.list[uid]) { openFriendCard(uid); return; }
+  let card = null;
+  try { const u = (await fRef('users/' + uid).once('value')).val(); if (u) { if (u.n) n = u.n; if (u.card) card = JSON.parse(u.card); } } catch (e) {}
+  showCardOf(card || { n: cleanName(n) || 'Player' }, uid, n);
+}
