@@ -2,7 +2,7 @@
 
 Usage:  python make_code.py "MY-SECRET-CODE"
 
-Prints the line to paste into the CODES table in trepong.html (search for "const CODES").
+Prints the line to paste into the CODES table in src/js/meta/33-redeem.js (search for "const CODES").
 Only the hash ends up in the game, so people reading the source can't see the code itself.
 Codes are case-insensitive and spaces/dashes don't matter (GHOST-PADDLE == ghost paddle).
 """

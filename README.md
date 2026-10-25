@@ -20,14 +20,27 @@ Onlineläget använder [PeerJS](https://peerjs.com/) (WebRTC), så telefonerna p
 Den som skapar ett rum är värd. Mynt, kosmetika och framsteg sparas på varje enhet.
 
 ## Filer
-- `index.html` – spelet (byggs från `trepong.html`)
-- `trepong.html` – källan, samma som Claude-versionen
-- `peerroom.js` – nätverkslagret för webben
-- `build.py` – bygger `index.html`: `python3 build.py`
+Koden ligger uppdelad i `src/`. Ändra där och kör sedan `python build.py`, som bygger ihop allt.
+
+- `src/page.html` – sidans HTML (menyer, skärmar). `/*@CSS@*/` och `/*@JS@*/` fylls i av build.py
+- `src/style.css` – all CSS
+- `src/order.json` – i vilken ordning JS-modulerna sätts ihop (ordningen spelar roll)
+- `src/js/core/` – start, huvudloopen och kopplingen av alla knappar
+- `src/js/sim/` – själva spelfysiken (ren simulering, delas av värd och gäster)
+- `src/js/game/` – rendering, ljud, input, matchstart, online, replay
+- `src/js/ui/` – lobby, butik, achievements, hjältar, profilkort, kistor
+- `src/js/modes/` – Adventure, battle pass, raids, Arena Builder, Daily Arena, Raid Forge, weekly boss och cup
+- `src/js/meta/` – redeem-koder, progression (level-väg, prestige, samlingsbok), stickers m.m.
+- `src/js/art/` – all ritad kosmetika (hattar, trails, ramar, raid-bossar, prestige-märken …)
+- `trepong.html` – hela spelet i en fil (byggs, används också som Claude-versionen)
+- `index.html` – webbversionen för GitHub Pages (byggs)
+- `peerroom.js`, `voice.js` – nätverk och röstchatt för webben
+- `sw.js`, `manifest.webmanifest`, `icons/` – installera som app
+- `build.py` – bygger `trepong.html` och `index.html`: `python build.py`
 - `make_code.py` – gör en ny inlösningskod: `python make_code.py "MIN-KOD"`
 
 ## Inlösningskoder
-Koderna ligger bara som SHA-256-hashar i `const CODES` i `trepong.html`, så den som läser källkoden ser inte själva koden.
+Koderna ligger bara som SHA-256-hashar i `const CODES` i `src/js/meta/33-redeem.js`, så den som läser källkoden ser inte själva koden.
 1. Kör `python make_code.py "GHOST-PADDLE"`.
 2. Klistra in raden den skriver ut i `CODES`, byt namn och belöningar (och `end:` om koden ska sluta gälla).
 3. Kör `python build.py`, committa och pusha.

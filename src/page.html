@@ -1,0 +1,555 @@
+<meta charset="utf-8">
+<title>Trepong</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Rubik+Mono+One&display=swap">
+<style>
+/*@CSS@*/
+</style>
+
+<canvas id="game" aria-label="Arena"></canvas>
+
+<div id="menu" class="screen">
+  <div class="panel menupanel">
+    <div class="mhead">
+      <div class="mtools">
+        <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
+        <button id="btnRedeem" class="gear" type="button" aria-label="Redeem code" title="Redeem code">🎁</button>
+        <button id="btnSettings" class="gear" type="button" aria-label="Settings" title="Settings">⚙</button>
+      </div>
+      <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
+      <p class="tag">Ping pong in a triangle. Cards, power-ups and chaos.</p>
+    </div>
+    <section class="mg you1">
+      <div class="field"><label for="name">Your name</label><input id="name" maxlength="12" autocomplete="off" placeholder="Ludvig"></div>
+      <button id="btnLevel" class="lvbar" type="button"><canvas id="lvBarCv" width="96" height="96"></canvas><span><b id="lvBarTxt">Level 1</b><i><b id="lvBarFill"></b></i><small id="lvBarSub"></small></span><span class="advnew lvnew" id="lvBadge" hidden>!</span></button>
+      <button id="btnLook" class="lookbtn" type="button"><canvas id="menuLook" width="144" height="88"></canvas><span>Your paddle and shop<small><span class="coin" id="menuCoins">0</span><span>coins</span></small></span></button>
+    </section>
+    <section class="mg modes">
+      <button id="btnAdv" class="advbtn" type="button"><canvas id="menuAdv" width="560" height="125"></canvas><span class="advtx"><b>Adventure</b><small>Story worlds, bosses and loot</small></span><span class="advnew" id="advNew">NEW</span></button>
+      <button id="btnArenas" class="buildbtn" type="button"><span class="bico">🛠️</span><span><b>Arena Builder</b><small>Build and share arenas · <span class="dailytag">Daily Arena</span></small></span><span class="advnew" id="arenaNew">NEW</span></button>
+      <button id="btnRaid" class="advbtn raidbtn" type="button"><canvas id="menuRaid" width="560" height="125"></canvas><span class="advtx"><b>Raids</b><small id="raidMenuSub">Giant bosses · rare loot</small></span><span class="advnew" id="raidNew">NEW</span></button>
+    </section>
+    <section class="mg play">
+      <div class="mtitle">Play</div>
+      <label>Players</label>
+    <div class="seg five" id="modeSeg" role="group" aria-label="Players">
+      <button type="button" data-n="2" aria-pressed="false">2</button>
+      <button type="button" data-n="3" aria-pressed="true">3</button>
+      <button type="button" data-n="4" aria-pressed="false">4</button>
+      <button type="button" data-n="5" aria-pressed="false">5</button>
+      <button type="button" data-n="6" aria-pressed="false">6</button>
+    </div>
+      <label>Mode</label>
+      <div class="seg five" id="fmtSeg" role="group" aria-label="Format">
+      <button type="button" data-f="serie" aria-pressed="true">Series</button>
+      <button type="button" data-f="snabb" aria-pressed="false">Quick</button>
+      <button type="button" data-f="boss" aria-pressed="false">Boss</button>
+      <button type="button" data-f="torn" aria-pressed="false">Tower</button>
+      <button type="button" data-f="cup" aria-pressed="false">Cup</button>
+    </div>
+      <p class="note" id="fmtNote"></p>
+      <div class="seg" id="chaosSeg" role="group" aria-label="Chaos Wheel">
+      <button type="button" data-c="0" aria-pressed="true">Chaos Wheel off</button>
+      <button type="button" data-c="1" aria-pressed="false">Chaos Wheel on</button>
+    </div>
+      <label>Arena</label>
+    <div class="seg four" id="arenaSeg" role="group" aria-label="Arena"></div>
+      <button id="btnHost" class="primary" type="button" disabled>Create room</button>
+    <div class="joinrow">
+      <input id="code" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="CODE" aria-label="Room code">
+      <button id="btnJoin" type="button" disabled>Join</button>
+    </div>
+      <button id="btnPractice" type="button">Practice vs bots</button>
+      <p id="netNote" class="note">Checking online mode…</p>
+      <p id="keysNote" class="note" hidden>On a computer: steer with the mouse or arrow keys. Space = supersmash, Q = hero power.</p>
+    </section>
+    <section class="mg hero">
+      <label>Hero</label>
+    <div class="herocard" id="heroCard">
+      <canvas id="heroArt" width="600" height="420" aria-hidden="true"></canvas>
+      <div class="herotext"><span class="htitle" id="heroTitle"></span><b id="heroName"></b><div class="hlv"><span id="heroLv"></span><i><b id="heroXp"></b></i></div><p id="heroNote"></p><div class="seg three" id="heroVar" role="group" aria-label="Variant"></div></div>
+    </div>
+    <div class="seg three" id="heroSeg" role="group" aria-label="Hero"></div>
+    </section>
+    <section class="mg you2">
+      <button id="btnBp" class="bpbtn" type="button"><span class="bptop"><b>Battle pass</b><span class="badge" id="bpBadge" hidden>0</span></span><small id="bpLvl">Tier 0 / 30</small><i class="bpbar"><b id="bpMini"></b></i></button>
+      <button id="btnQuests" class="questbtn" type="button"><span>Challenges and achievements</span><span class="badge" id="questBadge" hidden>0</span></button>
+      <div class="duo">
+      <button id="btnProfile" class="profbtn" type="button"><canvas id="menuCard" width="120" height="160"></canvas><span>Profile card</span></button>
+      <button id="btnChests" class="profbtn" type="button"><canvas id="menuChest" width="160" height="160"></canvas><span>Chests <span class="badge" id="chestBadge" hidden>0</span></span></button>
+    </div>
+    </section>
+  </div>
+</div>
+
+<div id="custom" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnShopBack" class="backbtn" type="button">‹ Done</button><span class="coin" id="shopCoins">0</span></div>
+    <canvas id="preview" width="640" height="260"></canvas>
+    <div id="buyBar" class="buybar" hidden><span id="buyTxt"></span><button id="btnBuy" type="button">Buy</button></div>
+    <div id="shopTabs" class="tabs" role="group" aria-label="Category"></div>
+    <div id="shopGrid" class="chips" role="group" aria-label="Items"></div>
+    <p class="note">You earn coins in every match. Coins are saved on this device.</p>
+    <button id="btnLookDone" class="primary" type="button">Done</button>
+  </div>
+</div>
+
+<div id="tower" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnTowerTop" class="backbtn" type="button">‹ Back</button><span class="coin" id="towerCoins">0</span></div>
+    <div class="eyebrow">Champion Tower</div>
+    <div class="winner" id="towerHead">Floor 1</div>
+    <p class="note" id="towerSub"></p>
+    <div class="seg three" id="towerSeg" role="group" aria-label="Team">
+      <button type="button" data-t="1" aria-pressed="true">Solo</button>
+      <button type="button" data-t="2" aria-pressed="false">+1 bot</button>
+      <button type="button" data-t="3" aria-pressed="false">+2 bots</button>
+    </div>
+    <button id="btnTowerGo" class="primary" type="button">Challenge the boss</button>
+    <div class="weekly">
+      <div class="wkhead"><canvas id="wkLook" width="88" height="60"></canvas><div><span class="htitle">Weekly boss</span><b id="wkName"></b></div></div>
+      <p class="note" id="wkSub"></p>
+      <button id="btnWeekly" type="button">Challenge the weekly boss</button>
+      <div class="qcat">Leaderboard, fastest win</div>
+      <div id="wkList" class="lb"></div>
+    </div>
+    <p class="note">With friends: create a room and pick Tower. The host's floor counts.</p>
+    <div id="towerList" class="towerlist"></div>
+    <button id="btnTowerBack" class="ghost" type="button">Back</button>
+  </div>
+</div>
+
+<div id="profile" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnProfBack" class="backbtn" type="button">‹ Back</button><span class="coin" id="profCoins">0</span><button id="btnProfSave" class="primary profsave" type="button">💾 Save card</button></div>
+    <canvas id="cardCv" class="cardcv" width="600" height="800"></canvas>
+    <div id="profBuyBar" class="buybar" hidden><span id="profBuyTxt"></span><button id="btnProfBuy" type="button">Buy</button></div>
+    <div id="profTabs" class="tabs qtabs" role="group" aria-label="Category"></div>
+    <div id="profGrid" class="chips pchips" role="group" aria-label="Items"></div>
+    <p class="note">Borders and backgrounds come in six rarities: common, uncommon, rare, epic, legendary and mythic. Mythic items only drop from chests and the Tower.</p>
+  </div>
+</div>
+
+<div id="chests" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnChestBack" class="backbtn" type="button">‹ Back</button><span class="coin" id="chestCoins">0</span></div>
+    <div class="eyebrow">Chests</div>
+    <canvas id="chestCv" class="chestcv" width="600" height="380"></canvas>
+    <div id="chestReveal" class="reveal" hidden>
+      <span id="revRar" class="htitle"></span><b id="revName"></b><small id="revDup"></small>
+      <button id="btnUseNow" type="button">Use now</button>
+    </div>
+    <button id="btnFreeChest" class="primary" type="button">Open free wooden chest</button>
+    <p class="note" id="chestNote"></p>
+    <div class="chestbuys">
+      <button id="buy_wood" type="button"><b>Wooden chest</b><small>Common to epic</small><span class="coin">120</span></button>
+      <button id="buy_gold" type="button"><b>Gold chest</b><small>Uncommon to mythic</small><span class="coin">350</span></button>
+      <button id="buy_myth" type="button"><b>Mythic chest</b><small>Rare to mythic</small><span class="coin">900</span></button>
+    </div>
+    <p class="note">Duplicates turn into coins instead. Every fifth match gives a free wooden chest.</p>
+  </div>
+</div>
+
+<div id="cardView" class="cardview" hidden>
+  <canvas id="viewCv" class="cardcv" width="600" height="800"></canvas>
+  <button id="btnCardClose" class="primary" type="button">Close</button>
+</div>
+
+<div id="cup" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnCupBack" class="backbtn" type="button">‹ Back</button><span class="coin" id="cupCoins">0</span></div>
+    <div class="eyebrow">Tournament</div>
+    <div class="seg" id="cupSeg" role="group" aria-label="Size"><button type="button" data-s="4" aria-pressed="false">4 players</button><button type="button" data-s="8" aria-pressed="true">8 players</button></div>
+    <div class="winner" id="cupStatus"></div>
+    <button id="btnCupGo" class="primary" type="button">Play</button>
+    <div id="cupTree" class="cuptree"></div>
+    <p class="note">Every match is one on one with 3 lives. Opponents get better each round. Winning gives 150 coins.</p>
+  </div>
+</div>
+
+<div id="settings" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnSetBack" class="backbtn" type="button">‹ Back</button></div>
+    <div class="winner">Settings</div>
+    <div class="setcols"><div class="setcol">
+    <label>Layout</label>
+    <div class="seg three" id="layoutSeg" role="group" aria-label="Layout">
+      <button type="button" data-l="auto">Auto</button><button type="button" data-l="mobile">Mobile</button><button type="button" data-l="desk">Desktop</button>
+    </div>
+    <p class="note" id="layoutNote"></p>
+    <label>Interface size</label>
+    <div class="seg four" id="uizSeg" role="group" aria-label="Interface size"><button type="button" data-z="auto">Auto</button><button type="button" data-z="1">100%</button><button type="button" data-z="1.25">125%</button><button type="button" data-z="1.5">150%</button></div>
+    <label>Boss fights with friends</label>
+    <div class="seg" id="hcSeg" role="group" aria-label="Friendly fire"><button type="button" data-h="0">Team shield</button><button type="button" data-h="1">Hardcore</button></div>
+    <p class="note" id="hcNote"></p>
+    <label>Sound effects</label>
+    <div class="seg" id="sfxSeg" role="group" aria-label="Sound effects"><button type="button" data-o="1">On</button><button type="button" data-o="0">Off</button></div>
+    <label>Music</label>
+    <div class="seg" id="musicSeg" role="group" aria-label="Music"><button type="button" data-o="1">On</button><button type="button" data-o="0">Off</button></div>
+    <label>Hero voices</label>
+    <div class="seg" id="voiceSeg" role="group" aria-label="Hero voices"><button type="button" data-v="1" aria-pressed="true">On</button><button type="button" data-v="0" aria-pressed="false">Off</button></div>
+    </div><div class="setcol">
+    <div id="appBox" class="setbox" hidden>
+      <label>Install as app</label>
+      <p class="note left" id="appNote"></p>
+      <button id="btnInstall" class="primary" type="button">Install Trepong</button>
+    </div>
+    <div id="vcBox" class="setbox" hidden>
+      <label>Voice chat</label>
+      <p class="note left">Opens automatically between rounds online (in the lobby, during card picks and after every match) and closes when the next round starts.</p>
+      <div class="seg" id="vcSeg" role="group" aria-label="Voice chat"><button type="button" data-o="1">On</button><button type="button" data-o="0">Off</button></div>
+      <button id="btnMicGrant" type="button">Allow microphone</button>
+      <div class="field"><label for="micSel">Microphone</label><select id="micSel"></select></div>
+      <div class="field" id="spkField"><label for="spkSel">Speakers / headphones</label><select id="spkSel"></select></div>
+      <div class="vctest"><button id="btnMicTest" type="button">Test microphone</button><div class="vmeter"><i id="micLvl"></i></div><button id="btnSpkTest" type="button">Test sound</button></div>
+      <p class="note left" id="vcNote"></p>
+    </div>
+    <label>Save code</label>
+    <p class="note left">Move coins, cosmetics and all progress to another device or browser. Keep the code somewhere safe.</p>
+    <div class="duo"><button id="btnExport" type="button">Export</button><button id="btnImport" type="button">Import</button></div>
+    <div id="saveBox" class="savebox" hidden>
+      <textarea id="saveCode" rows="4" spellcheck="false" aria-label="Save code"></textarea>
+      <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
+      <p class="note" id="saveMsg"></p>
+    </div>
+    <p class="note" id="buildTag">Trepong · build 12 (Oct 9, 2026)</p>
+    <label>Controls</label>
+    <div class="ctrls">
+      <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
+      <div><b>Desktop</b><span>Mouse or arrow keys (A and D work too). Space = supersmash, Q = hero power.</span></div>
+    </div>
+    </div></div>
+  </div>
+</div>
+
+<div id="adv" class="screen" hidden>
+  <div class="panel advpanel">
+    <div class="toprow"><button id="btnAdvBack" class="backbtn" type="button">‹ Back</button><span class="coin" id="advCoins">0</span></div>
+    <div id="advWorlds" class="worlds" role="group" aria-label="Worlds"></div>
+    <div class="advmain">
+      <div class="advleft">
+        <canvas id="advBanner" class="advbanner" width="640" height="260"></canvas>
+        <div class="eyebrow" id="advEyebrow"></div>
+        <div class="winner" id="advTitle"></div>
+        <div class="runbox">
+          <div class="runtop"><span id="advHearts" class="hearts"></span><small id="advLivesTxt"></small><button id="btnBuyLife" type="button">Buy a life</button></div>
+          <div id="advCards" class="pills runpills"></div>
+        </div>
+        <div id="advDead" class="deadbox" hidden><b>Out of lives</b><p class="note">Revive to retry this stage, or restart from your last checkpoint with full lives.</p><button id="btnAdvRevive" class="primary" type="button"></button><button id="btnAdvCp" type="button"></button></div>
+        <div id="advPick" class="pickbox" hidden><div class="eyebrow">Stage cleared · pick a card for this run</div><div id="advPickCards" class="cards"></div></div>
+        <div class="selbox"><b id="advSelTxt"></b><p class="note left" id="advSelDesc"></p><ul id="advGoals" class="goals"></ul></div>
+        <button id="btnAdvGo" class="primary advgo" type="button">Play</button>
+      </div>
+      <div class="advright">
+        <div class="eyebrow">Stages</div>
+        <div id="advPath" class="advpath"></div>
+        <p class="note" id="advStarRw"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="story" class="story" hidden>
+  <canvas id="storyCv"></canvas>
+  <button id="btnStorySkip" class="ghost skip" type="button">Skip ›</button>
+  <div id="storyBox" class="sbox"><b id="storyWho"></b><p id="storyTxt"></p><span class="snext">Tap to continue ▸</span></div>
+</div>
+
+<div id="bp" class="screen" hidden>
+  <div class="panel bppanel">
+    <div class="toprow"><button id="btnBpBack" class="backbtn" type="button">‹ Back</button><span class="coin" id="bpCoins">0</span></div>
+    <div class="eyebrow" id="bpEnds"></div>
+    <div class="winner bpname">Pumpkin Night Pass</div>
+    <div class="bphead"><div class="bptier"><span>TIER</span><b id="bpTierN">0</b></div><div class="bpprog"><i><b id="bpBar"></b></i><small id="bpXpTxt"></small></div></div>
+    <button id="btnBpPrem" class="prembtn" type="button">Unlock premium</button>
+    <p class="note">Earn pass XP from every match, adventure stages (event stages give 50% more) and daily challenges. Premium is paid with coins only.</p>
+    <button id="btnBpAll" class="claimall" type="button" hidden>Claim all</button>
+    <div class="bpcols"><span>Tier</span><span>Free</span><span>★ Premium</span></div>
+    <div id="bpList" class="bplist"></div>
+  </div>
+</div>
+
+<div id="levels" class="screen" hidden>
+  <div class="panel lvpanel">
+    <div class="toprow"><button id="btnLvBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Progression</span><span></span></div>
+    <div class="lvhead"><canvas id="lvHeadCv" width="200" height="200"></canvas><div><b id="lvHeadName"></b><i class="lvxp"><b id="lvHeadFill"></b></i><small id="lvHeadXp"></small></div></div>
+    <div class="tabs qtabs ltabs"><button type="button" class="ltab" data-t="road">Level road</button><button type="button" class="ltab" data-t="coll">Collection</button><button type="button" class="ltab" data-t="pres">Prestige</button></div>
+    <div id="lv_road"><p class="note">Every level pays out. Levels 10, 25 and 45 are milestones with exclusive items, and level 60 unlocks prestige.</p><div id="lvRoad" class="lvroad"></div></div>
+    <div id="lv_coll" hidden>
+      <div class="collhead"><b id="collPct">0%</b><small id="collCount"></small><i class="lvxp"><b id="collFill"></b></i></div>
+      <label>Milestones</label><div id="collMs" class="collms"></div>
+      <label>Categories</label><div id="collCats" class="collcats"></div>
+      <label>Sticker album</label><p class="note left" id="stkCount"></p><div id="stkGrid" class="stkgrid"></div>
+    </div>
+    <div id="lv_pres" hidden>
+      <canvas id="presCv" class="prescv" width="700" height="260"></canvas>
+      <div class="winner" id="presNow"></div>
+      <p class="note" id="presInfo"></p>
+      <button id="btnPrestige" class="primary prestigebtn" type="button">Prestige</button>
+    </div>
+  </div>
+</div>
+
+<div id="loginBox" class="cardview" hidden>
+  <div class="panel loginpanel">
+    <div class="eyebrow">Daily reward</div><div class="winner">Welcome back!</div>
+    <div id="loginDays" class="ldays"></div>
+    <p class="note" id="loginNote"></p>
+    <button id="btnLoginClaim" class="primary" type="button">Claim</button>
+  </div>
+</div>
+
+<div id="lvFx" class="lvfx" hidden>
+  <canvas id="lvFxCv"></canvas>
+  <div class="lvfxtxt">
+    <div id="lvFxTop" class="lvtop"></div>
+    <div id="lvFxLow" class="lvlow">
+      <div id="lvFxMain" class="lvmain"></div>
+      <div id="lvFxSub" class="lvsub"></div>
+      <div id="lvFxRw" class="lvrw"></div>
+      <div id="lvFxBtns" class="lvbtns"><button id="btnLvPres" class="primary" type="button">Prestige now</button><button id="btnLvLater" type="button">Later</button></div>
+    </div>
+    <div id="lvFxTap" class="lvtap">Tap to continue</div>
+  </div>
+</div>
+
+<div id="redeem" class="screen" hidden>
+  <div class="panel redeempanel">
+    <div class="toprow"><button id="btnRedeemBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Redeem code</span><span class="coin" id="redeemCoins">0</span></div>
+    <canvas id="redeemCv" class="redeemcv" width="600" height="260"></canvas>
+    <div class="winner">Got a code?</div>
+    <p class="note">Codes hide in clues during events, in patch notes and wherever the creator feels like it. Each code works once per player.</p>
+    <div class="redeemrow"><input id="redeemIn" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ENTER CODE" aria-label="Code"><button id="btnRedeemGo" class="primary" type="button">Redeem</button></div>
+    <p class="note" id="redeemMsg"></p>
+    <div id="redeemCard" class="redeemcard" hidden><canvas id="redeemCardCv" width="600" height="800"></canvas></div>
+    <div id="redeemGot" class="redeemgot" hidden></div>
+    <label>Redeemed</label>
+    <p class="note left" id="redeemList"></p>
+  </div>
+</div>
+
+<div id="raid" class="screen" hidden>
+  <div class="panel raidpanel">
+    <div class="toprow"><button id="btnRaidBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Raids · rotation changes every 3 days</span><span class="coin" id="raidCoins">0</span></div>
+    <div class="tabs qtabs rtabs"><button type="button" class="rtab" data-t="raids" aria-pressed="true">⚔ Raids</button><button type="button" class="rtab" data-t="forge" aria-pressed="false">⚒ Forge <span class="badge" id="forgeBadge" hidden>!</span></button></div>
+    <div id="raidMainTab" class="raidtab">
+    <div id="raidList" class="raidlist" role="group" aria-label="Raid bosses"></div>
+    <div class="raidmain">
+      <div class="raidleft">
+        <canvas id="raidArt" class="raidart" width="640" height="360"></canvas>
+        <div class="winner" id="raidName"></div>
+        <p class="note left" id="raidLore"></p>
+        <p class="note left" id="raidPhases"></p>
+        <div class="raidopts">
+          <div><label>Difficulty</label>
+          <div class="seg three" id="raidModSeg" role="group" aria-label="Difficulty"><button type="button" data-m="0">Normal</button><button type="button" data-m="1">Hard</button><button type="button" data-m="2">Nightmare</button></div></div>
+          <div><label>Bots on your team</label>
+          <div class="seg four" id="raidTeam" role="group" aria-label="Team"><button type="button" data-p="1">None</button><button type="button" data-p="2">+1</button><button type="button" data-p="3">+2</button><button type="button" data-p="4">+3</button></div></div>
+        </div>
+        <p class="note left" id="raidModNote"></p>
+        <button id="btnRaidGo" class="primary" type="button">Start raid</button>
+        <p class="note" id="raidNote"></p>
+      </div>
+      <div class="raidright">
+        <div class="eyebrow">Possible loot</div>
+        <p class="luck" id="raidLuck"></p>
+        <div id="raidLoot" class="lootlist"></div>
+        <p class="note left" id="raidLootNote"></p>
+      </div>
+    </div>
+    </div>
+    <div id="raidForgeTab" class="raidtab" hidden>
+      <div class="forgemain">
+        <div class="forgeleft">
+          <canvas id="forgeCv" class="forgecv" width="600" height="300"></canvas>
+          <div id="forgeReveal" class="lootreveal" hidden></div>
+          <div class="forgebar"><span>Forge points</span><b id="forgePts">0</b><i><b id="forgeBar"></b></i></div>
+          <button id="btnForgeOpen" class="primary forgeopen" type="button" hidden>Open Raid Chest</button>
+          <button id="btnForgeMake" type="button">Forge a Raid Chest</button>
+          <p class="note left forgehide" id="forgeStats"></p>
+          <label class="forgehide">Forge recipe</label>
+          <div class="ptsrow forgehide"><span class="s">Shard 5</span><span class="r">Rare 10</span><span class="e">Epic 30</span><span class="l">Legendary 100</span><span class="m">Mythic 400</span><span>→</span><span class="goal">1,000 pts = Raid Chest</span></div>
+          <p class="note left forgehide">Sacrifice raid shards and duplicate raid loot for forge points. Raid Chests only come from the Forge and can only be opened here.</p>
+        </div>
+        <div class="forgeright">
+          <div class="eyebrow">Your stash</div>
+          <div class="duo"><button id="btnSelAll" type="button">Select everything</button><button id="btnSacrifice" class="sacbtn" type="button">Sacrifice</button></div>
+          <div id="forgeStash" class="stash"></div>
+          <div class="eyebrow">Raid collection</div>
+          <div id="forgeColl" class="coll"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="build" class="screen buildscreen" hidden>
+  <div class="panel buildpanel">
+    <div class="toprow"><button id="btnBuildBack" class="backbtn" type="button">‹ Arenas</button><input id="lvName" maxlength="24" aria-label="Arena name"><button id="btnLvSave" type="button">Save</button><button id="btnLvTest" class="primary" type="button">▶ Test</button></div>
+    <div class="buildmain">
+      <div class="buildstage"><canvas id="buildCv"></canvas>
+        <div class="bfloat"><button id="btnLvUndo" type="button" aria-label="Undo">↶</button><button id="btnLvRedo" type="button" aria-label="Redo">↷</button></div>
+      </div>
+      <div class="buildside">
+        <div class="tabs qtabs"><button type="button" class="btab" data-t="build">Build</button><button type="button" class="btab" data-t="rules">Rules</button></div>
+        <div id="lvBuildTab" class="lvtab">
+          <div id="lvTools" class="tools"></div>
+          <p class="note left" id="lvTip"></p>
+          <div id="lvInspect" class="inspect" hidden></div>
+          <label>Symmetry</label>
+          <div class="seg three" id="lvSym" role="group"><button type="button" data-s="off">Off</button><button type="button" data-s="mirror">Mirror</button><button type="button" data-s="radial">Every side</button></div>
+          <label>Snap to grid</label>
+          <div class="seg" id="lvSnap" role="group"><button type="button" data-g="1">On</button><button type="button" data-g="0">Off</button></div>
+          <button id="btnLvClear" class="ghost" type="button">Clear everything</button>
+        </div>
+        <div id="lvRulesTab" class="lvtab" hidden>
+          <label>Players / sides</label>
+          <div class="seg five" id="lvSides" role="group"><button type="button" data-n="2">2</button><button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button><button type="button" data-n="6">6</button></div>
+          <label>Arena look</label>
+          <div class="seg four" id="lvAr" role="group"><button type="button" data-a="classic">Classic</button><button type="button" data-a="ice">Ice</button><button type="button" data-a="hole">Black hole</button><button type="button" data-a="retro">Retro</button></div>
+          <label>How to win</label>
+          <div class="seg three" id="lvGoal" role="group"><button type="button" data-g="last">Last standing</button><button type="button" data-g="stars">Star hunt</button><button type="button" data-g="survive">Survive</button></div>
+          <div id="lvGoalRow" class="stepper"><span id="lvGoalL"></span><button type="button" data-d="-1" data-k="lvGoal">−</button><b id="lvGoalV"></b><button type="button" data-d="1" data-k="lvGoal">+</button></div>
+          <p class="note warn" id="lvStarWarn" hidden>Place some stars, or nobody can win the star hunt!</p>
+          <div class="stepper"><span>Lives</span><button type="button" data-d="-1" data-k="lvLives">−</button><b id="lvLivesV"></b><button type="button" data-d="1" data-k="lvLives">+</button></div><div class="stepper"><span>Ball speed</span><button type="button" data-d="-1" data-k="lvSpeed">−</button><b id="lvSpeedV"></b><button type="button" data-d="1" data-k="lvSpeed">+</button></div><div class="stepper"><span>Ball size</span><button type="button" data-d="-1" data-k="lvSize">−</button><b id="lvSizeV"></b><button type="button" data-d="1" data-k="lvSize">+</button></div><div class="stepper"><span>Paddle size</span><button type="button" data-d="-1" data-k="lvPaddle">−</button><b id="lvPaddleV"></b><button type="button" data-d="1" data-k="lvPaddle">+</button></div><div class="stepper"><span>Bots</span><button type="button" data-d="-1" data-k="lvBots">−</button><b id="lvBotsV"></b><button type="button" data-d="1" data-k="lvBots">+</button></div>
+          <label>Balls per serve</label>
+          <div class="seg three" id="lvServe" role="group"><button type="button" data-b="1">1</button><button type="button" data-b="2">2</button><button type="button" data-b="3">3</button></div>
+          <label>Power-ups</label>
+          <div class="seg three" id="lvPu" role="group"><button type="button" data-p="off">Off</button><button type="button" data-p="on">Normal</button><button type="button" data-p="storm">Storm</button></div>
+          <label>Gravity</label>
+          <div class="seg four" id="lvGrav" role="group"><button type="button" data-v="none">None</button><button type="button" data-v="center">To center</button><button type="button" data-v="spin">Whirlpool</button><button type="button" data-v="wind">Wind</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="arenas" class="screen" hidden>
+  <div class="panel arenaspanel">
+    <div class="toprow"><button id="btnArenasBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Arena Builder</span><span></span></div>
+    <div id="dailyCard" class="dailycard">
+      <canvas id="dailyCv" width="240" height="180"></canvas>
+      <div class="dinfo">
+        <span class="eyebrow left">Daily Arena · <span id="dailyLeft"></span></span>
+        <b id="dailyName"></b>
+        <small id="dailyDesc"></small>
+        <div class="medals" id="dailyMedals"></div>
+        <small id="dailyBest"></small>
+        <button id="btnDailyGo" class="primary" type="button">Play today's arena</button>
+      </div>
+    </div>
+    <div class="duo"><button id="btnNewArena" class="primary" type="button">+ New arena</button><button id="btnLoadArena" type="button">Load a code</button></div>
+    <div id="loadBox" class="savebox" hidden><textarea id="loadCode" rows="2" placeholder="Paste an arena code (TPA1-…)"></textarea><div class="duo"><button id="btnLoadGo" class="primary" type="button">Load</button><button id="btnLoadClose" type="button">Close</button></div><p class="note" id="loadMsg"></p></div>
+    <div id="arenaList" class="arenalist"></div>
+  </div>
+</div>
+
+<div id="shareBox" class="cardview" hidden>
+  <div class="panel sharepanel">
+    <div class="eyebrow">Share arena</div><div class="winner" id="shareName"></div>
+    <label>Link</label><textarea id="shareUrl" rows="2" readonly></textarea>
+    <label>Code</label><textarea id="shareCode" rows="3" readonly></textarea>
+    <div class="duo"><button id="btnShareCopy" class="primary" type="button">Copy link</button><button id="btnShareClose" type="button">Close</button></div>
+  </div>
+</div>
+
+<div id="quests" class="screen" hidden>
+  <div class="panel">
+    <div class="toprow"><button id="btnQuestsDone" class="backbtn" type="button">‹ Back</button><span class="coin" id="questCoins">0</span></div>
+    <div id="questTabs" class="tabs qtabs" role="group" aria-label="Category"></div>
+    <button id="btnClaimAll" class="claimall" type="button" hidden>Claim all</button>
+    <p class="note" id="questNote"></p>
+    <div id="questList" class="qlist"></div>
+  </div>
+</div>
+
+<div id="lobby" class="screen" hidden>
+  <div class="panel">
+    <div class="eyebrow">Room code</div>
+    <div id="lobbyCode" class="code">----</div>
+    <p class="note" id="lobbyHint">Your friend opens the same link, enters the code and taps Join.</p>
+    <div class="seg five" id="lobbySeg" role="group" aria-label="Players">
+      <button type="button" data-n="2" aria-pressed="false">2</button>
+      <button type="button" data-n="3" aria-pressed="true">3</button>
+      <button type="button" data-n="4" aria-pressed="false">4</button>
+      <button type="button" data-n="5" aria-pressed="false">5</button>
+      <button type="button" data-n="6" aria-pressed="false">6</button>
+    </div>
+    <div class="seg five" id="lobbyFmt" role="group" aria-label="Room format">
+      <button type="button" data-f="serie" aria-pressed="true">Series</button>
+      <button type="button" data-f="snabb" aria-pressed="false">Quick</button>
+      <button type="button" data-f="boss" aria-pressed="false">Boss</button>
+      <button type="button" data-f="torn" aria-pressed="false">Tower</button>
+      <button type="button" data-f="raid" aria-pressed="false">Raid</button>
+      <button type="button" data-f="arena" aria-pressed="false" id="lobbyArenaBtn" hidden>Arena</button>
+    </div>
+    <div class="seg" id="lobbyChaos" role="group" aria-label="Chaos Wheel in the room">
+      <button type="button" data-c="0" aria-pressed="true">Chaos Wheel off</button>
+      <button type="button" data-c="1" aria-pressed="false">Chaos Wheel on</button>
+    </div>
+    <p class="note" id="lobbyFmtNote"></p>
+    <ul id="seats"></ul>
+    <button id="btnStart" class="primary" type="button">Start</button>
+    <p id="lobbyWait" class="note" hidden>Waiting for the host to start…</p>
+    <button id="btnLeaveLobby" class="ghost" type="button">Leave room</button>
+  </div>
+</div>
+
+<div id="pick" class="screen" hidden>
+  <div class="panel wide">
+    <div class="eyebrow" id="pickTitle">Match 1 of 4</div>
+    <div class="winner" id="pickHead">Pick a card</div>
+    <p class="note" id="pickSub"></p>
+    <div class="timer"><i id="pickBar"></i></div>
+    <div id="pickCards" class="cards"></div>
+    <p class="note" id="pickWait"></p>
+    <div class="eyebrow">Everyone's cards</div>
+    <div id="pickBoard" class="board"></div>
+  </div>
+</div>
+
+<div id="over" class="screen" hidden>
+  <div class="panel">
+    <div class="eyebrow" id="overEyebrow">Match over</div>
+    <div id="overWho" class="winner"></div>
+    <p id="dailyRes" class="dailyres" hidden></p>
+    <div id="overEarn" class="earn" hidden><span class="coin" id="earnAmt">+0</span><small id="earnWhy"></small></div>
+    <div id="overStars" class="ostars" hidden></div>
+    <div id="overRewards" class="orewards" hidden></div>
+    <div id="overBoard" class="board" hidden></div>
+    <div class="stats" id="overStats">
+      <div class="stat"><span>Team score</span><b id="stTot">0</b></div>
+      <div class="stat"><span>Best rally</span><b id="stBest">0</b></div>
+    </div>
+    <div id="stRec" class="newrec" hidden>New rally record!</div>
+    <p id="stRecOld" class="note"></p>
+    <button id="btnNext" class="primary" type="button">To card pick</button>
+    <button id="btnAgain" class="primary" type="button">Play again</button>
+    <button id="btnRevive" class="revive" type="button" hidden>Revive</button>
+    <button id="btnToLobby" type="button">To lobby</button>
+    <p id="overWait" class="note" hidden>The host decides when to continue.</p>
+    <button id="btnOverMenu" class="ghost" type="button">To menu</button>
+  </div>
+</div>
+
+<div id="hud" hidden>
+  <button id="btnQuit" type="button">Menu</button>
+  <span id="hudCode" class="chip" hidden><i id="hudDot"></i><span id="hudCodeTxt"></span></span>
+  <span class="hudr"><button id="btnMusic" type="button">Music</button><button id="btnSound" type="button">Sound on</button></span>
+</div>
+<button id="smashBtn" type="button" hidden>SMASH</button>
+<button id="emoteBtn" type="button" hidden aria-label="Emotes">😀</button>
+<button id="heroBtn" type="button" hidden>POWER</button>
+<div id="emoteTray" hidden></div>
+<div id="voiceBar" class="voicebar" hidden><span class="vtitle">🎙<span class="vtx"> Voice chat</span></span><span id="vcPeople" class="vpeople"></span><button id="btnVcMute" type="button">Mic on</button></div>
+<div id="toast" hidden></div>
+<div id="voteBox" class="votebox" hidden>
+  <div class="vhead"><b>Team vote · pick a boon</b><span id="voteTime"></span></div>
+  <div id="voteOpts" class="vopts"></div>
+  <p class="vnote" id="voteNote"></p>
+</div>
+
+<script>
+/*@JS@*/
+</script>

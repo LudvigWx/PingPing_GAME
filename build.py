@@ -1,9 +1,23 @@
 #!/usr/bin/env python3
-"""Builds the standalone web version (index.html) from the Claude artifact source (trepong.html).
+"""Builds the game from the source modules in src/:
+  trepong.html  single-file version (also used as the Claude artifact)
+  index.html    the web version for GitHub Pages (online play through PeerJS)
+Edit files in src/, then run: python build.py
 The only real difference: online play goes through PeerJS (peerroom.js) instead of the Claude room."""
-import sys, pathlib
+import sys, json, pathlib
 here = pathlib.Path(__file__).resolve().parent
-src = (here / 'trepong.html').read_text(encoding='utf-8')
+
+# 0) assemble the single-file game (trepong.html, also the Claude artifact) from the modules in src/
+S = here / 'src'
+order = json.loads((S / 'order.json').read_text(encoding='utf-8'))
+js = ''.join((S / p).read_text(encoding='utf-8') for p in order).rstrip('\n')
+css = (S / 'style.css').read_text(encoding='utf-8').rstrip('\n')
+page = (S / 'page.html').read_text(encoding='utf-8')
+if page.count('/*@CSS@*/') != 1 or page.count('/*@JS@*/') != 1: sys.exit('build: page.html needs exactly one /*@CSS@*/ and one /*@JS@*/')
+full = page.replace('/*@CSS@*/', css).replace('/*@JS@*/', js)
+(here / 'trepong.html').write_text(full, encoding='utf-8')
+print('built trepong.html', len(full)//1024, 'KB from', len(order), 'modules')
+src = full
 src = src.replace('<meta charset="utf-8">\n', '', 1)
 adapter = (here / 'peerroom.js').read_text(encoding='utf-8') + '\n' + (here / 'voice.js').read_text(encoding='utf-8')
 
