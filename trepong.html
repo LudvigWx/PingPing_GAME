@@ -12825,7 +12825,7 @@ PROF.pt.push(['creator', 'Creator of Trepong', 'm', 'creator'], ['codebreaker', 
 PROF.pe.push(['candycorn', 'Candy corn', 'e', 'code']);
 let redeemed = (() => { const a = storeJSON('trepong-codes', []); return Array.isArray(a) ? a.filter(h => typeof h === 'string') : []; })();
 function saveRedeemed() { store('trepong-codes', JSON.stringify(redeemed)); }
-function normCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+function normCode(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }   // ä, å, ö count as a, a, o
 async function codeHash(s) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('trepong:' + s));
   return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join('');

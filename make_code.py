@@ -6,9 +6,10 @@ Prints the line to paste into the CODES table in src/js/meta/33-redeem.js (searc
 Only the hash ends up in the game, so people reading the source can't see the code itself.
 Codes are case-insensitive and spaces/dashes don't matter (GHOST-PADDLE == ghost paddle).
 """
-import hashlib, re, sys
+import hashlib, re, sys, unicodedata
 
 def norm(code):
+    code = ''.join(ch for ch in unicodedata.normalize('NFD', code) if not unicodedata.combining(ch))   # ä, å, ö count as a, a, o
     return re.sub(r'[^A-Z0-9]', '', code.upper())
 
 def code_hash(code):
