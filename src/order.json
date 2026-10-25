@@ -24,6 +24,7 @@
  "js/ui/20-stats-achievements.js",
  "js/ui/21-heroes.js",
  "js/ui/22-profile.js",
+ "js/art/14-forester-card.js",
  "js/ui/23-chests.js",
  "js/modes/24-weekly-cup.js",
  "js/game/25-replay-victory.js",

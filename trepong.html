@@ -1034,7 +1034,7 @@ body.desk .tabbar button{padding:6px 4px}
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 18 (Oct 25, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 19 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -10646,6 +10646,7 @@ function profSourceText(it) {
   if (it[3] === 'coll') return 'Collection book reward';
   if (it[3] === 'prestige') return 'Prestige reward';
   if (it[3] === 'creator') return 'Only the creator of Trepong has this';
+  if (it[3] === 'gift') return 'A one-of-a-kind gift. Only from a secret code.';
   if (it[3].startsWith('raid:')) return 'Raid loot: ' + RAIDS[it[3].slice(5)].n;
   if (it[3].startsWith('tower:')) return 'Clear floor ' + it[3].slice(6) + ' of the Tower';
   if (it[3].startsWith('ach:')) { const a = ACH.find(x => x[0] === it[3].slice(4)); return 'Achievement: ' + (a ? a[1] : '?'); }
@@ -10689,6 +10690,7 @@ function perim(u, x, y, w, h) { // point + inward normal along a rectangle's per
 }
 function drawEmblem(c, id, x, y, r) {
   if (id === 'candycorn') { drawCandyCorn(c, x, y, r); return; }
+  if (id === 'forester') { fr_emblem(c, x, y, r); return; }
   if (drawEmblem2(c, id, x, y, r)) return;
   c.save(); c.translate(x, y); c.lineJoin = 'round';
   if (id === 'star') { c.fillStyle = '#FFD84A'; c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI/2 + k*Math.PI/5, rr2 = k % 2 ? r*0.45 : r; c.lineTo(Math.cos(a)*rr2, Math.sin(a)*rr2); } c.closePath(); c.fill(); }
@@ -10703,6 +10705,7 @@ function drawEmblem(c, id, x, y, r) {
 }
 function drawCardBg(c, id, t, W, H) {
   if (id === 'creator') { drawCreatorBg(c, t, W, H); return; }
+  if (id === 'oldgrowth') { fr_bg(c, t, W, H); return; }
   if (drawCardBg3(c, id, t, W, H) || drawCardBg2(c, id, t, W, H)) return;
   const lin = (stops) => { const g = c.createLinearGradient(0, 0, W*0.3, H); stops.forEach((s, i) => g.addColorStop(i/(stops.length - 1), s)); return g; };
   if (id === 'sunset') { c.fillStyle = lin(['#FF8A3D', '#FF4F8B', '#4A1A6A']); c.fillRect(0, 0, W, H); }
@@ -10735,6 +10738,7 @@ function drawCardBg(c, id, t, W, H) {
 }
 function drawCardBorder(c, id, t, W, H, accent) {
   if (id === 'creator') { drawCreatorBorder(c, t, W, H); return; }
+  if (id === 'heartwood') { fr_border(c, t, W, H); return; }
   if (id.startsWith('pframe')) { drawPrestigeFrame(c, +id.slice(6), t, W, H); return; }
   if (drawCardBorder3(c, id, t, W, H, accent) || drawCardBorder2(c, id, t, W, H, accent)) return;
   const pad = 5, x = pad, y = pad, w = W - pad*2, h = H - pad*2, R = 20;
@@ -10768,27 +10772,24 @@ function drawCard(c, d, t) {
   const CW = 300, CH = 400;
   c.save(); rr(c, 0, 0, CW, CH, 22); c.clip();
   drawCardBg(c, d.pg, t, CW, CH);
-  const shade = c.createLinearGradient(0, 150, 0, CH); shade.addColorStop(0, 'rgba(8,6,20,0)'); shade.addColorStop(0.25, 'rgba(8,6,20,0.72)'); shade.addColorStop(1, 'rgba(8,6,20,0.9)');
+  const shade = c.createLinearGradient(0, 165, 0, CH), sk = d.pg === 'oldgrowth' ? 0.62 : 1; shade.addColorStop(0, 'rgba(8,6,20,0)'); shade.addColorStop(0.25, 'rgba(8,6,20,' + 0.72*sk + ')'); shade.addColorStop(1, 'rgba(8,6,20,' + 0.9*sk + ')');
   c.fillStyle = shade; c.fillRect(0, 150, CW, CH - 150);
   if (d.pg === 'creator') drawCreatorOverlay(c, t, CW, CH);
-  // hero portrait window
-  drawHero(heroCardCv.getContext('2d'), d.he, 520, 300, t, 0, d.hv);
-  c.save(); rr(c, 22, 22, 256, 148, 14); c.clip(); c.drawImage(heroCardCv, 22, 22, 256, 148); c.restore();
-  c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1; rr(c, 22, 22, 256, 148, 14); c.stroke();
-  // paddle avatar on the portrait
-  c.save(); c.translate(150, 158); c.scale(2.2, 2.2); drawPaddleLocal(c, d.lk, 18, t, [0, -1], {}, 10); c.restore();
+  // the paddle on a soft spotlight (no hero portrait: the card is about you, your paddle and your style)
+  { const sg = c.createRadialGradient(150, 112, 4, 150, 112, 120); sg.addColorStop(0, 'rgba(255,255,255,0.16)'); sg.addColorStop(0.5, 'rgba(255,255,255,0.05)'); sg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = sg; c.fillRect(0, 0, CW, 200); }
+  c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(150, 152, 74, 7, 0, 0, TAU); c.fill();
+  c.save(); c.translate(150, 140); c.scale(3.3, 3.3); drawPaddleLocal(c, d.lk, 18, t, [Math.sin(t*0.7)*0.5, -1], {}, 12); c.restore();
   // level badge
   c.save(); drawPrestigeBadge(c, d.pr || 0, d.lv, 256, 40, 17, t);
   c.fillStyle = PRESTIGE_COLS[d.pr || 0]; c.font = '700 7px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(d.pr ? 'PRESTIGE ' + ROMAN[d.pr] : 'LEVEL', 256, 15); c.restore();
-  // hero tag
-  if (d.he !== 'none') { c.font = '700 9px "Chakra Petch", system-ui'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillStyle = 'rgba(8,6,20,0.7)'; rr(c, 30, 30, 92, 18, 9); c.fill(); c.fillStyle = HERO_INFO[d.he].col; c.fillText(HEROES[d.he][0].toUpperCase() + ' · LEVEL ' + d.hl, 38, 39.5); }
   // name + emblem + title
   c.textAlign = 'center'; c.textBaseline = 'alphabetic';
   c.font = '22px "Rubik Mono One", monospace';
   const nm = d.n.toUpperCase(), nw = c.measureText(nm).width;
   c.fillStyle = '#F0ECFF'; c.fillText(nm, 150 + (d.pe !== 'none' ? 12 : 0), 204);
-  if (d.pe !== 'none') drawEmblem(c, d.pe, 150 - nw/2 - 4, 196, 10);
-  const ti = profItem('pt', d.pt); c.font = '700 12px "Chakra Petch", system-ui'; c.fillStyle = d.pt === 'creator' ? cre_holo(c, 150, 218, t*1.5, 1) : RAR6[ti[2]][1]; c.fillText(ti[1].toUpperCase(), 150, 222);
+  if (d.pe !== 'none') { const big = d.pe === 'forester'; drawEmblem(c, d.pe, 150 - nw/2 - (big ? 8 : 4), big ? 192 : 196, big ? 15 : 10); }
+  const ti = profItem('pt', d.pt); c.font = '700 12px "Chakra Petch", system-ui'; c.fillStyle = d.pt === 'creator' ? cre_holo(c, 150, 218, t*1.5, 1) : d.pt === 'skogsmastare' ? fr_titleFill(c, 150, t) : RAR6[ti[2]][1];
+  if (d.pt === 'skogsmastare') { c.save(); c.shadowColor = 'rgba(160,255,170,0.8)'; c.shadowBlur = 8 + 4*Math.sin(t*1.6); c.fillText(ti[1].toUpperCase(), 150, 222); c.restore(); } else c.fillText(ti[1].toUpperCase(), 150, 222);
   // xp bar
   c.fillStyle = 'rgba(255,255,255,0.12)'; rr(c, 40, 232, 220, 6, 3); c.fill();
   const xg = c.createLinearGradient(40, 0, 260, 0); xg.addColorStop(0, '#3EE6FF'); xg.addColorStop(1, '#FFD84A'); c.fillStyle = xg; rr(c, 40, 232, Math.max(6, 220*d.xf), 6, 3); c.fill();
@@ -10842,7 +10843,7 @@ function drawProfChip(cvs, k, id, t) {
   if (k === 'pg') { c.save(); rr(c, 4, 2, w - 8, h - 4, 8); c.clip(); c.translate(4, 2); c.scale((w - 8)/300, (h - 4)/200); drawCardBg(c, id, t, 300, 200); c.restore(); }
   else if (k === 'pb') { c.save(); c.translate(4, 2); c.scale((w - 8)/240, (h - 4)/160); c.fillStyle = '#16112E'; rr(c, 0, 0, 240, 160, 22); c.fill(); drawCardBorder(c, id, t, 240, 160, myLook.c); c.restore(); }
   else if (k === 'pe') { if (id === 'none') { c.fillStyle = '#6B6490'; c.font = '700 12px system-ui'; c.textAlign = 'center'; c.fillText('—', w/2, h/2 + 4); } else drawEmblem(c, id, w/2, h/2, 18); }
-  else if (k === 'pt') { const it = profItem('pt', id); c.fillStyle = RAR6[it[2]][1]; c.font = '700 13px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('“' + (it[1].length > 11 ? it[1].slice(0, 10) + '…' : it[1]) + '”', w/2, h/2); }
+  else if (k === 'pt') { const it = profItem('pt', id); c.fillStyle = id === 'skogsmastare' ? fr_titleFill(c, w/2, t) : RAR6[it[2]][1]; c.font = '700 13px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('“' + (it[1].length > 11 ? it[1].slice(0, 10) + '…' : it[1]) + '”', w/2, h/2); }
   else if (k === 'sh') { c.fillStyle = '#FFD84A'; c.beginPath(); c.arc(w/2, h/2, 16, 0, TAU); c.fill(); c.fillStyle = '#8A5F0A'; star4(c, w/2, h/2, 9); }
 }
 function pickProf(k, id) {
@@ -10864,7 +10865,7 @@ function syncProf() {
     const id = b.dataset.id, own = k === 'sh' ? true : ownsProf(k, id), it = k === 'sh' ? null : profItem(k, id);
     const sel = k === 'sh' ? profPreview.sh.includes(id) : profPreview[k] === id;
     b.setAttribute('aria-pressed', String(sel)); b.classList.toggle('locked', !own);
-    const pr = b.querySelector('.pr'); pr.textContent = own ? '' : (profPrice(it) != null ? profPrice(it) : it[3] === 'chest' ? 'Chest' : it[3].startsWith('tower:') ? 'Tower ' + it[3].slice(6) : it[3].startsWith('adv:') ? 'Adventure' : it[3] === 'bp' ? 'Pass' : it[3].startsWith('raid:') ? 'Raid' : 'Achievement');
+    const pr = b.querySelector('.pr'); pr.textContent = own ? '' : (profPrice(it) != null ? profPrice(it) : it[3] === 'chest' ? 'Chest' : it[3].startsWith('tower:') ? 'Tower ' + it[3].slice(6) : it[3].startsWith('adv:') ? 'Adventure' : it[3] === 'bp' ? 'Pass' : it[3].startsWith('raid:') ? 'Raid' : it[3] === 'gift' ? 'Gift' : 'Achievement');
     pr.classList.toggle('ex', !own && profPrice(it) == null);
   });
   const bar = $('#profBuyBar');
@@ -10886,6 +10887,152 @@ function previewCardData() { const d = myCardData(); if (profPreview) Object.ass
 function showCardOf(d, fid, n) { viewCard = validCard(d); viewFid = fid || null; viewFn = n || ''; $('#cardView').hidden = false; if (typeof syncCardAdd === 'function') syncCardAdd(); }
 var viewFid = null, viewFn = '';
 
+// ===================== forester profile card set (gift, only from a redeem code) =====================
+// Border: Heartwood frame · Background: Old-growth forest · Title: Skogsmästare · Emblem: The Forester
+PROF.pb.push(['heartwood', 'Heartwood frame', 'm', 'gift', 1]);
+PROF.pg.push(['oldgrowth', 'Old-growth forest', 'm', 'gift', 1]);
+PROF.pt.push(['skogsmastare', 'Skogsmästare', 'm', 'gift']);
+PROF.pe.push(['forester', 'The Forester', 'm', 'gift']);
+Object.assign(GIFT_SRC, { 'pb:heartwood': 1, 'pg:oldgrowth': 1, 'pt:skogsmastare': 1, 'pe:forester': 1 });
+
+// ---------------------------------------------------------------- emblem: the forester herself, side view, axe on her shoulder, a stump in front
+function fr_emblem(c, x, y, r) {
+  const t = clock, bob = Math.sin(t*2.2)*0.18;
+  c.save(); c.translate(x, y); c.scale(r/10, r/10); c.lineJoin = 'round'; c.lineCap = 'round';
+  // soft light behind her so she reads on a dark card
+  c.fillStyle = lx_rg(c, 0, 1, 0.5, 11, ['rgba(140,220,150,0.28)', 'rgba(140,220,150,0)']); c.beginPath(); c.arc(0, 1, 11, 0, TAU); c.fill();
+  // ground + grass
+  c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(1.5, 9.6, 8.5, 1.1, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#4FA05A'; c.lineWidth = 0.35; for (const gx of [-6.5, -5.8, 3.4, 9.2, 9.8]) { c.beginPath(); c.moveTo(gx, 9.6); c.lineTo(gx - 0.4, 8.4); c.moveTo(gx, 9.6); c.lineTo(gx + 0.5, 8.6); c.stroke(); }
+  // the stump in front of her, with a little mushroom and a sprout
+  c.fillStyle = lx_lg(c, 4.4, 0, 9.2, 0, ['#5A3216', '#8A5428', '#4A2810']); c.beginPath(); c.moveTo(4.4, 6.9); c.lineTo(4.2, 9.6); c.quadraticCurveTo(6.8, 10.3, 9.4, 9.6); c.lineTo(9.2, 6.9); c.closePath(); c.fill();
+  c.fillStyle = '#E8C08A'; c.beginPath(); c.ellipse(6.8, 6.9, 2.4, 0.8, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#B07A44'; c.lineWidth = 0.18; c.beginPath(); c.ellipse(6.8, 6.9, 1.5, 0.48, 0, 0, TAU); c.stroke(); c.beginPath(); c.ellipse(6.8, 6.9, 0.7, 0.22, 0, 0, TAU); c.stroke();
+  c.strokeStyle = 'rgba(30,14,4,0.5)'; c.lineWidth = 0.2; c.beginPath(); c.moveTo(5.4, 7.6); c.lineTo(5.5, 9.4); c.moveTo(7.9, 7.6); c.lineTo(8, 9.5); c.stroke();
+  c.fillStyle = '#F2E6D0'; c.fillRect(8.85, 8.4, 0.4, 0.9); c.fillStyle = '#D8453A'; c.beginPath(); c.ellipse(9.05, 8.4, 0.8, 0.5, 0, Math.PI, 0); c.fill(); c.fillStyle = '#FFF'; c.beginPath(); c.arc(8.8, 8.15, 0.12, 0, TAU); c.arc(9.3, 8.2, 0.1, 0, TAU); c.fill();
+  c.strokeStyle = '#5FBF5A'; c.lineWidth = 0.25; c.beginPath(); c.moveTo(6.2, 6.8); c.quadraticCurveTo(6, 5.8, 5.4, 5.6); c.moveTo(6.2, 6.8); c.quadraticCurveTo(6.6, 5.9, 7.2, 5.9); c.stroke();
+  c.save(); c.translate(-1.2, bob);
+  // braid behind her back
+  c.fillStyle = '#7A4220'; for (let k = 0; k < 5; k++) { c.beginPath(); c.ellipse(-1.9 - k*0.12, -4.6 + k*1.05, 0.62, 0.55, 0.3, 0, TAU); c.fill(); }
+  c.fillStyle = '#E2B84A'; c.beginPath(); c.arc(-2.4, 0.8, 0.32, 0, TAU); c.fill();
+  // legs (one step forward) and boots
+  c.fillStyle = '#2E4A2A';
+  c.beginPath(); c.moveTo(-1.6, 3.6); c.lineTo(-2.6, 8.4); c.lineTo(-1.2, 8.4); c.lineTo(-0.2, 3.6); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(-0.6, 3.6); c.lineTo(1.4, 8.3); c.lineTo(2.7, 8.1); c.lineTo(0.9, 3.6); c.closePath(); c.fill();
+  c.fillStyle = '#3A2010'; rr(c, -3.1, 8.2, 2.4, 1.3, 0.4); c.fill(); rr(c, 1.1, 8, 2.6, 1.3, 0.4); c.fill();
+  c.fillStyle = 'rgba(255,220,170,0.35)'; c.fillRect(-2.9, 8.3, 1.8, 0.25); c.fillRect(1.3, 8.1, 2, 0.25);
+  // red flannel jacket
+  c.fillStyle = lx_lg(c, -2, -2, 1.6, 4, ['#E0503E', '#9A2620']); c.beginPath(); c.moveTo(-2.1, -2.2); c.quadraticCurveTo(-2.7, 1.2, -2.2, 4.1); c.lineTo(1.5, 4.1); c.quadraticCurveTo(1.9, 1, 1.2, -2.2); c.closePath(); c.fill();
+  c.save(); c.clip(); c.strokeStyle = 'rgba(40,10,10,0.45)'; c.lineWidth = 0.28; for (let k = -3; k <= 2; k += 1.1) { c.beginPath(); c.moveTo(k, -3); c.lineTo(k, 5); c.stroke(); } for (let k = -2; k <= 4; k += 1.1) { c.beginPath(); c.moveTo(-3, k); c.lineTo(2, k); c.stroke(); } c.restore();
+  c.fillStyle = '#5A3216'; c.fillRect(-2.4, 2.4, 3.9, 0.55); c.fillStyle = '#E2B84A'; c.fillRect(0.6, 2.35, 0.6, 0.65);
+  // the axe on her shoulder: handle from her hand in front, over the shoulder, head behind her
+  c.strokeStyle = lx_lg(c, 2.6, 1, -6, -6, ['#6A3A16', '#C08A50']); c.lineWidth = 0.6; c.beginPath(); c.moveTo(2.7, 0.6); c.lineTo(-5.4, -6.6); c.stroke();
+  c.save(); c.translate(-5.2, -6.4); c.rotate(-0.72);
+  c.fillStyle = lx_lg(c, -1.5, -2.6, 1.5, 0.8, ['#F4F8FF', '#B8C4D4', '#6A7688']); c.beginPath(); c.moveTo(-0.5, -0.6); c.lineTo(-1.6, -2.4); c.quadraticCurveTo(0, -3.3, 1.6, -2.4); c.lineTo(0.5, -0.6); c.closePath(); c.fill();
+  c.fillStyle = '#3A3F4A'; rr(c, -0.65, -0.9, 1.3, 1.5, 0.25); c.fill();
+  c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 0.18; c.beginPath(); c.moveTo(-1.4, -2.5); c.quadraticCurveTo(0, -3.1, 1.4, -2.5); c.stroke();
+  const g = (t % 3)/3; if (g < 0.18) { c.save(); c.globalAlpha = Math.sin(g/0.18*Math.PI); c.fillStyle = '#FFFFFF'; star4(c, 1.2, -2.8, 1.4); c.restore(); }
+  c.restore();
+  // arm reaching up to hold the handle
+  c.strokeStyle = '#B83428'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(0.4, -1.4); c.quadraticCurveTo(1.6, 0.6, 2.4, 0.5); c.stroke();
+  c.fillStyle = '#F2C49A'; c.beginPath(); c.arc(2.6, 0.5, 0.55, 0, TAU); c.fill();
+  // head in profile, facing right towards the stump
+  c.fillStyle = '#F2C49A'; c.fillRect(-0.5, -3.2, 1, 1.2);
+  c.fillStyle = lx_rg(c, 0.4, -5.2, 0.2, 2.4, ['#FFDDB8', '#F2C49A', '#D9A07A']); c.beginPath(); c.moveTo(-1.6, -5.2); c.quadraticCurveTo(-1.5, -7.2, 0.2, -7.1); c.quadraticCurveTo(1.8, -7, 1.9, -5.6); c.lineTo(2.5, -4.8); c.lineTo(1.9, -4.5); c.quadraticCurveTo(1.8, -3.2, 0.4, -3.1); c.quadraticCurveTo(-1.5, -3.2, -1.6, -5.2); c.fill();
+  c.fillStyle = '#7A4220'; c.beginPath(); c.moveTo(-1.7, -4.6); c.quadraticCurveTo(-2, -6.8, -0.2, -7.1); c.lineTo(0.4, -6); c.quadraticCurveTo(-0.6, -5.6, -0.7, -4.2); c.closePath(); c.fill();
+  c.fillStyle = '#2A160A'; c.beginPath(); c.ellipse(1.15, -5.45, 0.2, 0.28, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#8A3A2A'; c.lineWidth = 0.2; c.beginPath(); c.moveTo(1.2, -4); c.quadraticCurveTo(1.6, -3.8, 1.85, -4.1); c.stroke();
+  c.fillStyle = 'rgba(230,110,110,0.4)'; c.beginPath(); c.arc(0.7, -4.5, 0.4, 0, TAU); c.fill();
+  // green beanie with the pom-pom bouncing at the back
+  c.fillStyle = lx_lg(c, 0, -9, 0, -6, ['#4FA05A', '#2A6A36']); c.beginPath(); c.moveTo(-1.8, -6.1); c.quadraticCurveTo(-1.6, -8.9, 0.6, -8.7); c.quadraticCurveTo(2.2, -8.4, 2.1, -6.1); c.closePath(); c.fill();
+  c.fillStyle = '#1F5A2C'; rr(c, -2, -6.5, 4.2, 0.8, 0.35); c.fill();
+  c.fillStyle = '#EDE6D6'; c.beginPath(); c.arc(-1.4 + Math.sin(t*4.4)*0.15, -8.6 + Math.cos(t*4.4)*0.12, 0.75, 0, TAU); c.fill();
+  c.restore();
+  // a leaf drifting past
+  const u = (t*0.18) % 1; c.save(); c.globalAlpha = Math.sin(u*Math.PI); c.translate(-8 + u*16, -8 + u*14 + Math.sin(t*2)*0.8); c.rotate(t*2); c.scale(0.9, 0.9*Math.max(0.3, Math.abs(Math.cos(t*3)))); fg_leaf(c, 1, '#E8742A', false); c.restore();
+  c.restore();
+}
+
+// ---------------------------------------------------------------- border: carved heartwood with gold inlay, pinecones and fireflies
+function fr_border(c, t, W, H) {
+  const p = 5, x = p, y = p, w = W - p*2, h = H - p*2, R = 20, pulse = 0.5 + 0.5*Math.sin(t*1.4);
+  c.save();
+  c.shadowColor = 'rgba(0,0,0,0.6)'; c.shadowBlur = 8;
+  c.strokeStyle = lx_lg(c, 0, 0, W, H, ['#2A160A', '#4A2A14', '#24130A', '#5A3418', '#2A160A']); c.lineWidth = 12; rr(c, x, y, w, h, R); c.stroke();
+  c.restore();
+  // wood grain
+  c.save(); c.strokeStyle = 'rgba(10,4,0,0.55)'; c.lineWidth = 0.8;
+  const N = 140; c.beginPath();
+  for (let k = 0; k <= N; k++) { const [px, py, nx, ny] = cos_rrp(k/N, x, y, w, h, R), o = Math.sin(k*0.9)*2.2; k ? c.lineTo(px + nx*o, py + ny*o) : c.moveTo(px + nx*o, py + ny*o); } c.stroke();
+  c.strokeStyle = 'rgba(200,150,100,0.14)'; c.beginPath();
+  for (let k = 0; k <= N; k++) { const [px, py, nx, ny] = cos_rrp(k/N, x, y, w, h, R), o = -3 + Math.sin(k*1.3 + 1)*1.2; k ? c.lineTo(px + nx*o, py + ny*o) : c.moveTo(px + nx*o, py + ny*o); } c.stroke();
+  c.restore();
+  // old bronze inlay
+  c.save(); c.strokeStyle = lx_lg(c, 0, 0, W, H, ['#B08A4A', '#6A4A1A', '#A07A3A', '#4A320E']); c.lineWidth = 1.3; rr(c, x + 7.5, y + 7.5, w - 15, h - 15, R - 6); c.stroke(); c.restore();
+  // moss and pine needles along the sides
+  c.save(); c.strokeStyle = '#2E6A38'; c.lineWidth = 1; c.lineCap = 'round';
+  for (let k = 0; k < 26; k++) {
+    if (W < 290 && k % 2) continue;
+    const u = k/26 + 0.012, [px, py, nx, ny] = cos_rrp(u, x, y, w, h, R), tx = -ny, ty = nx;
+    for (const s2 of [-1, 1]) { c.beginPath(); c.moveTo(px, py); c.lineTo(px + (tx*0.6 + nx*s2*0.9)*5, py + (ty*0.6 + ny*s2*0.9)*5); c.stroke(); }
+  }
+  c.restore();
+  // leaves hanging down from the top edge on thin vines, swaying a little
+  const strands = W < 290 ? [0.14, 0.32, 0.68, 0.86] : [0.08, 0.17, 0.27, 0.38, 0.62, 0.73, 0.83, 0.92];
+  strands.forEach((fx, i) => {
+    const sx = x + w*fx, sy = y + 4, len = (W < 290 ? 16 : 26) + lx_h(i + 3)*(W < 290 ? 12 : 30), sw = Math.sin(t*1.1 + i*1.3)*3;
+    c.save(); c.strokeStyle = '#3A5A2A'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(sx, sy); c.quadraticCurveTo(sx + sw*0.4, sy + len*0.5, sx + sw, sy + len); c.stroke();
+    const n = Math.max(2, Math.round(len/8));
+    for (let k = 1; k <= n; k++) {
+      const f = k/n, lx = sx + sw*f*f, ly = sy + len*f, side = k % 2 ? 1 : -1;
+      c.save(); c.translate(lx, ly); c.rotate(side*0.9 + Math.PI/2 + Math.sin(t*1.6 + i + k)*0.15); c.translate(3.2, 0); c.scale(3.4, 3.4);
+      fg_leaf(c, 1, ['#2F7A3E', '#3E8E4E', '#6A8A2A', '#B0702A', '#8A3A1A'][(i + k) % 5], true); c.restore();
+    }
+    c.restore();
+  });
+  // pinecone ornaments in the corners
+  [[x + 9, y + 9, -0.6], [x + w - 9, y + 9, 0.6], [x + w - 9, y + h - 9, 2.5], [x + 9, y + h - 9, -2.5]].forEach(([px, py, a]) => { c.save(); c.translate(px, py); c.scale(6.5, 6.5); fg_cone(c, 1, a); c.restore(); });
+  // a dark medallion at the top with a faintly glowing pine
+  c.save(); c.translate(W/2, y + 1);
+  c.fillStyle = lx_lg(c, -12, -12, 12, 12, ['#B08A4A', '#6A4A1A', '#4A320E']); c.beginPath(); c.arc(0, 0, 11, 0, TAU); c.fill();
+  c.fillStyle = '#10261A'; c.beginPath(); c.arc(0, 0, 9, 0, TAU); c.fill();
+  c.shadowColor = 'rgba(140,230,150,0.6)'; c.shadowBlur = 3 + 3*pulse; c.fillStyle = '#4F9A4A'; c.beginPath(); c.moveTo(0, -6.5); c.lineTo(4.8, 4); c.lineTo(-4.8, 4); c.closePath(); c.fill();
+  c.shadowBlur = 0; c.fillStyle = '#8A5428'; c.fillRect(-0.9, 4, 1.8, 2.5);
+  c.restore();
+  // just a few dim fireflies
+  c.save(); c.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < 4; k++) {
+    const u = (t*0.025 + k/4) % 1, [px, py, nx, ny] = cos_rrp(u, x, y, w, h, R), o = 8 + Math.sin(t*2 + k)*4, on = Math.max(0, Math.sin(t*1.8 + k*2.1));
+    const fx = px + nx*o, fy = py + ny*o;
+    c.globalAlpha = on*0.55; c.fillStyle = lx_rg(c, fx, fy, 0, 4, ['rgba(220,255,140,0.8)', 'rgba(190,255,110,0)']); c.beginPath(); c.arc(fx, fy, 4, 0, TAU); c.fill();
+  }
+  c.restore();
+}
+
+// ---------------------------------------------------------------- background: the forest arena's golden-hour forest, alive
+const frBgCache = {};
+function fr_bg(c, t, W, H) {
+  const key = W + 'x' + H; if (!frBgCache[key]) frBgCache[key] = fg_buildBg(W, H);
+  c.drawImage(frBgCache[key], 0, 0, W, H);
+  c.save(); c.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < 3; k++) {
+    const x0 = W*(0.3 + k*0.2) + Math.sin(t*0.3 + k)*W*0.04;
+    c.globalAlpha = 0.1 + 0.05*Math.sin(t*0.8 + k*2);
+    c.fillStyle = lx_lg(c, 0, 0, 0, H, ['rgba(255,230,160,1)', 'rgba(255,220,150,0)']);
+    c.beginPath(); c.moveTo(x0 - W*0.03, 0); c.lineTo(x0 + W*0.03, 0); c.lineTo(x0 + W*0.16, H); c.lineTo(x0 - W*0.08, H); c.closePath(); c.fill();
+  }
+  for (let k = 0; k < 14; k++) {
+    const fx = W*lx_h(k + 3) + Math.sin(t*0.6 + k)*10, fy = H*(0.25 + lx_h(k + 11)*0.7) + Math.cos(t*0.8 + k)*8, on = Math.max(0, Math.sin(t*1.7 + k*2.3));
+    c.globalAlpha = on; c.fillStyle = lx_rg(c, fx, fy, 0, 6, ['rgba(220,255,140,0.9)', 'rgba(190,255,110,0)']); c.beginPath(); c.arc(fx, fy, 6, 0, TAU); c.fill();
+  }
+  c.restore();
+  for (let k = 0; k < 6; k++) {
+    const u = (t*0.07 + lx_h(k + 30)) % 1, lx = W*lx_h(k + 40) + Math.sin(t + k)*20, ly = -10 + u*(H + 20);
+    c.save(); c.globalAlpha = 0.8*Math.sin(u*Math.PI); c.translate(lx, ly); c.rotate(t*1.4 + k); c.scale(5, 5*Math.max(0.25, Math.abs(Math.cos(t*2 + k)))); fg_leaf(c, 1, FG_LEAF_COLS[k % 6], false); c.restore();
+  }
+}
+// title colour: gold melting into forest green, with a soft glow
+function fr_titleFill(c, x, t) { const o = (t*0.25) % 1, g = c.createLinearGradient(x - 90 + o*60, 0, x + 90 + o*60, 0); g.addColorStop(0, '#FFE7A0'); g.addColorStop(0.35, '#B8F2A8'); g.addColorStop(0.65, '#FFE7A0'); g.addColorStop(1, '#9FE6A0'); return g; }
 // ---------- chests ----------
 const CHESTS = {
   wood: { n: 'Wooden chest',     price: 120, odds: { c: 50, u: 30, r: 15, e: 5 },              col: '#C08040', trim: '#8A5A2B' },
@@ -12817,6 +12964,7 @@ const CODES = {
   '91d980becc16bbdcad14d30ce28dfd70cf0db22cba9ea07d90c8645791a77b41': { n: 'Welcome to Trepong', r: [['coins', 250], ['chest', 'wood']] },
   '46532d99f79b700069b83c07e7eb3c54c677dfc5455b05867226df55eb801965': { n: 'Pumpkin Night secret', r: [['pe', 'candycorn'], ['pt', 'codebreaker'], ['coins', 300]], end: ADV_EVENT_END },
   '073debdc198f532c2377f183bf93402dc58544d8a6a2804f0fcd53b864c13241': { n: 'The Forester\'s Bundle', r: [['h', 'pinetree'], ['f', 'pinecones'], ['b', 'lingon'], ['u', 'leafwind'], ['v', 'forestfall'], ['a', 'forest']], look: 1, vic: 'forestfall' },
+  'e3e08fa81a0f5f0588bc50683951d6c16174fec161ae7f961de126d334c50145': { n: 'The Forester\'s Card', r: [['pb', 'heartwood'], ['pg', 'oldgrowth'], ['pt', 'skogsmastare'], ['pe', 'forester']], eq: 1, vic: 'forestfall' },
   '2bc15f89d763b69932b54df3a71aae3d54195cf72a1e6e2ab8986419368cb118': { n: 'The Creator', r: [['pb', 'creator'], ['pg', 'creator'], ['pt', 'creator']], eq: 1, big: 1 }
 };
 PROF.pb.push(['creator', 'Architect\'s Prism', 'm', 'creator', 1]);
@@ -12878,7 +13026,7 @@ async function redeemCode() {
   redeemShow = { r: C.r, big: !!C.big, n: C.n };
   redeemAnim = { kind: 'yes', t: 0, big: !!C.big, n: C.n };
   $('#redeemIn').value = '';
-  redeemMsg(C.big ? 'Welcome home, creator. Everything is equipped.' : 'Code redeemed: ' + C.n + '!' + (C.look ? ' Everything is equipped.' : ''), 'good');
+  redeemMsg(C.big ? 'Welcome home, creator. Everything is equipped.' : 'Code redeemed: ' + C.n + '!' + (C.look || C.eq ? ' Everything is equipped.' : ''), 'good');
   sfx.win(); buzz(C.big ? [40, 30, 80, 30, 200] : [40, 30, 80]);
   startVictory(C.vic || (C.big ? 'supernova' : 'confetti'));
   renderRedeem();

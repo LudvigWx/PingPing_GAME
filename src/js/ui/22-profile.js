@@ -45,6 +45,7 @@ function profSourceText(it) {
   if (it[3] === 'coll') return 'Collection book reward';
   if (it[3] === 'prestige') return 'Prestige reward';
   if (it[3] === 'creator') return 'Only the creator of Trepong has this';
+  if (it[3] === 'gift') return 'A one-of-a-kind gift. Only from a secret code.';
   if (it[3].startsWith('raid:')) return 'Raid loot: ' + RAIDS[it[3].slice(5)].n;
   if (it[3].startsWith('tower:')) return 'Clear floor ' + it[3].slice(6) + ' of the Tower';
   if (it[3].startsWith('ach:')) { const a = ACH.find(x => x[0] === it[3].slice(4)); return 'Achievement: ' + (a ? a[1] : '?'); }
@@ -88,6 +89,7 @@ function perim(u, x, y, w, h) { // point + inward normal along a rectangle's per
 }
 function drawEmblem(c, id, x, y, r) {
   if (id === 'candycorn') { drawCandyCorn(c, x, y, r); return; }
+  if (id === 'forester') { fr_emblem(c, x, y, r); return; }
   if (drawEmblem2(c, id, x, y, r)) return;
   c.save(); c.translate(x, y); c.lineJoin = 'round';
   if (id === 'star') { c.fillStyle = '#FFD84A'; c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI/2 + k*Math.PI/5, rr2 = k % 2 ? r*0.45 : r; c.lineTo(Math.cos(a)*rr2, Math.sin(a)*rr2); } c.closePath(); c.fill(); }
@@ -102,6 +104,7 @@ function drawEmblem(c, id, x, y, r) {
 }
 function drawCardBg(c, id, t, W, H) {
   if (id === 'creator') { drawCreatorBg(c, t, W, H); return; }
+  if (id === 'oldgrowth') { fr_bg(c, t, W, H); return; }
   if (drawCardBg3(c, id, t, W, H) || drawCardBg2(c, id, t, W, H)) return;
   const lin = (stops) => { const g = c.createLinearGradient(0, 0, W*0.3, H); stops.forEach((s, i) => g.addColorStop(i/(stops.length - 1), s)); return g; };
   if (id === 'sunset') { c.fillStyle = lin(['#FF8A3D', '#FF4F8B', '#4A1A6A']); c.fillRect(0, 0, W, H); }
@@ -134,6 +137,7 @@ function drawCardBg(c, id, t, W, H) {
 }
 function drawCardBorder(c, id, t, W, H, accent) {
   if (id === 'creator') { drawCreatorBorder(c, t, W, H); return; }
+  if (id === 'heartwood') { fr_border(c, t, W, H); return; }
   if (id.startsWith('pframe')) { drawPrestigeFrame(c, +id.slice(6), t, W, H); return; }
   if (drawCardBorder3(c, id, t, W, H, accent) || drawCardBorder2(c, id, t, W, H, accent)) return;
   const pad = 5, x = pad, y = pad, w = W - pad*2, h = H - pad*2, R = 20;
@@ -167,27 +171,24 @@ function drawCard(c, d, t) {
   const CW = 300, CH = 400;
   c.save(); rr(c, 0, 0, CW, CH, 22); c.clip();
   drawCardBg(c, d.pg, t, CW, CH);
-  const shade = c.createLinearGradient(0, 150, 0, CH); shade.addColorStop(0, 'rgba(8,6,20,0)'); shade.addColorStop(0.25, 'rgba(8,6,20,0.72)'); shade.addColorStop(1, 'rgba(8,6,20,0.9)');
+  const shade = c.createLinearGradient(0, 165, 0, CH), sk = d.pg === 'oldgrowth' ? 0.62 : 1; shade.addColorStop(0, 'rgba(8,6,20,0)'); shade.addColorStop(0.25, 'rgba(8,6,20,' + 0.72*sk + ')'); shade.addColorStop(1, 'rgba(8,6,20,' + 0.9*sk + ')');
   c.fillStyle = shade; c.fillRect(0, 150, CW, CH - 150);
   if (d.pg === 'creator') drawCreatorOverlay(c, t, CW, CH);
-  // hero portrait window
-  drawHero(heroCardCv.getContext('2d'), d.he, 520, 300, t, 0, d.hv);
-  c.save(); rr(c, 22, 22, 256, 148, 14); c.clip(); c.drawImage(heroCardCv, 22, 22, 256, 148); c.restore();
-  c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1; rr(c, 22, 22, 256, 148, 14); c.stroke();
-  // paddle avatar on the portrait
-  c.save(); c.translate(150, 158); c.scale(2.2, 2.2); drawPaddleLocal(c, d.lk, 18, t, [0, -1], {}, 10); c.restore();
+  // the paddle on a soft spotlight (no hero portrait: the card is about you, your paddle and your style)
+  { const sg = c.createRadialGradient(150, 112, 4, 150, 112, 120); sg.addColorStop(0, 'rgba(255,255,255,0.16)'); sg.addColorStop(0.5, 'rgba(255,255,255,0.05)'); sg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = sg; c.fillRect(0, 0, CW, 200); }
+  c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(150, 152, 74, 7, 0, 0, TAU); c.fill();
+  c.save(); c.translate(150, 140); c.scale(3.3, 3.3); drawPaddleLocal(c, d.lk, 18, t, [Math.sin(t*0.7)*0.5, -1], {}, 12); c.restore();
   // level badge
   c.save(); drawPrestigeBadge(c, d.pr || 0, d.lv, 256, 40, 17, t);
   c.fillStyle = PRESTIGE_COLS[d.pr || 0]; c.font = '700 7px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(d.pr ? 'PRESTIGE ' + ROMAN[d.pr] : 'LEVEL', 256, 15); c.restore();
-  // hero tag
-  if (d.he !== 'none') { c.font = '700 9px "Chakra Petch", system-ui'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillStyle = 'rgba(8,6,20,0.7)'; rr(c, 30, 30, 92, 18, 9); c.fill(); c.fillStyle = HERO_INFO[d.he].col; c.fillText(HEROES[d.he][0].toUpperCase() + ' · LEVEL ' + d.hl, 38, 39.5); }
   // name + emblem + title
   c.textAlign = 'center'; c.textBaseline = 'alphabetic';
   c.font = '22px "Rubik Mono One", monospace';
   const nm = d.n.toUpperCase(), nw = c.measureText(nm).width;
   c.fillStyle = '#F0ECFF'; c.fillText(nm, 150 + (d.pe !== 'none' ? 12 : 0), 204);
-  if (d.pe !== 'none') drawEmblem(c, d.pe, 150 - nw/2 - 4, 196, 10);
-  const ti = profItem('pt', d.pt); c.font = '700 12px "Chakra Petch", system-ui'; c.fillStyle = d.pt === 'creator' ? cre_holo(c, 150, 218, t*1.5, 1) : RAR6[ti[2]][1]; c.fillText(ti[1].toUpperCase(), 150, 222);
+  if (d.pe !== 'none') { const big = d.pe === 'forester'; drawEmblem(c, d.pe, 150 - nw/2 - (big ? 8 : 4), big ? 192 : 196, big ? 15 : 10); }
+  const ti = profItem('pt', d.pt); c.font = '700 12px "Chakra Petch", system-ui'; c.fillStyle = d.pt === 'creator' ? cre_holo(c, 150, 218, t*1.5, 1) : d.pt === 'skogsmastare' ? fr_titleFill(c, 150, t) : RAR6[ti[2]][1];
+  if (d.pt === 'skogsmastare') { c.save(); c.shadowColor = 'rgba(160,255,170,0.8)'; c.shadowBlur = 8 + 4*Math.sin(t*1.6); c.fillText(ti[1].toUpperCase(), 150, 222); c.restore(); } else c.fillText(ti[1].toUpperCase(), 150, 222);
   // xp bar
   c.fillStyle = 'rgba(255,255,255,0.12)'; rr(c, 40, 232, 220, 6, 3); c.fill();
   const xg = c.createLinearGradient(40, 0, 260, 0); xg.addColorStop(0, '#3EE6FF'); xg.addColorStop(1, '#FFD84A'); c.fillStyle = xg; rr(c, 40, 232, Math.max(6, 220*d.xf), 6, 3); c.fill();
@@ -241,7 +242,7 @@ function drawProfChip(cvs, k, id, t) {
   if (k === 'pg') { c.save(); rr(c, 4, 2, w - 8, h - 4, 8); c.clip(); c.translate(4, 2); c.scale((w - 8)/300, (h - 4)/200); drawCardBg(c, id, t, 300, 200); c.restore(); }
   else if (k === 'pb') { c.save(); c.translate(4, 2); c.scale((w - 8)/240, (h - 4)/160); c.fillStyle = '#16112E'; rr(c, 0, 0, 240, 160, 22); c.fill(); drawCardBorder(c, id, t, 240, 160, myLook.c); c.restore(); }
   else if (k === 'pe') { if (id === 'none') { c.fillStyle = '#6B6490'; c.font = '700 12px system-ui'; c.textAlign = 'center'; c.fillText('—', w/2, h/2 + 4); } else drawEmblem(c, id, w/2, h/2, 18); }
-  else if (k === 'pt') { const it = profItem('pt', id); c.fillStyle = RAR6[it[2]][1]; c.font = '700 13px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('“' + (it[1].length > 11 ? it[1].slice(0, 10) + '…' : it[1]) + '”', w/2, h/2); }
+  else if (k === 'pt') { const it = profItem('pt', id); c.fillStyle = id === 'skogsmastare' ? fr_titleFill(c, w/2, t) : RAR6[it[2]][1]; c.font = '700 13px "Chakra Petch", system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('“' + (it[1].length > 11 ? it[1].slice(0, 10) + '…' : it[1]) + '”', w/2, h/2); }
   else if (k === 'sh') { c.fillStyle = '#FFD84A'; c.beginPath(); c.arc(w/2, h/2, 16, 0, TAU); c.fill(); c.fillStyle = '#8A5F0A'; star4(c, w/2, h/2, 9); }
 }
 function pickProf(k, id) {
@@ -263,7 +264,7 @@ function syncProf() {
     const id = b.dataset.id, own = k === 'sh' ? true : ownsProf(k, id), it = k === 'sh' ? null : profItem(k, id);
     const sel = k === 'sh' ? profPreview.sh.includes(id) : profPreview[k] === id;
     b.setAttribute('aria-pressed', String(sel)); b.classList.toggle('locked', !own);
-    const pr = b.querySelector('.pr'); pr.textContent = own ? '' : (profPrice(it) != null ? profPrice(it) : it[3] === 'chest' ? 'Chest' : it[3].startsWith('tower:') ? 'Tower ' + it[3].slice(6) : it[3].startsWith('adv:') ? 'Adventure' : it[3] === 'bp' ? 'Pass' : it[3].startsWith('raid:') ? 'Raid' : 'Achievement');
+    const pr = b.querySelector('.pr'); pr.textContent = own ? '' : (profPrice(it) != null ? profPrice(it) : it[3] === 'chest' ? 'Chest' : it[3].startsWith('tower:') ? 'Tower ' + it[3].slice(6) : it[3].startsWith('adv:') ? 'Adventure' : it[3] === 'bp' ? 'Pass' : it[3].startsWith('raid:') ? 'Raid' : it[3] === 'gift' ? 'Gift' : 'Achievement');
     pr.classList.toggle('ex', !own && profPrice(it) == null);
   });
   const bar = $('#profBuyBar');
