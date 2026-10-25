@@ -317,17 +317,12 @@ function applyLayout() {
   let z = 1;
   if (uiSize !== 'auto') z = +uiSize;
   else if (d) { // grow the UI as far as the menu still fits the window without scrolling
-    document.documentElement.style.setProperty('--uiz', '1');
-    const mp = document.querySelector('.menupanel'), menuOn = !$('#menu').hidden;
-    if (!menuOn) $('#menu').hidden = false;
-    const r = mp.getBoundingClientRect();
-    if (!menuOn) $('#menu').hidden = true;
-    if (r.height > 0) z = clamp(Math.min((innerWidth - 64)/r.width, (innerHeight - 40)/r.height), 0.85, 1.4);
+    z = clamp(Math.min(innerWidth/1050, innerHeight/860), 0.85, 1.35);
   }
   document.documentElement.style.setProperty('--uiz', String(Math.round(z*100)/100));
   setSeg($('#uizSeg'), uiSize, 'z');
   setSeg($('#layoutSeg'), layoutPref, 'l');
-  $('#layoutNote').textContent = layoutPref === 'auto' ? 'Auto picks desktop layout on wide screens with a mouse, otherwise mobile. Right now: ' + (d ? 'desktop' : 'mobile') + '.' : (d ? 'Desktop layout: the menu in three columns.' : 'Mobile layout: everything in one column.');
+  $('#layoutNote').textContent = layoutPref === 'auto' ? 'Auto picks desktop layout on wide screens with a mouse, otherwise mobile. Right now: ' + (d ? 'desktop' : 'mobile') + '.' : (d ? 'Desktop layout: tabs on the left side.' : 'Mobile layout: tabs at the bottom.');
 }
 addEventListener('resize', applyLayout);
 try { document.fonts.ready.then(() => setTimeout(applyLayout, 50)); } catch (e) {}

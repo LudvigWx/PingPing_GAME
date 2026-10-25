@@ -2,88 +2,129 @@
 <title>Trepong</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Rubik+Mono+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Outfit:wght@400;500;600;700&family=Rubik+Mono+One&display=swap">
 <style>
 /*@CSS@*/
 </style>
 
 <canvas id="game" aria-label="Arena"></canvas>
 
+<div id="scenery" aria-hidden="true"><!--@ART:forest@--><div id="sceneNeb" hidden><!--@ART:nebula@--></div></div>
+
 <div id="menu" class="screen">
   <div class="panel menupanel">
-    <div class="mhead">
-      <div class="mtools">
-        <button id="btnLive" class="livepill" type="button" hidden><i></i><b id="liveN">0</b> online</button>
-        <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
-        <button id="btnFriends" class="gear friendsbtn" type="button" aria-label="Friends" title="Friends" hidden>👥<span class="advnew fbadge" id="friendsBadge" hidden>0</span></button>
-        <button id="btnRedeem" class="gear" type="button" aria-label="Redeem code" title="Redeem code">🎁</button>
-        <button id="btnSettings" class="gear" type="button" aria-label="Settings" title="Settings">⚙</button>
+    <div class="mtop">
+      <button id="btnLive" class="livepill" type="button" hidden><i></i><b id="liveN">0</b> online</button>
+      <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
+      <span class="toppill"><span class="coin" id="topCoins">0</span></span>
+      <button id="btnSettings" class="gear" type="button" aria-label="Settings" title="Settings"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/></svg></button>
+    </div>
+
+    <div class="mtab" data-tab="play">
+      <div class="mhead">
+        <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
+        <p class="tag" id="greetTag">Ready to rally?</p>
       </div>
-      <h1 class="logo"><span class="a">T</span><span class="b">R</span><span class="c">E</span>PONG</h1>
-      <p class="tag">Ping pong in a triangle. Cards, power-ups and chaos.</p>
+      <section class="mcard play">
+        <div class="mtitle">Quick play</div>
+        <label>Players</label>
+        <div class="seg five" id="modeSeg" role="group" aria-label="Players">
+          <button type="button" data-n="2" aria-pressed="false">2</button>
+          <button type="button" data-n="3" aria-pressed="true">3</button>
+          <button type="button" data-n="4" aria-pressed="false">4</button>
+          <button type="button" data-n="5" aria-pressed="false">5</button>
+          <button type="button" data-n="6" aria-pressed="false">6</button>
+        </div>
+        <label>Mode</label>
+        <div class="seg five" id="fmtSeg" role="group" aria-label="Format">
+          <button type="button" data-f="serie" aria-pressed="true">Series</button>
+          <button type="button" data-f="snabb" aria-pressed="false">Quick</button>
+          <button type="button" data-f="boss" aria-pressed="false">Boss</button>
+          <button type="button" data-f="torn" aria-pressed="false">Tower</button>
+          <button type="button" data-f="cup" aria-pressed="false">Cup</button>
+        </div>
+        <p class="note" id="fmtNote"></p>
+        <div id="miniRally" class="minilb" hidden></div>
+        <div class="seg" id="chaosSeg" role="group" aria-label="Chaos Wheel">
+          <button type="button" data-c="0" aria-pressed="true">Chaos Wheel off</button>
+          <button type="button" data-c="1" aria-pressed="false">Chaos Wheel on</button>
+        </div>
+        <label>Arena</label>
+        <div class="seg four" id="arenaSeg" role="group" aria-label="Arena"></div>
+        <button id="btnPractice" class="cta" type="button"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg>Practice vs bots</button>
+        <div class="hostrow">
+          <button id="btnHost" type="button" disabled>Create room</button>
+          <div class="joinrow">
+            <input id="code" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="CODE" aria-label="Room code">
+            <button id="btnJoin" type="button" disabled>Join</button>
+          </div>
+        </div>
+        <p id="netNote" class="note">Checking online mode…</p>
+        <p id="keysNote" class="note" hidden>On a computer: steer with the mouse or arrow keys. Space = supersmash, Q = hero power.</p>
+      </section>
     </div>
-    <section class="mg you1">
-      <div class="field"><label for="name">Your name</label><input id="name" maxlength="12" autocomplete="off" placeholder="Ludvig"></div>
-      <button id="btnLevel" class="lvbar" type="button"><canvas id="lvBarCv" width="96" height="96"></canvas><span><b id="lvBarTxt">Level 1</b><i><b id="lvBarFill"></b></i><small id="lvBarSub"></small></span><span class="advnew lvnew" id="lvBadge" hidden>!</span></button>
-      <button id="btnLook" class="lookbtn" type="button"><canvas id="menuLook" width="144" height="88"></canvas><span>Your paddle and shop<small><span class="coin" id="menuCoins">0</span><span>coins</span></small></span></button>
-    </section>
-    <section class="mg modes">
-      <button id="btnAdv" class="advbtn" type="button"><canvas id="menuAdv" width="560" height="125"></canvas><span class="advtx"><b>Adventure</b><small>Story worlds, bosses and loot<span id="liveAdv" class="livecnt"></span></small></span><span class="advnew" id="advNew">NEW</span></button>
-      <button id="btnArenas" class="buildbtn" type="button"><span class="bico">🛠️</span><span><b>Arena Builder</b><small>Build and share arenas · <span class="dailytag">Daily Arena</span><span id="liveBuild" class="livecnt"></span></small></span><span class="advnew" id="arenaNew">NEW</span></button>
-      <button id="btnRaid" class="advbtn raidbtn" type="button"><canvas id="menuRaid" width="560" height="125"></canvas><span class="advtx"><b>Raids</b><small><span id="raidMenuSub">Giant bosses · rare loot</span><span id="liveRaid" class="livecnt"></span></small></span><span class="advnew" id="raidNew">NEW</span></button>
-    </section>
-    <section class="mg play">
-      <div class="mtitle">Play</div>
-      <label>Players</label>
-    <div class="seg five" id="modeSeg" role="group" aria-label="Players">
-      <button type="button" data-n="2" aria-pressed="false">2</button>
-      <button type="button" data-n="3" aria-pressed="true">3</button>
-      <button type="button" data-n="4" aria-pressed="false">4</button>
-      <button type="button" data-n="5" aria-pressed="false">5</button>
-      <button type="button" data-n="6" aria-pressed="false">6</button>
-    </div>
-      <label>Mode</label>
-      <div class="seg five" id="fmtSeg" role="group" aria-label="Format">
-      <button type="button" data-f="serie" aria-pressed="true">Series</button>
-      <button type="button" data-f="snabb" aria-pressed="false">Quick</button>
-      <button type="button" data-f="boss" aria-pressed="false">Boss</button>
-      <button type="button" data-f="torn" aria-pressed="false">Tower</button>
-      <button type="button" data-f="cup" aria-pressed="false">Cup</button>
-    </div>
-      <p class="note" id="fmtNote"></p>
-      <div id="miniRally" class="minilb" hidden></div>
-      <div class="seg" id="chaosSeg" role="group" aria-label="Chaos Wheel">
-      <button type="button" data-c="0" aria-pressed="true">Chaos Wheel off</button>
-      <button type="button" data-c="1" aria-pressed="false">Chaos Wheel on</button>
-    </div>
-      <label>Arena</label>
-    <div class="seg four" id="arenaSeg" role="group" aria-label="Arena"></div>
-      <button id="btnHost" class="primary" type="button" disabled>Create room</button>
-    <div class="joinrow">
-      <input id="code" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="CODE" aria-label="Room code">
-      <button id="btnJoin" type="button" disabled>Join</button>
-    </div>
-      <button id="btnPractice" type="button">Practice vs bots</button>
-      <p id="netNote" class="note">Checking online mode…</p>
-      <p id="keysNote" class="note" hidden>On a computer: steer with the mouse or arrow keys. Space = supersmash, Q = hero power.</p>
-    </section>
-    <section class="mg hero">
-      <label>Hero</label>
-    <div class="herocard" id="heroCard">
-      <canvas id="heroArt" width="600" height="420" aria-hidden="true"></canvas>
-      <div class="herotext"><span class="htitle" id="heroTitle"></span><b id="heroName"></b><div class="hlv"><span id="heroLv"></span><i><b id="heroXp"></b></i></div><p id="heroNote"></p><div class="seg three" id="heroVar" role="group" aria-label="Variant"></div></div>
-    </div>
-    <div class="seg three" id="heroSeg" role="group" aria-label="Hero"></div>
-    </section>
-    <section class="mg you2">
-      <button id="btnBp" class="bpbtn" type="button"><span class="bptop"><b>Battle pass</b><span class="badge" id="bpBadge" hidden>0</span></span><small id="bpLvl">Tier 0 / 30</small><i class="bpbar"><b id="bpMini"></b></i></button>
-      <button id="btnQuests" class="questbtn" type="button"><span>Challenges and achievements</span><span class="badge" id="questBadge" hidden>0</span></button>
+
+    <div class="mtab" data-tab="modes" hidden>
+      <h2 class="ttitle">Modes<small>Pick your challenge</small></h2>
+      <button id="btnAdv" class="advbtn" type="button"><!--@ART:adv@--><canvas id="menuAdv" width="560" height="125"></canvas><span class="advtx"><b>Adventure</b><small>Story worlds, bosses and loot<span id="liveAdv" class="livecnt"></span></small></span><span class="advnew" id="advNew">NEW</span></button>
+      <button id="btnRaid" class="advbtn raidbtn" type="button"><canvas id="menuRaid" width="560" height="150"></canvas><span class="advtx"><b>Raids</b><small><span id="raidMenuSub">Giant bosses · rare loot</span><span id="liveRaid" class="livecnt"></span></small></span><span class="advnew" id="raidNew">NEW</span></button>
       <div class="duo">
-      <button id="btnProfile" class="profbtn" type="button"><canvas id="menuCard" width="120" height="160"></canvas><span>Profile card</span></button>
-      <button id="btnChests" class="profbtn" type="button"><canvas id="menuChest" width="160" height="160"></canvas><span>Chests <span class="badge" id="chestBadge" hidden>0</span></span></button>
+        <button id="btnModeTower" class="modecard" type="button"><!--@ART:tower@--><span><b>Tower</b><small>A new boss on every floor</small></span></button>
+        <button id="btnArenas" class="modecard buildbtn" type="button"><!--@ART:build@--><span><b>Arena Builder</b><small>Build, share · <span class="dailytag">Daily Arena</span><span id="liveBuild" class="livecnt"></span></small></span><span class="advnew" id="arenaNew">NEW</span></button>
+      </div>
+      <div class="duo">
+        <button id="btnModeCup" class="modecard" type="button"><!--@ART:cup@--><span><b>Cup</b><small>Knockout bracket vs bots</small></span></button>
+        <button id="btnModeBoss" class="modecard bossmini" type="button"><canvas id="menuBoss" width="560" height="220" aria-hidden="true"></canvas><span><b>Boss fight</b><small>Everyone vs the boss</small></span></button>
+      </div>
     </div>
-    </section>
+
+    <div class="mtab" data-tab="collection" hidden>
+      <h2 class="ttitle">Collection</h2>
+      <button id="btnLook" class="lookbtn" type="button"><canvas id="menuLook" width="144" height="88"></canvas><span>Your paddle and shop<small><span class="coin" id="menuCoins">0</span><span>coins</span></small></span></button>
+      <div class="duo">
+        <button id="btnChests" class="profbtn" type="button"><canvas id="menuChest" width="160" height="160"></canvas><span>Chests <span class="badge" id="chestBadge" hidden>0</span></span></button>
+        <button id="btnBp" class="bpbtn" type="button"><span class="bptop"><b>Battle pass</b><span class="badge" id="bpBadge" hidden>0</span></span><small id="bpLvl">Tier 0 / 30</small><i class="bpbar"><b id="bpMini"></b></i></button>
+      </div>
+      <section class="mcard hero">
+        <div class="mtitle">Hero</div>
+        <div class="herocard" id="heroCard">
+          <canvas id="heroArt" width="600" height="420" aria-hidden="true"></canvas>
+          <div class="herotext"><span class="htitle" id="heroTitle"></span><b id="heroName"></b><div class="hlv"><span id="heroLv"></span><i><b id="heroXp"></b></i></div><p id="heroNote"></p><div class="seg three" id="heroVar" role="group" aria-label="Variant"></div></div>
+        </div>
+        <div class="seg three" id="heroSeg" role="group" aria-label="Hero"></div>
+      </section>
+    </div>
+
+    <div class="mtab" data-tab="social" hidden>
+      <h2 class="ttitle">Social</h2>
+      <button id="btnFriends" class="friendsbtn" type="button" hidden><span class="fico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4c1.8.8 3 2.7 3 5.6"/></svg></span><span><b>Friends</b><small id="friendsSub">Add friends, see their cards and invite them</small></span><span class="advnew fbadge" id="friendsBadge" hidden>0</span></button>
+      <p class="note" id="socialOff">Friends and leaderboards need an internet connection.</p>
+      <section class="mcard" id="socialLive"></section>
+    </div>
+
+    <div class="mtab" data-tab="profile" hidden>
+      <h2 class="ttitle">Profile</h2>
+      <section class="mcard">
+        <button id="btnLevel" class="lvbar" type="button"><canvas id="lvBarCv" width="96" height="96"></canvas><span><b id="lvBarTxt">Level 1</b><i><b id="lvBarFill"></b></i><small id="lvBarSub"></small></span><span class="advnew lvnew" id="lvBadge" hidden>!</span></button>
+        <div class="field"><label for="name">Your name</label><input id="name" maxlength="12" autocomplete="off" placeholder="Ludvig"></div>
+      </section>
+      <div class="duo">
+        <button id="btnProfile" class="profbtn" type="button"><canvas id="menuCard" width="120" height="160"></canvas><span>Profile card</span></button>
+        <button id="btnQuests" class="questbtn" type="button"><span class="qico" aria-hidden="true">★</span><span>Challenges and achievements</span><span class="badge" id="questBadge" hidden>0</span></button>
+      </div>
+      <nav class="mcard rows" aria-label="More">
+        <button id="btnRedeem" class="rowbtn" type="button">Redeem a code<i aria-hidden="true">›</i></button>
+        <button id="btnSettings2" class="rowbtn" type="button">Settings<i aria-hidden="true">›</i></button>
+      </nav>
+    </div>
   </div>
+  <nav class="tabbar" aria-label="Menu">
+    <button type="button" data-tab="play" aria-pressed="true"><span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 21.5 19.5H2.5Z"/></svg></span>Play</button>
+    <button type="button" data-tab="modes" aria-pressed="false"><span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13.5L9 17.5l6 2.5 6-2.5V4L15 6.5zM9 4v13.5M15 6.5V20"/></svg></span>Modes<i class="ndot" hidden></i></button>
+    <button type="button" data-tab="collection" aria-pressed="false"><span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16v11H4zM4 9l2-5h12l2 5M12 9v11"/></svg></span>Collection<i class="ndot" hidden></i></button>
+    <button type="button" data-tab="social" aria-pressed="false"><span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4c1.8.8 3 2.7 3 5.6"/></svg></span>Social<i class="ndot" hidden></i></button>
+    <button type="button" data-tab="profile" aria-pressed="false"><span><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span>Profile<i class="ndot" hidden></i></button>
+  </nav>
 </div>
 
 <div id="custom" class="screen" hidden>
@@ -217,7 +258,7 @@
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 14 (Oct 25, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 15 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>

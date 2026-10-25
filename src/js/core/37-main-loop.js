@@ -71,6 +71,7 @@ function frame(now) {
     lookCanvas($('#menuLook'), myLook, 2.2);
     if (Math.floor(clock*30) % 2 === 0) drawMenuAdv();
     if (Math.floor(clock*30) % 3 === 1) drawMenuRaid();
+    if (Math.floor(clock*30) % 3 === 2 && menuTabCur === 'modes') drawMenuBoss();
     if (Math.floor(clock*20) % 3 === 0) { drawCard($('#menuCard').getContext('2d'), myCardData(), clock); const mc = $('#menuChest').getContext('2d'); mc.setTransform(1, 0, 0, 1, 0, 0); mc.clearRect(0, 0, 160, 160); drawChestBox(mc, freeChests ? 'gold' : 'wood', 80, 96 + Math.sin(clock*3)*3, 1.2, 0, freeChests ? 0.6 : 0.2); }
     if (heroSelT) heroSelT += dt; if (heroSelT > 1) heroSelT = 0;
     const hc = $('#heroArt'); drawHero(hc.getContext('2d'), myHero, hc.width, hc.height, clock, heroSelT, heroVariant(myHero));

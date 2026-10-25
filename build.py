@@ -13,6 +13,8 @@ order = json.loads((S / 'order.json').read_text(encoding='utf-8'))
 js = ''.join((S / p).read_text(encoding='utf-8') for p in order).rstrip('\n')
 css = (S / 'style.css').read_text(encoding='utf-8').rstrip('\n')
 page = (S / 'page.html').read_text(encoding='utf-8')
+import re as _re
+page = _re.sub(r'<!--@ART:(\w+)@-->', lambda m: (S / 'art' / (m.group(1) + '.svg')).read_text(encoding='utf-8'), page)
 if page.count('/*@CSS@*/') != 1 or page.count('/*@JS@*/') != 1: sys.exit('build: page.html needs exactly one /*@CSS@*/ and one /*@JS@*/')
 full = page.replace('/*@CSS@*/', css).replace('/*@JS@*/', js)
 (here / 'trepong.html').write_text(full, encoding='utf-8')

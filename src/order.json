@@ -39,5 +39,6 @@
  "js/meta/37-friends.js",
  "js/modes/36-raid-vote.js",
  "js/core/37-main-loop.js",
- "js/core/38-wiring.js"
+ "js/core/38-wiring.js",
+ "js/ui/39-tabs.js"
 ]

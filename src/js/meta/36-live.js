@@ -130,9 +130,9 @@ function syncLiveUI() {
   for (const [id, m] of [['liveAdv', 'adv'], ['liveRaid', 'raid'], ['liveBuild', 'build'], ['liveBuild2', 'daily']]) { const el = $('#' + id); if (el) { const c = cnt(m); el.textContent = c ? ' · ' + c + ' playing' : ''; } }
   renderMinis(true);
   if (typeof syncFriendsUI === 'function') syncFriendsUI();
-  if (curScreen === 'live') renderLive();
+  if (curScreen === 'live' || (curScreen === 'menu' && typeof menuTabCur !== 'undefined' && menuTabCur === 'social')) renderLive();
 }
-function openLive() { mode = 'menu'; st = null; series = null; special = null; showScreen('live'); renderLive(); }
+function openLive() { mode = 'menu'; st = null; series = null; special = null; menuTab('social'); showScreen('menu'); renderLive(); }
 function renderLive() {
   const by = {}; for (const p of Live.online) by[p.m] = (by[p.m] || 0) + 1;
   $('#liveCount').textContent = Live.online.length + (Live.online.length === 1 ? ' player' : ' players') + ' online right now';
