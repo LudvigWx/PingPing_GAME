@@ -187,7 +187,8 @@ function exclusiveText(kind, id) {
   return { short: 'Tower ' + exclusiveFloor(kind, id), long: 'Exclusive. Clear floor ' + exclusiveFloor(kind, id) + ' in the Champion Tower.' };
 }
 // ----- battle pass -----
-const BP = { id: 's1', n: 'Season 1: Pumpkin Night', end: ADV_EVENT_END, premium: 3000, matchCap: 500000, xpPts: 1000 };
+const BP = { id: 's1', n: 'Season 1: Pumpkin Night', end: Date.UTC(2026, 10, 30, 23, 0), // pass runs until 1 Dec (Stockholm), then the winter season
+  premium: 3000, matchCap: 500000, xpPts: 1000 };
 // The pass is a grind: tiers are checkpoints of TOTAL rally points (everything your team scores, summed over the season).
 // One match counts at most BP.matchCap, so a single lucky rally can't skip half the pass. Tier 30 needs 25 million.
 function bpNice(v) { const m = Math.pow(10, Math.floor(Math.log10(v)) - 1); return Math.round(v / m) * m; }

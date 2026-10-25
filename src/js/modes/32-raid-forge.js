@@ -14,7 +14,7 @@ for (const [b, id] of Object.entries(GILDED)) {
 for (const [id, R] of Object.entries(RAIDS)) for (const it of R.loot) RAID_SRC[lootKey(it)] = R.n + (it[4] ? ' (Nightmare)' : '');
 // gilded ball skins = the base skin wrapped in molten gold and sparkles
 function drawBallSkinX(c, id, x, y, r, t, vx, vy) {
-  if (drawBallSkin4(c, id, x, y, r, t, vx, vy) || drawBallSkin5(c, id, x, y, r, t, vx, vy)) return true;
+  if (drawBallSkin6(c, id, x, y, r, t, vx, vy) || drawBallSkin4(c, id, x, y, r, t, vx, vy) || drawBallSkin5(c, id, x, y, r, t, vx, vy)) return true;
   if (!id || !id.endsWith('_g')) return drawBallSkin(c, id, x, y, r, t, vx, vy);
   drawBallSkin(c, id.slice(0, -2), x, y, r, t, vx, vy);
   c.save(); const A0 = c.globalAlpha;

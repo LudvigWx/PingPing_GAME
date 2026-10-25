@@ -195,12 +195,12 @@ function drawHat(c, hat, col, t) {
     const sx = Math.abs(Math.cos(t*16));
     c.fillStyle = '#FFD84A'; c.beginPath(); c.ellipse(0, -7.5, 0.4 + 7*sx, 1, 0, 0, TAU); c.fill();
     c.fillStyle = '#FF5A4A'; c.beginPath(); c.arc(0, -7.5, 1, 0, TAU); c.fill();
-  } else if (!drawHat5(c, hat, col, t) && !drawHat4(c, hat, col, t) && !drawHat3(c, hat, col, t)) drawHat2(c, hat, col, t);
+  } else if (!drawHat6(c, hat, col, t) && !drawHat5(c, hat, col, t) && !drawHat4(c, hat, col, t) && !drawHat3(c, hat, col, t)) drawHat2(c, hat, col, t);
   c.restore();
 }
 function drawFace(c, face, gx, gy, t) {
   if (face === 'none') return;
-  if (drawFace4(c, face, gx, gy, t) || drawFace2(c, face, gx, gy, t)) return;
+  if (drawFace6(c, face, gx, gy, t) || drawFace4(c, face, gx, gy, t) || drawFace2(c, face, gx, gy, t)) return;
   const blink = (t % 3.7) < 0.12;
   if (face === 'shades') {
     c.fillStyle = '#0B0914';
@@ -262,11 +262,11 @@ function drawSkin(c, look, hw, t) {
     if (s === 'tower') { c.fillStyle = '#FFF6B0'; star4(c, L + ((t*7) % Wd), 0, 1.2); }
   }
   else if (s.startsWith('pskin')) drawPrestigeSkin(c, +s.slice(5), L, Wd, t);
-  else if (!drawSkin5(c, s, look, L, Wd, t) && !drawSkin4(c, s, look, L, Wd, t)) drawSkin2(c, s, look, L, Wd, t);
+  else if (!drawSkin6(c, s, look, L, Wd, t) && !drawSkin5(c, s, look, L, Wd, t) && !drawSkin4(c, s, look, L, Wd, t)) drawSkin2(c, s, look, L, Wd, t);
   c.restore();
 }
 function drawPaddleLocal(c, look, hwU, t, gaze, state, glowPx) {
-  if (look.u && look.u !== 'none' && !drawAura5(c, look.u, hwU, t, look.c)) drawAura(c, look.u, hwU, t, look.c);
+  if (look.u && look.u !== 'none' && !drawAura6(c, look.u, hwU, t, look.c) && !drawAura5(c, look.u, hwU, t, look.c)) drawAura(c, look.u, hwU, t, look.c);
   c.lineCap = 'round';
   c.shadowColor = look.c; c.shadowBlur = glowPx;
   c.strokeStyle = state.ice ? '#CFF6FF' : look.c; c.lineWidth = 4.4;
@@ -293,6 +293,6 @@ function trailDot(c, style, col, x, y, r, k, idx, t) {
   else if (style === 'bolt') { c.strokeStyle = idx % 2 ? '#FFE34A' : '#ffffff'; c.lineWidth = r*0.25; c.beginPath(); c.moveTo(x - r, y - r); c.lineTo(x + r*0.2, y - r*0.1); c.lineTo(x - r*0.2, y + r*0.1); c.lineTo(x + r, y + r); c.stroke(); }
   else if (style === 'money') { c.save(); c.translate(x, y); c.rotate(idx*0.7 + t*2); c.fillStyle = '#2FBF5A'; c.fillRect(-r*0.9, -r*0.5, r*1.8, r); c.fillStyle = '#B8F5C8'; c.beginPath(); c.arc(0, 0, r*0.28, 0, TAU); c.fill(); c.restore(); }
   else if (style === 'bossfire') { c.fillStyle = k > 0.6 ? '#FF2244' : k > 0.3 ? '#8A0A1E' : '#1A0208'; c.beginPath(); c.arc(x, y, r*(0.6 + 1.2*k)*(0.8 + 0.4*Math.sin(t*25 + idx)), 0, TAU); c.fill(); if (idx % 3 === 0) { c.fillStyle = '#FFB23E'; c.fillRect(x + Math.sin(idx)*r, y + Math.cos(idx)*r, r*0.3, r*0.3); } }
-  else if (!trailDot4(c, style, col, x, y, r, k, idx, t) && !trailDot2(c, style, col, x, y, r, k, idx, t)) { c.fillStyle = col; c.beginPath(); c.arc(x, y, r*(0.35 + 0.6*k), 0, TAU); c.fill(); }
+  else if (!trailDot6(c, style, col, x, y, r, k, idx, t) && !trailDot4(c, style, col, x, y, r, k, idx, t) && !trailDot2(c, style, col, x, y, r, k, idx, t)) { c.fillStyle = col; c.beginPath(); c.arc(x, y, r*(0.35 + 0.6*k), 0, TAU); c.fill(); }
 }
 

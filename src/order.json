@@ -13,6 +13,7 @@
  "js/art/11-profile-set2.js",
  "js/sim/12-sim.js",
  "js/game/13-looks-shop-data.js",
+ "js/art/12-luxe-drop.js",
  "js/game/14-core-audio-state.js",
  "js/game/15-render.js",
  "js/game/16-input-setup-series.js",

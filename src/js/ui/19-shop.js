@@ -57,7 +57,7 @@ function drawChip(cvs, kind, id) {
   else if (kind === 'v') drawVictoryChip(cvs, id);
   else if (kind === 'a') drawArenaChip(cvs, id);
   else if (kind === 'u') lookCanvas(cvs, { ...L, u: id, h: 'none' }, 2.1, 13);
-  else if (kind === 'b') { if (id.endsWith('_g') || id === 'eightball' || id === 'legend') { const c = cvs.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); drawBallSkinX(c, id, cvs.width/2, cvs.height/2, 13, clock, 1, 0); } else if (id === 'std' || !drawBallChip(cvs, id)) { const c = cvs.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); c.fillStyle = '#fff'; c.beginPath(); c.arc(cvs.width/2, cvs.height/2, 12, 0, TAU); c.fill(); } }
+  else if (kind === 'b') { if (id.endsWith('_g') || id === 'eightball' || id === 'legend' || LX_BALLS[id]) { const c = cvs.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); drawBallSkinX(c, id, cvs.width/2, cvs.height/2, 13, clock, 1, 0); } else if (id === 'std' || !drawBallChip(cvs, id)) { const c = cvs.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); c.fillStyle = '#fff'; c.beginPath(); c.arc(cvs.width/2, cvs.height/2, 12, 0, TAU); c.fill(); } }
 }
 function syncShop() {
   syncCoinUI();
@@ -66,7 +66,7 @@ function syncShop() {
     const id = b.dataset.id, own = ownsItem(shopTab, id), ex = isExclusive(shopTab, id);
     const sel = shopTab === 'a' ? (menuArena === id || (buyTarget && buyTarget[0] === 'a' && buyTarget[1] === id)) : previewLook[LOOK_FIELD[shopTab]] === id;
     b.setAttribute('aria-pressed', String(!!sel)); b.classList.toggle('locked', !own);
-    const pr = b.querySelector('.pr'); pr.textContent = own ? '' : ex ? exclusiveText(shopTab, id).short : PRICE[shopTab][id]; pr.classList.toggle('ex', !own && ex);
+    const pr = b.querySelector('.pr'); pr.textContent = own ? '' : ex ? exclusiveText(shopTab, id).short : fmt(PRICE[shopTab][id]); b.classList.toggle('luxe', PRICE[shopTab][id] >= LUXE_MIN); pr.classList.toggle('ex', !own && ex);
     if (secretLocked(shopTab, id)) { pr.textContent = 'Secret'; drawSecretChip(b.querySelector('canvas')); } else drawChip(b.querySelector('canvas'), shopTab, id);
   });
   const bar = $('#buyBar');
@@ -75,8 +75,8 @@ function syncShop() {
     bar.hidden = false;
     if (secretLocked(k, id)) { $('#buyTxt').textContent = '??? · "' + SECRETS[k + ':' + id] + '"'; $('#btnBuy').disabled = true; }
     else if (isExclusive(k, id)) { $('#buyTxt').textContent = itemName(k, id) + ': ' + exclusiveText(k, id).long; $('#btnBuy').disabled = true; }
-    else if (coins >= price) { $('#buyTxt').textContent = itemName(k, id) + ' costs ' + price + ' coins.'; $('#btnBuy').disabled = false; }
-    else { $('#buyTxt').textContent = itemName(k, id) + ' costs ' + price + ' coins. You need ' + (price - coins) + ' more.'; $('#btnBuy').disabled = true; }
+    else if (coins >= price) { $('#buyTxt').textContent = itemName(k, id) + ' costs ' + fmt(price) + ' coins.' + (price >= LUXE_MIN ? ' ✦ Luxe item' : ''); $('#btnBuy').disabled = false; }
+    else { $('#buyTxt').textContent = itemName(k, id) + ' costs ' + fmt(price) + ' coins. You need ' + fmt(price - coins) + ' more.'; $('#btnBuy').disabled = true; }
   } else bar.hidden = true;
 }
 function drawArenaChip(cvs, id) {

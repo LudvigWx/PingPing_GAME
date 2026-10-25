@@ -50,6 +50,7 @@ function drawVictory(dt) {
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       vic2(T, t, dt);
       vic4(T, t, dt);
+      vic6(T, t, dt);
       if (T === 'disco') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (let k = 0; k < 6; k++) { const a = t*1.5 + k*TAU/6; ctx.fillStyle = 'hsla(' + (k*60 + t*90) % 360 + ',90%,60%,0.13)'; ctx.beginPath(); ctx.moveTo(W/2, 40); ctx.lineTo(W/2 + Math.cos(a)*H*1.4 - 60, 40 + Math.sin(a)*H*1.4); ctx.lineTo(W/2 + Math.cos(a)*H*1.4 + 60, 40 + Math.sin(a)*H*1.4); ctx.closePath(); ctx.fill(); } ctx.restore(); ctx.font = '40px system-ui'; ctx.textAlign = 'center'; ctx.fillText('🪩', W/2, 54); }
       if (T === 'champion') { ctx.save(); ctx.globalAlpha = Math.min(1, t) * Math.max(0, 1 - (t - 3.5)); ctx.translate(W/2, H*0.16); ctx.rotate(t*0.3); ctx.fillStyle = 'rgba(255,216,74,0.12)'; for (let k = 0; k < 12; k++) { ctx.rotate(TAU/12); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-30, -H); ctx.lineTo(30, -H); ctx.fill(); } ctx.restore(); ctx.font = '54px system-ui'; ctx.textAlign = 'center'; ctx.fillText('👑', W/2, H*0.16 + 18); }
       const keep = [];
@@ -70,7 +71,7 @@ function drawVictory(dt) {
 function drawVictoryChip(cvs, id) {
   const c = cvs.getContext('2d'), w = cvs.width, h = cvs.height;
   c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h); c.textAlign = 'center'; c.textBaseline = 'middle';
-  if (drawVictoryChip4(c, id, w, h) || drawVictoryChip2(c, id, w, h)) return;
+  if (drawVictoryChip6(c, id, w, h) || drawVictoryChip4(c, id, w, h) || drawVictoryChip2(c, id, w, h)) return;
   if (id === 'confetti') for (let k = 0; k < 14; k++) { c.fillStyle = 'hsl(' + (k*47 % 360) + ',90%,62%)'; c.save(); c.translate(8 + (k*29 % 72), 8 + ((k*17 + clock*30) % 44)); c.rotate(k + clock*3); c.fillRect(-3, -1.5, 6, 3); c.restore(); }
   if (id === 'fireworks') { [[28, 22, '#FF4F8B'], [58, 30, '#3EE6FF']].forEach(([x, y, col]) => { c.strokeStyle = col; c.lineWidth = 1.5; for (let k = 0; k < 10; k++) { const a = k/10*TAU; c.beginPath(); c.moveTo(x + Math.cos(a)*4, y + Math.sin(a)*4); c.lineTo(x + Math.cos(a)*12, y + Math.sin(a)*12); c.stroke(); } }); }
   if (id === 'disco') { c.font = '30px system-ui'; c.fillText('🪩', w/2, h/2 + 2); }

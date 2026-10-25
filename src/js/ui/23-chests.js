@@ -5,7 +5,7 @@ const CHESTS = {
   myth: { n: 'Mythic chest', price: 900, odds: { r: 30, e: 40, l: 25, m: 5 },             col: '#FF4F8B', trim: '#7A1A4A' }
 };
 const KIND_NAME = { c: 'Color', h: 'Hat', f: 'Face', k: 'Skin', t: 'Ball trail', v: 'Win effect', a: 'Arena', u: 'Aura', b: 'Ball skin', pb: 'Border', pg: 'Background', pt: 'Title', pe: 'Emblem' };
-function priceRarity(p) { return p <= 60 ? 'c' : p <= 120 ? 'u' : p <= 180 ? 'r' : p <= 250 ? 'e' : 'l'; }
+function priceRarity(p) { return p >= LUXE_MIN ? 'm' : p <= 60 ? 'c' : p <= 120 ? 'u' : p <= 180 ? 'r' : p <= 250 ? 'e' : 'l'; }
 function chestPool() {
   const pool = [];
   for (const k of ['c', 'h', 'f', 'k', 't', 'v']) for (const [id] of shopList(k)) { const p = PRICE[k][id]; if (p) pool.push({ k, id, r: priceRarity(p) }); }
