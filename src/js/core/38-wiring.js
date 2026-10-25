@@ -115,6 +115,18 @@ document.querySelectorAll('#build .stepper button').forEach(b => b.addEventListe
 addEventListener('keydown', e => { if (curScreen !== 'build' || !ed || e.target.tagName === 'INPUT') return; if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? edRedo() : edUndo(); } else if (e.key === 'Delete' || e.key === 'Backspace') { if (ed.sel >= 0) { edSnapshot(); ed.L.objs.splice(ed.sel, 1); ed.sel = -1; renderBuilder(); } } });
 // opening a shared arena link: ?arena=CODE
 $('#btnLive').addEventListener('click', () => { audioOn(); openLive(); });
+$('#btnFriends').addEventListener('click', () => { audioOn(); openFriends(); });
+$('#btnLobbyInvite').addEventListener('click', () => { audioOn(); openFriends(); });
+$('#btnFriendsBack').addEventListener('click', () => showScreen(friendsBack === 'lobby' && (mode === 'host' || mode === 'guest') ? 'lobby' : 'menu'));
+$('#btnAddFriend').addEventListener('click', () => { audioOn(); sendFriendRequest(); });
+$('#friendIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendFriendRequest(); } });
+$('#btnCopyCode').addEventListener('click', () => { try { navigator.clipboard.writeText(Friends.code); toast('Friend code copied!'); } catch (e) {} });
+$('#btnShareCode').addEventListener('click', async () => { const url = location.origin + location.pathname + '?friend=' + Friends.code; try { if (navigator.share) await navigator.share({ title: 'Trepong', text: 'Add me as a friend in Trepong!', url }); else { await navigator.clipboard.writeText(url); toast('Link copied!'); } } catch (e) {} });
+$('#btnFcClose').addEventListener('click', closeFriendCard);
+$('#btnFcInvite').addEventListener('click', () => { const f = Friends.viewing && Friends.viewing.f; closeFriendCard(); if (f) inviteFriend(f); });
+$('#btnFcRemove').addEventListener('click', e => { const b = e.currentTarget; if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Tap again to remove'; setTimeout(() => { delete b.dataset.armed; b.textContent = 'Remove friend'; }, 3000); return; } delete b.dataset.armed; b.textContent = 'Remove friend'; if (Friends.viewing) removeFriend(Friends.viewing.f); });
+$('#btnInvJoin').addEventListener('click', () => { audioOn(); answerInvite(true); });
+$('#btnInvNo').addEventListener('click', () => answerInvite(false));
 $('#btnLiveBack').addEventListener('click', () => showScreen('menu'));
 document.querySelectorAll('#live .lvtab2').forEach(b => b.addEventListener('click', () => { liveTab = b.dataset.b; renderLive(); }));
 $('#liveRallySeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; liveRally = +b.dataset.n; renderLive(); });
@@ -310,7 +322,7 @@ function applyLayout() {
     if (!menuOn) $('#menu').hidden = false;
     const r = mp.getBoundingClientRect();
     if (!menuOn) $('#menu').hidden = true;
-    if (r.height > 0) z = clamp(Math.min((innerWidth - 64)/r.width, (innerHeight - 40)/r.height), 1, 1.4);
+    if (r.height > 0) z = clamp(Math.min((innerWidth - 64)/r.width, (innerHeight - 40)/r.height), 0.85, 1.4);
   }
   document.documentElement.style.setProperty('--uiz', String(Math.round(z*100)/100));
   setSeg($('#uizSeg'), uiSize, 'z');

@@ -19,7 +19,8 @@ const LIVE_BOARDS = {
   tower: ['Champion Tower', () => 'all', false, s => 'Floor ' + s],
   weekly: ['Weekly boss', () => String(weekId()), true, s => fmtTime(s/10)],
   raids: ['Raid clears', () => 'all', false, s => s + (s === 1 ? ' clear' : ' clears')],
-  level: ['Highest level', () => 'all', false, s => (Math.floor(s/1000) ? 'P' + ROMAN[Math.floor(s/1000)] + ' · ' : '') + 'Lv ' + (s % 1000)]
+  level: ['Highest level', () => 'all', false, s => (Math.floor(s/1000) ? 'P' + ROMAN[Math.floor(s/1000)] + ' · ' : '') + 'Lv ' + (s % 1000)],
+  adv: ['Adventure stars', () => 'all', false, s => s + ' ★']
 };
 const LIVE_MODES = { menu: '🏠 Menu', practice: '🤖 Vs bots', online: '🌐 Online rooms', adv: '🗺️ Adventure', raid: '⚔️ Raids', tower: '🗼 Tower', daily: '🏟️ Daily Arena', build: '🛠️ Arena Builder', cup: '🏆 Cup' };
 const Live = { ok: false, uid: null, db: null, off: 0, online: [], mode: '', subs: {}, tops: {} };
@@ -32,7 +33,7 @@ async function liveInit() {
     const fb = window.firebase; fb.initializeApp(LIVE_CFG);
     Live.db = fb.database();
     Live.db.ref('.info/serverTimeOffset').on('value', s => { Live.off = s.val() || 0; });
-    fb.auth().onAuthStateChanged(u => { if (!u) return; Live.uid = u.uid; Live.ok = true; livePresence(); liveSubmitAll(); liveWatch(); });
+    fb.auth().onAuthStateChanged(u => { if (!u) return; Live.uid = u.uid; Live.ok = true; livePresence(); liveSubmitAll(); liveWatch(); friendsInit(); });
     await fb.auth().signInAnonymously();
   } catch (e) { Live.ok = false; }
 }
@@ -55,7 +56,7 @@ function livePresence() {
   clearInterval(Live.hb); Live.hb = setInterval(() => { if (Live.ok) ref.set({ m: liveMode(), t: firebase.database.ServerValue.TIMESTAMP }).catch(() => {}); }, 60000);
   Live.db.ref('presence').on('value', s => {
     const now = liveNow(), v = s.val() || {};
-    Live.online = Object.values(v).filter(p => p && now - (p.t || 0) < 150000); // a heartbeat in the last 2.5 min
+    Live.online = Object.entries(v).map(([id, p]) => ({ id, ...(p || {}) })).filter(p => now - (p.t || 0) < 150000); // a heartbeat in the last 2.5 min
     syncLiveUI();
   });
 }
@@ -81,6 +82,7 @@ function liveSubmitAll() { // everything we already know about you, so you show 
   for (let n = 2; n <= 6; n++) { const r = +store('trepong-rec-' + n) || 0; if (r) liveSubmit('rally' + n, 'all', r); }
   const d = dailyData(); if (d.best) liveSubmit('daily', String(arenaDay()), d.best);
   const w = weeklyBest(); if (w) liveSubmit('weekly', String(weekId()), w.t*10, true);
+  liveSubmit('adv', 'all', advTotalStars());
 }
 // keep the top 10 of a board live
 function liveTop(board, period, lower, cb) {
@@ -92,6 +94,33 @@ function liveTop(board, period, lower, cb) {
   });
 }
 function liveWatch() { liveTop('daily', String(arenaDay()), false); liveTop('weekly', String(weekId()), true, () => { if (curScreen === 'tower') renderWeekly(); }); }
+function advTotalStars() { return WORLDS.reduce((a, W) => a + worldStars(W.id), 0); }
+// small leaderboards next to each mode
+const LIVE_MINIS = [
+  ['#miniRally', () => ['rally' + menuN, 'Rally record · ' + menuN + ' players'], 2],
+  ['#miniTower', () => ['tower', 'Tower leaderboard'], 5],
+  ['#miniRaids', () => ['raids', 'Raid leaderboard'], 5],
+  ['#miniAdv', () => ['adv', 'Adventure leaderboard'], 5],
+  ['#miniDaily', () => ['daily', 'Today\'s top'], 3]
+];
+let miniT = 0;
+function renderMinis(force) {
+  if (!Live.ok) return;
+  for (const [sel, get, n] of LIVE_MINIS) {
+    const el = $(sel), scr = el && el.closest('.screen'); if (!el || !scr || scr.hidden) continue;
+    const [board, title] = get(), B = LIVE_BOARDS[board.startsWith('rally') ? 'rally' : board], period = B[1](), key = board + '/' + period;
+    liveTop(board, period, B[2]);
+    const rows = Live.tops[key], me = rows ? rows.findIndex(r => r.id === Live.uid) : -1;
+    const sig = key + JSON.stringify((rows || []).slice(0, n)) + me; if (!force && el.dataset.sig === sig) continue; el.dataset.sig = sig;
+    const wasHidden = el.hidden; el.textContent = ''; el.hidden = false; if (wasHidden && sel === '#miniRally') setTimeout(applyLayout, 60);
+    el.append(Object.assign(document.createElement('div'), { className: 'mlhead', textContent: '🏆 ' + title }));
+    if (!rows) { el.append(Object.assign(document.createElement('small'), { textContent: 'Loading…' })); continue; }
+    if (!rows.length) { el.append(Object.assign(document.createElement('small'), { textContent: 'No scores yet. Be the first!' })); continue; }
+    rows.slice(0, n).forEach((r, i) => { const d = document.createElement('div'); d.className = 'mlrow' + (r.id === Live.uid ? ' me' : ''); d.append(Object.assign(document.createElement('span'), { textContent: ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' }), Object.assign(document.createElement('b'), { textContent: r.n }), Object.assign(document.createElement('span'), { className: 'mls', textContent: B[3](r.s) })); el.append(d); });
+    if (me >= n) el.append(Object.assign(document.createElement('small'), { className: 'mlme', textContent: 'You: #' + (me + 1) + ' · ' + B[3](rows[me].s) }));
+  }
+}
+function liveFrame() { liveTick(); const t = performance.now(); if (t - miniT > 800) { miniT = t; renderMinis(false); if (typeof friendsPublish === 'function') friendsPublish(false); } }
 // ----- UI -----
 let liveTab = 'daily', liveRally = 3;
 function syncLiveUI() {
@@ -99,8 +128,8 @@ function syncLiveUI() {
   $('#liveN').textContent = n;
   const cnt = m => Live.online.filter(p => p.m === m).length;
   for (const [id, m] of [['liveAdv', 'adv'], ['liveRaid', 'raid'], ['liveBuild', 'build'], ['liveBuild2', 'daily']]) { const el = $('#' + id); if (el) { const c = cnt(m); el.textContent = c ? ' · ' + c + ' playing' : ''; } }
-  const dr = Live.tops['daily/' + arenaDay()], dl = $('#dailyLive');
-  if (dl) { dl.hidden = !Live.ok; if (Live.ok) { const me = dr ? dr.findIndex(r => r.id === Live.uid) : -1; dl.textContent = dr && dr.length ? '🌍 Today\'s #1: ' + dr[0].n + ' ' + fmt(dr[0].s) + (me >= 0 ? ' · you are #' + (me + 1) : '') : '🌍 No scores yet today. Be the first!'; } }
+  renderMinis(true);
+  if (typeof syncFriendsUI === 'function') syncFriendsUI();
   if (curScreen === 'live') renderLive();
 }
 function openLive() { mode = 'menu'; st = null; series = null; special = null; showScreen('live'); renderLive(); }
@@ -112,7 +141,7 @@ function renderLive() {
   document.querySelectorAll('#live .lvtab2').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.b === liveTab)));
   $('#liveRallySeg').hidden = liveTab !== 'rally'; setSeg($('#liveRallySeg'), liveRally, 'n');
   const B = LIVE_BOARDS[liveTab], board = liveTab === 'rally' ? 'rally' + liveRally : liveTab, period = B[1](), key = board + '/' + period;
-  $('#liveBoardSub').textContent = liveTab === 'daily' ? 'Today\'s arena: ' + dailyLevel(arenaDay()).name + '. Best single rally.' : liveTab === 'weekly' ? 'This week: ' + weeklyCfg().n + '. Fastest win.' : liveTab === 'rally' ? 'Best rally score in a ' + liveRally + '-player match.' : liveTab === 'tower' ? 'Highest Champion Tower floor cleared.' : liveTab === 'raids' ? 'Most raid clears.' : 'Prestige first, then level.';
+  $('#liveBoardSub').textContent = liveTab === 'adv' ? 'Most Adventure stars across all worlds.' : liveTab === 'daily' ? 'Today\'s arena: ' + dailyLevel(arenaDay()).name + '. Best single rally.' : liveTab === 'weekly' ? 'This week: ' + weeklyCfg().n + '. Fastest win.' : liveTab === 'rally' ? 'Best rally score in a ' + liveRally + '-player match.' : liveTab === 'tower' ? 'Highest Champion Tower floor cleared.' : liveTab === 'raids' ? 'Most raid clears.' : 'Prestige first, then level.';
   if (Live.ok) liveTop(board, period, B[2]);
   const list = $('#liveList'); list.textContent = '';
   const rows = Live.tops[key];

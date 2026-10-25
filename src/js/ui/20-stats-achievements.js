@@ -199,6 +199,7 @@ function trackMatchEnd(earned) {
   if (!st.boss && !st.raid && !st.lv && st.n >= 2 && st.n <= 6) liveSubmit('rally' + st.n, 'all', st.best);
   if (st.boss && st.boss.floor) liveSubmit('tower', 'all', towerCleared());
   if (st.raid) setTimeout(() => liveSubmit('raids', 'all', stats.raidClears || 0), 500);
+  if (special === 'adv') setTimeout(() => liveSubmit('adv', 'all', advTotalStars()), 500);
   if (st.mut) track('chaosMatches');
   if (st.n >= 6 && !st.boss) track('sixMatch');
   const ars = new Set(stats.arenas || []); ars.add(st.ar); stats.arenas = [...ars]; trackMax('arenaCount', ars.size);

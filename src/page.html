@@ -15,6 +15,7 @@
       <div class="mtools">
         <button id="btnLive" class="livepill" type="button" hidden><i></i><b id="liveN">0</b> online</button>
         <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
+        <button id="btnFriends" class="gear friendsbtn" type="button" aria-label="Friends" title="Friends" hidden>👥<span class="advnew fbadge" id="friendsBadge" hidden>0</span></button>
         <button id="btnRedeem" class="gear" type="button" aria-label="Redeem code" title="Redeem code">🎁</button>
         <button id="btnSettings" class="gear" type="button" aria-label="Settings" title="Settings">⚙</button>
       </div>
@@ -50,6 +51,7 @@
       <button type="button" data-f="cup" aria-pressed="false">Cup</button>
     </div>
       <p class="note" id="fmtNote"></p>
+      <div id="miniRally" class="minilb" hidden></div>
       <div class="seg" id="chaosSeg" role="group" aria-label="Chaos Wheel">
       <button type="button" data-c="0" aria-pressed="true">Chaos Wheel off</button>
       <button type="button" data-c="1" aria-pressed="false">Chaos Wheel on</button>
@@ -102,6 +104,7 @@
     <div class="eyebrow">Champion Tower</div>
     <div class="winner" id="towerHead">Floor 1</div>
     <p class="note" id="towerSub"></p>
+    <div id="miniTower" class="minilb" hidden></div>
     <div class="seg three" id="towerSeg" role="group" aria-label="Team">
       <button type="button" data-t="1" aria-pressed="true">Solo</button>
       <button type="button" data-t="2" aria-pressed="false">+1 bot</button>
@@ -214,7 +217,7 @@
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 13 (Oct 25, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 14 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -228,6 +231,7 @@
   <div class="panel advpanel">
     <div class="toprow"><button id="btnAdvBack" class="backbtn" type="button">‹ Back</button><span class="coin" id="advCoins">0</span></div>
     <div id="advWorlds" class="worlds" role="group" aria-label="Worlds"></div>
+    <div id="miniAdv" class="minilb minirow" hidden></div>
     <div class="advmain">
       <div class="advleft">
         <canvas id="advBanner" class="advbanner" width="640" height="260"></canvas>
@@ -271,13 +275,41 @@
   </div>
 </div>
 
+<div id="friends" class="screen" hidden>
+  <div class="panel friendspanel">
+    <div class="toprow"><button id="btnFriendsBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Friends</span><span></span></div>
+    <div class="fcode"><small>Your friend code</small><b id="myFriendCode">······</b><div class="duo"><button id="btnCopyCode" type="button">Copy code</button><button id="btnShareCode" type="button">Share link</button></div></div>
+    <label>Add a friend</label>
+    <div class="redeemrow"><input id="friendIn" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="FRIEND CODE" aria-label="Friend code"><button id="btnAddFriend" class="primary" type="button">Send</button></div>
+    <p class="note" id="friendMsg"></p>
+    <label id="friendReqHead" hidden>Friend requests</label>
+    <div id="friendReqs" class="flist"></div>
+    <label>Your friends</label>
+    <div id="friendList" class="flist"></div>
+  </div>
+</div>
+
+<div id="friendCard" class="cardview" hidden>
+  <canvas id="fcCv" class="cardcv" width="600" height="800"></canvas>
+  <p class="note" id="fcStatus"></p>
+  <div class="duo"><button id="btnFcInvite" class="primary" type="button">Invite to a match</button><button id="btnFcClose" type="button">Close</button></div>
+  <button id="btnFcRemove" class="ghost" type="button">Remove friend</button>
+</div>
+
+<div id="inviteBox" class="cardview" hidden>
+  <div class="panel loginpanel">
+    <div class="eyebrow">Match invite</div><div class="winner" id="inviteTxt"></div>
+    <div class="duo"><button id="btnInvJoin" class="primary" type="button">Join</button><button id="btnInvNo" type="button">Not now</button></div>
+  </div>
+</div>
+
 <div id="live" class="screen" hidden>
   <div class="panel livepanel">
     <div class="toprow"><button id="btnLiveBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Live</span><span></span></div>
     <div class="livehead"><i class="livedot"></i><b id="liveCount">0 players online right now</b></div>
     <div id="liveModes" class="livemodes"></div>
     <label>Leaderboards</label>
-    <div class="tabs qtabs livetabs"><button type="button" class="lvtab2" data-b="daily">Daily</button><button type="button" class="lvtab2" data-b="rally">Rally</button><button type="button" class="lvtab2" data-b="tower">Tower</button><button type="button" class="lvtab2" data-b="weekly">Weekly</button><button type="button" class="lvtab2" data-b="raids">Raids</button><button type="button" class="lvtab2" data-b="level">Level</button></div>
+    <div class="tabs qtabs livetabs"><button type="button" class="lvtab2" data-b="daily">Daily</button><button type="button" class="lvtab2" data-b="rally">Rally</button><button type="button" class="lvtab2" data-b="tower">Tower</button><button type="button" class="lvtab2" data-b="weekly">Weekly</button><button type="button" class="lvtab2" data-b="raids">Raids</button><button type="button" class="lvtab2" data-b="adv">Adventure</button><button type="button" class="lvtab2" data-b="level">Level</button></div>
     <div class="seg five" id="liveRallySeg" hidden><button type="button" data-n="2">2</button><button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button><button type="button" data-n="6">6</button></div>
     <p class="note" id="liveBoardSub"></p>
     <div id="liveList" class="lb"></div>
@@ -371,6 +403,7 @@
         <p class="luck" id="raidLuck"></p>
         <div id="raidLoot" class="lootlist"></div>
         <p class="note left" id="raidLootNote"></p>
+        <div id="miniRaids" class="minilb" hidden></div>
       </div>
     </div>
     </div>
@@ -451,7 +484,7 @@
         <small id="dailyDesc"></small>
         <div class="medals" id="dailyMedals"></div>
         <small id="dailyBest"></small>
-        <small id="dailyLive" class="dailylive" hidden></small>
+        <div id="miniDaily" class="minilb" hidden></div>
         <button id="btnDailyGo" class="primary" type="button">Play today's arena</button>
       </div>
     </div>
@@ -506,6 +539,7 @@
     </div>
     <p class="note" id="lobbyFmtNote"></p>
     <ul id="seats"></ul>
+    <button id="btnLobbyInvite" type="button" hidden>👥 Invite friends</button>
     <button id="btnStart" class="primary" type="button">Start</button>
     <p id="lobbyWait" class="note" hidden>Waiting for the host to start…</p>
     <button id="btnLeaveLobby" class="ghost" type="button">Leave room</button>

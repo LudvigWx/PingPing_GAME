@@ -587,6 +587,32 @@ body.desk .dailycard canvas{width:160px;height:120px}
 .stk.have{opacity:1} .stk.on{border-color:#7CFFB2;background:color-mix(in srgb,#7CFFB2 14%,transparent)}
 .stk.u{border-color:color-mix(in srgb,#7CFFB2 45%,var(--edge))} .stk.r{border-color:color-mix(in srgb,#4FA8FF 50%,var(--edge))} .stk.e{border-color:color-mix(in srgb,#C59BFF 60%,var(--edge))} .stk.l{border-color:#FFB23E} .stk.m{border-color:#FF4F8B;box-shadow:0 0 12px -6px #FF4F8B}
 .profsave{margin-left:10px;padding:8px 14px;font-size:14px}
+.friendsbtn{position:relative;font-size:18px}
+.fbadge{position:absolute;top:-6px;right:-6px;font-size:10px;padding:1px 5px}
+.minilb{display:flex;flex-direction:column;gap:2px;border:1px solid color-mix(in srgb,#FFD84A 35%,var(--edge));border-radius:12px;padding:6px 10px;background:color-mix(in srgb,#FFD84A 5%,transparent)}
+.minilb .mlhead{font-size:11px;font-weight:700;letter-spacing:.06em;color:#FFD84A;text-transform:uppercase}
+.minilb small{font-size:11px;color:var(--mute);font-weight:600}
+.mlrow{display:grid;grid-template-columns:22px 1fr auto;gap:6px;align-items:center;font-size:12px}
+.mlrow b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .mlrow .mls{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums}
+.mlrow.me b{color:var(--c0)}
+.minilb .mlme{color:var(--c0)}
+.minilb.minirow{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:2px 16px}
+.minilb.minirow .mlhead{grid-column:1/-1}
+.friendspanel{width:min(100%,480px)}
+.friendspanel .toprow .eyebrow{flex:1;text-align:center}
+.fcode{display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid var(--edge);border-radius:14px;padding:10px}
+.fcode small{color:var(--mute);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.fcode b{font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:.18em;color:#7CFFB2}
+.fcode .duo{width:100%}
+#friendIn{letter-spacing:.2em;text-align:center;text-transform:uppercase;font-weight:700}
+.flist{display:flex;flex-direction:column;gap:6px}
+.frow{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;border:1px solid var(--edge);border-radius:12px;padding:6px 8px}
+.frow.req{grid-template-columns:auto 1fr auto auto;border-color:#FFD84A}
+.frow b{font-size:14px} .frow small{font-size:11px;color:var(--mute);font-weight:600}
+.frow button{padding:6px 10px;font-size:12px}
+.finfo{display:flex;flex-direction:column;min-width:0}
+.fdot{width:9px;height:9px;border-radius:50%;background:#4A4370}
+.frow.on .fdot{background:#7CFFB2;box-shadow:0 0 8px #7CFFB2}
 .livepill{margin-right:auto;display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:12px;border-radius:999px;border-color:color-mix(in srgb,#7CFFB2 60%,var(--edge));color:#7CFFB2}
 .livepill i,.livedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7CFFB2;box-shadow:0 0 8px #7CFFB2;animation:pulse 1s ease-in-out infinite alternate}
 .livepill+.installtop{margin-right:0}
@@ -946,6 +972,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <div class="mtools">
         <button id="btnLive" class="livepill" type="button" hidden><i></i><b id="liveN">0</b> online</button>
         <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
+        <button id="btnFriends" class="gear friendsbtn" type="button" aria-label="Friends" title="Friends" hidden>👥<span class="advnew fbadge" id="friendsBadge" hidden>0</span></button>
         <button id="btnRedeem" class="gear" type="button" aria-label="Redeem code" title="Redeem code">🎁</button>
         <button id="btnSettings" class="gear" type="button" aria-label="Settings" title="Settings">⚙</button>
       </div>
@@ -981,6 +1008,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <button type="button" data-f="cup" aria-pressed="false">Cup</button>
     </div>
       <p class="note" id="fmtNote"></p>
+      <div id="miniRally" class="minilb" hidden></div>
       <div class="seg" id="chaosSeg" role="group" aria-label="Chaos Wheel">
       <button type="button" data-c="0" aria-pressed="true">Chaos Wheel off</button>
       <button type="button" data-c="1" aria-pressed="false">Chaos Wheel on</button>
@@ -1033,6 +1061,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
     <div class="eyebrow">Champion Tower</div>
     <div class="winner" id="towerHead">Floor 1</div>
     <p class="note" id="towerSub"></p>
+    <div id="miniTower" class="minilb" hidden></div>
     <div class="seg three" id="towerSeg" role="group" aria-label="Team">
       <button type="button" data-t="1" aria-pressed="true">Solo</button>
       <button type="button" data-t="2" aria-pressed="false">+1 bot</button>
@@ -1145,7 +1174,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 13 (Oct 25, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 14 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -1159,6 +1188,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
   <div class="panel advpanel">
     <div class="toprow"><button id="btnAdvBack" class="backbtn" type="button">‹ Back</button><span class="coin" id="advCoins">0</span></div>
     <div id="advWorlds" class="worlds" role="group" aria-label="Worlds"></div>
+    <div id="miniAdv" class="minilb minirow" hidden></div>
     <div class="advmain">
       <div class="advleft">
         <canvas id="advBanner" class="advbanner" width="640" height="260"></canvas>
@@ -1202,13 +1232,41 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
   </div>
 </div>
 
+<div id="friends" class="screen" hidden>
+  <div class="panel friendspanel">
+    <div class="toprow"><button id="btnFriendsBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Friends</span><span></span></div>
+    <div class="fcode"><small>Your friend code</small><b id="myFriendCode">······</b><div class="duo"><button id="btnCopyCode" type="button">Copy code</button><button id="btnShareCode" type="button">Share link</button></div></div>
+    <label>Add a friend</label>
+    <div class="redeemrow"><input id="friendIn" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="FRIEND CODE" aria-label="Friend code"><button id="btnAddFriend" class="primary" type="button">Send</button></div>
+    <p class="note" id="friendMsg"></p>
+    <label id="friendReqHead" hidden>Friend requests</label>
+    <div id="friendReqs" class="flist"></div>
+    <label>Your friends</label>
+    <div id="friendList" class="flist"></div>
+  </div>
+</div>
+
+<div id="friendCard" class="cardview" hidden>
+  <canvas id="fcCv" class="cardcv" width="600" height="800"></canvas>
+  <p class="note" id="fcStatus"></p>
+  <div class="duo"><button id="btnFcInvite" class="primary" type="button">Invite to a match</button><button id="btnFcClose" type="button">Close</button></div>
+  <button id="btnFcRemove" class="ghost" type="button">Remove friend</button>
+</div>
+
+<div id="inviteBox" class="cardview" hidden>
+  <div class="panel loginpanel">
+    <div class="eyebrow">Match invite</div><div class="winner" id="inviteTxt"></div>
+    <div class="duo"><button id="btnInvJoin" class="primary" type="button">Join</button><button id="btnInvNo" type="button">Not now</button></div>
+  </div>
+</div>
+
 <div id="live" class="screen" hidden>
   <div class="panel livepanel">
     <div class="toprow"><button id="btnLiveBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Live</span><span></span></div>
     <div class="livehead"><i class="livedot"></i><b id="liveCount">0 players online right now</b></div>
     <div id="liveModes" class="livemodes"></div>
     <label>Leaderboards</label>
-    <div class="tabs qtabs livetabs"><button type="button" class="lvtab2" data-b="daily">Daily</button><button type="button" class="lvtab2" data-b="rally">Rally</button><button type="button" class="lvtab2" data-b="tower">Tower</button><button type="button" class="lvtab2" data-b="weekly">Weekly</button><button type="button" class="lvtab2" data-b="raids">Raids</button><button type="button" class="lvtab2" data-b="level">Level</button></div>
+    <div class="tabs qtabs livetabs"><button type="button" class="lvtab2" data-b="daily">Daily</button><button type="button" class="lvtab2" data-b="rally">Rally</button><button type="button" class="lvtab2" data-b="tower">Tower</button><button type="button" class="lvtab2" data-b="weekly">Weekly</button><button type="button" class="lvtab2" data-b="raids">Raids</button><button type="button" class="lvtab2" data-b="adv">Adventure</button><button type="button" class="lvtab2" data-b="level">Level</button></div>
     <div class="seg five" id="liveRallySeg" hidden><button type="button" data-n="2">2</button><button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button><button type="button" data-n="6">6</button></div>
     <p class="note" id="liveBoardSub"></p>
     <div id="liveList" class="lb"></div>
@@ -1302,6 +1360,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
         <p class="luck" id="raidLuck"></p>
         <div id="raidLoot" class="lootlist"></div>
         <p class="note left" id="raidLootNote"></p>
+        <div id="miniRaids" class="minilb" hidden></div>
       </div>
     </div>
     </div>
@@ -1382,7 +1441,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
         <small id="dailyDesc"></small>
         <div class="medals" id="dailyMedals"></div>
         <small id="dailyBest"></small>
-        <small id="dailyLive" class="dailylive" hidden></small>
+        <div id="miniDaily" class="minilb" hidden></div>
         <button id="btnDailyGo" class="primary" type="button">Play today's arena</button>
       </div>
     </div>
@@ -1437,6 +1496,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
     </div>
     <p class="note" id="lobbyFmtNote"></p>
     <ul id="seats"></ul>
+    <button id="btnLobbyInvite" type="button" hidden>👥 Invite friends</button>
     <button id="btnStart" class="primary" type="button">Start</button>
     <p id="lobbyWait" class="note" hidden>Waiting for the host to start…</p>
     <button id="btnLeaveLobby" class="ghost" type="button">Leave room</button>
@@ -8088,10 +8148,10 @@ function myName() { return cleanName($('#name').value) || 'Player'; }
 function colOf(i, lk) { const l = (lk || looks)[i]; return l ? l.c : SEAT_DEFAULT[i]; }
 
 // ---------- screens ----------
-const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live'];
+const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live', 'friends'];
 function showScreen(name) {
   SCREENS.forEach(id => $('#' + id).hidden = id !== name);
-  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live'].includes(name);
+  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live', 'friends'].includes(name);
   curScreen = name;
   if (name === 'menu' && typeof lvCheck === 'function') setTimeout(() => { if (curScreen === 'menu' && !lvFx) { lvCheck(); syncLevelBar(); if (!lvFx) loginCheck(); } }, 350);
   if (name && $('#' + name)) $('#' + name).scrollTop = 0;
@@ -9760,6 +9820,7 @@ function trackMatchEnd(earned) {
   if (!st.boss && !st.raid && !st.lv && st.n >= 2 && st.n <= 6) liveSubmit('rally' + st.n, 'all', st.best);
   if (st.boss && st.boss.floor) liveSubmit('tower', 'all', towerCleared());
   if (st.raid) setTimeout(() => liveSubmit('raids', 'all', stats.raidClears || 0), 500);
+  if (special === 'adv') setTimeout(() => liveSubmit('adv', 'all', advTotalStars()), 500);
   if (st.mut) track('chaosMatches');
   if (st.n >= 6 && !st.boss) track('sixMatch');
   const ars = new Set(stats.arenas || []); ars.add(st.ar); stats.arenas = [...ars]; trackMax('arenaCount', ars.size);
@@ -10054,7 +10115,7 @@ function validCard(d) {
   return Object.assign(p, { n: cleanName(d.n) || 'Player', lk: validLook(d.lk), he: HEROES[d.he] ? d.he : 'none', hv: ['std', 'gold', 'shadow'].includes(d.hv) ? d.hv : 'std',
     hl: clamp(Math.floor(+d.hl || 1), 1, 10), lv: clamp(Math.floor(+d.lv || 1), 1, 999), pr: clamp(Math.floor(+d.pr || 0), 0, 12), xf: clamp(+d.xf || 0, 0, 1), s });
 }
-function pushProfile() { if (net) net.presence({ card: myCardData() }).catch(() => {}); }
+function pushProfile() { if (net) net.presence({ card: myCardData() }).catch(() => {}); if (typeof friendsPublish === 'function') { Friends.pubT = 0; friendsPublish(false); } }
 // ----- drawing helpers -----
 function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function perim(u, x, y, w, h) { // point + inward normal along a rectangle's perimeter, u in 0..1
@@ -12533,7 +12594,8 @@ const LIVE_BOARDS = {
   tower: ['Champion Tower', () => 'all', false, s => 'Floor ' + s],
   weekly: ['Weekly boss', () => String(weekId()), true, s => fmtTime(s/10)],
   raids: ['Raid clears', () => 'all', false, s => s + (s === 1 ? ' clear' : ' clears')],
-  level: ['Highest level', () => 'all', false, s => (Math.floor(s/1000) ? 'P' + ROMAN[Math.floor(s/1000)] + ' · ' : '') + 'Lv ' + (s % 1000)]
+  level: ['Highest level', () => 'all', false, s => (Math.floor(s/1000) ? 'P' + ROMAN[Math.floor(s/1000)] + ' · ' : '') + 'Lv ' + (s % 1000)],
+  adv: ['Adventure stars', () => 'all', false, s => s + ' ★']
 };
 const LIVE_MODES = { menu: '🏠 Menu', practice: '🤖 Vs bots', online: '🌐 Online rooms', adv: '🗺️ Adventure', raid: '⚔️ Raids', tower: '🗼 Tower', daily: '🏟️ Daily Arena', build: '🛠️ Arena Builder', cup: '🏆 Cup' };
 const Live = { ok: false, uid: null, db: null, off: 0, online: [], mode: '', subs: {}, tops: {} };
@@ -12546,7 +12608,7 @@ async function liveInit() {
     const fb = window.firebase; fb.initializeApp(LIVE_CFG);
     Live.db = fb.database();
     Live.db.ref('.info/serverTimeOffset').on('value', s => { Live.off = s.val() || 0; });
-    fb.auth().onAuthStateChanged(u => { if (!u) return; Live.uid = u.uid; Live.ok = true; livePresence(); liveSubmitAll(); liveWatch(); });
+    fb.auth().onAuthStateChanged(u => { if (!u) return; Live.uid = u.uid; Live.ok = true; livePresence(); liveSubmitAll(); liveWatch(); friendsInit(); });
     await fb.auth().signInAnonymously();
   } catch (e) { Live.ok = false; }
 }
@@ -12569,7 +12631,7 @@ function livePresence() {
   clearInterval(Live.hb); Live.hb = setInterval(() => { if (Live.ok) ref.set({ m: liveMode(), t: firebase.database.ServerValue.TIMESTAMP }).catch(() => {}); }, 60000);
   Live.db.ref('presence').on('value', s => {
     const now = liveNow(), v = s.val() || {};
-    Live.online = Object.values(v).filter(p => p && now - (p.t || 0) < 150000); // a heartbeat in the last 2.5 min
+    Live.online = Object.entries(v).map(([id, p]) => ({ id, ...(p || {}) })).filter(p => now - (p.t || 0) < 150000); // a heartbeat in the last 2.5 min
     syncLiveUI();
   });
 }
@@ -12595,6 +12657,7 @@ function liveSubmitAll() { // everything we already know about you, so you show 
   for (let n = 2; n <= 6; n++) { const r = +store('trepong-rec-' + n) || 0; if (r) liveSubmit('rally' + n, 'all', r); }
   const d = dailyData(); if (d.best) liveSubmit('daily', String(arenaDay()), d.best);
   const w = weeklyBest(); if (w) liveSubmit('weekly', String(weekId()), w.t*10, true);
+  liveSubmit('adv', 'all', advTotalStars());
 }
 // keep the top 10 of a board live
 function liveTop(board, period, lower, cb) {
@@ -12606,6 +12669,33 @@ function liveTop(board, period, lower, cb) {
   });
 }
 function liveWatch() { liveTop('daily', String(arenaDay()), false); liveTop('weekly', String(weekId()), true, () => { if (curScreen === 'tower') renderWeekly(); }); }
+function advTotalStars() { return WORLDS.reduce((a, W) => a + worldStars(W.id), 0); }
+// small leaderboards next to each mode
+const LIVE_MINIS = [
+  ['#miniRally', () => ['rally' + menuN, 'Rally record · ' + menuN + ' players'], 2],
+  ['#miniTower', () => ['tower', 'Tower leaderboard'], 5],
+  ['#miniRaids', () => ['raids', 'Raid leaderboard'], 5],
+  ['#miniAdv', () => ['adv', 'Adventure leaderboard'], 5],
+  ['#miniDaily', () => ['daily', 'Today\'s top'], 3]
+];
+let miniT = 0;
+function renderMinis(force) {
+  if (!Live.ok) return;
+  for (const [sel, get, n] of LIVE_MINIS) {
+    const el = $(sel), scr = el && el.closest('.screen'); if (!el || !scr || scr.hidden) continue;
+    const [board, title] = get(), B = LIVE_BOARDS[board.startsWith('rally') ? 'rally' : board], period = B[1](), key = board + '/' + period;
+    liveTop(board, period, B[2]);
+    const rows = Live.tops[key], me = rows ? rows.findIndex(r => r.id === Live.uid) : -1;
+    const sig = key + JSON.stringify((rows || []).slice(0, n)) + me; if (!force && el.dataset.sig === sig) continue; el.dataset.sig = sig;
+    const wasHidden = el.hidden; el.textContent = ''; el.hidden = false; if (wasHidden && sel === '#miniRally') setTimeout(applyLayout, 60);
+    el.append(Object.assign(document.createElement('div'), { className: 'mlhead', textContent: '🏆 ' + title }));
+    if (!rows) { el.append(Object.assign(document.createElement('small'), { textContent: 'Loading…' })); continue; }
+    if (!rows.length) { el.append(Object.assign(document.createElement('small'), { textContent: 'No scores yet. Be the first!' })); continue; }
+    rows.slice(0, n).forEach((r, i) => { const d = document.createElement('div'); d.className = 'mlrow' + (r.id === Live.uid ? ' me' : ''); d.append(Object.assign(document.createElement('span'), { textContent: ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' }), Object.assign(document.createElement('b'), { textContent: r.n }), Object.assign(document.createElement('span'), { className: 'mls', textContent: B[3](r.s) })); el.append(d); });
+    if (me >= n) el.append(Object.assign(document.createElement('small'), { className: 'mlme', textContent: 'You: #' + (me + 1) + ' · ' + B[3](rows[me].s) }));
+  }
+}
+function liveFrame() { liveTick(); const t = performance.now(); if (t - miniT > 800) { miniT = t; renderMinis(false); if (typeof friendsPublish === 'function') friendsPublish(false); } }
 // ----- UI -----
 let liveTab = 'daily', liveRally = 3;
 function syncLiveUI() {
@@ -12613,8 +12703,8 @@ function syncLiveUI() {
   $('#liveN').textContent = n;
   const cnt = m => Live.online.filter(p => p.m === m).length;
   for (const [id, m] of [['liveAdv', 'adv'], ['liveRaid', 'raid'], ['liveBuild', 'build'], ['liveBuild2', 'daily']]) { const el = $('#' + id); if (el) { const c = cnt(m); el.textContent = c ? ' · ' + c + ' playing' : ''; } }
-  const dr = Live.tops['daily/' + arenaDay()], dl = $('#dailyLive');
-  if (dl) { dl.hidden = !Live.ok; if (Live.ok) { const me = dr ? dr.findIndex(r => r.id === Live.uid) : -1; dl.textContent = dr && dr.length ? '🌍 Today\'s #1: ' + dr[0].n + ' ' + fmt(dr[0].s) + (me >= 0 ? ' · you are #' + (me + 1) : '') : '🌍 No scores yet today. Be the first!'; } }
+  renderMinis(true);
+  if (typeof syncFriendsUI === 'function') syncFriendsUI();
   if (curScreen === 'live') renderLive();
 }
 function openLive() { mode = 'menu'; st = null; series = null; special = null; showScreen('live'); renderLive(); }
@@ -12626,7 +12716,7 @@ function renderLive() {
   document.querySelectorAll('#live .lvtab2').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.b === liveTab)));
   $('#liveRallySeg').hidden = liveTab !== 'rally'; setSeg($('#liveRallySeg'), liveRally, 'n');
   const B = LIVE_BOARDS[liveTab], board = liveTab === 'rally' ? 'rally' + liveRally : liveTab, period = B[1](), key = board + '/' + period;
-  $('#liveBoardSub').textContent = liveTab === 'daily' ? 'Today\'s arena: ' + dailyLevel(arenaDay()).name + '. Best single rally.' : liveTab === 'weekly' ? 'This week: ' + weeklyCfg().n + '. Fastest win.' : liveTab === 'rally' ? 'Best rally score in a ' + liveRally + '-player match.' : liveTab === 'tower' ? 'Highest Champion Tower floor cleared.' : liveTab === 'raids' ? 'Most raid clears.' : 'Prestige first, then level.';
+  $('#liveBoardSub').textContent = liveTab === 'adv' ? 'Most Adventure stars across all worlds.' : liveTab === 'daily' ? 'Today\'s arena: ' + dailyLevel(arenaDay()).name + '. Best single rally.' : liveTab === 'weekly' ? 'This week: ' + weeklyCfg().n + '. Fastest win.' : liveTab === 'rally' ? 'Best rally score in a ' + liveRally + '-player match.' : liveTab === 'tower' ? 'Highest Champion Tower floor cleared.' : liveTab === 'raids' ? 'Most raid clears.' : 'Prestige first, then level.';
   if (Live.ok) liveTop(board, period, B[2]);
   const list = $('#liveList'); list.textContent = '';
   const rows = Live.tops[key];
@@ -12641,6 +12731,126 @@ function renderLive() {
   const me = rows.findIndex(r => r.id === Live.uid);
   $('#liveMe').textContent = me >= 10 ? 'You: #' + (me + 1) + ' · ' + B[3](rows[me].s) : me < 0 ? 'You are not on this list yet.' : '';
 }
+// ---------- friends: friend codes, requests, profiles and match invites (Firebase, web version only) ----------
+// users/<uid> = { n, code, card (JSON), t }   codes/<CODE> = uid
+// requests/<to>/<from> = { n, t }             friends/<uid>/<friendUid> = true
+// invites/<to>/<from> = { n, room, t }
+const Friends = { code: '', list: {}, users: {}, reqs: {}, invites: {}, pubT: 0, viewing: null, inviteShown: {} };
+const FCODE_CH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function fRef(p) { return Live.db.ref(p); }
+function fNow() { return firebase.database.ServerValue.TIMESTAMP; }
+async function friendsInit() {
+  if (!Live.ok || Friends.started) return; Friends.started = true;
+  const me = Live.uid;
+  // my friend code: reuse the saved one, otherwise claim a fresh one
+  try {
+    const u = (await fRef('users/' + me).once('value')).val();
+    Friends.code = (u && u.code) || '';
+    for (let tries = 0; !Friends.code && tries < 6; tries++) {
+      const c = Array.from({ length: 6 }, () => FCODE_CH[Math.floor(Math.random()*FCODE_CH.length)]).join('');
+      try { await fRef('codes/' + c).set(me); Friends.code = c; } catch (e) {}
+    }
+  } catch (e) {}
+  friendsPublish(true);
+  fRef('friends/' + me).on('value', s => { Friends.list = s.val() || {}; for (const f in Friends.list) friendsWatchUser(f); syncFriendsUI(); });
+  fRef('requests/' + me).on('value', s => { Friends.reqs = s.val() || {}; syncFriendsUI(); });
+  fRef('invites/' + me).on('value', s => { Friends.invites = s.val() || {}; syncFriendsUI(); friendsShowInvite(); });
+  try { const q = new URLSearchParams(location.search).get('friend'); if (q) { history.replaceState(null, '', location.pathname); setTimeout(() => { openFriends(); $('#friendIn').value = q.toUpperCase(); }, 600); } } catch (e) {}
+}
+function friendsWatchUser(f) { if (Friends.users[f] !== undefined) return; Friends.users[f] = null; fRef('users/' + f).on('value', s => { Friends.users[f] = s.val(); syncFriendsUI(); }); }
+function friendsPublish(force) { // what friends see of you: name, friend code and your profile card
+  if (!Live.ok || !Friends.code) return;
+  const now = Date.now(); if (!force && now - Friends.pubT < 20000) return; Friends.pubT = now;
+  fRef('users/' + Live.uid).set({ n: myName().slice(0, 16), code: Friends.code, card: JSON.stringify(myCardData()).slice(0, 6000), t: fNow() }).catch(() => {});
+}
+function friendOnline(f) { const p = Live.online.find(x => x.id === f); return p || null; }
+function fmtAgo(t) { const m = Math.max(0, Math.round((liveNow() - (t || 0))/60000)); return m < 2 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m/60) + ' h ago' : Math.round(m/1440) + ' days ago'; }
+async function sendFriendRequest() {
+  const code = $('#friendIn').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const msg = t => { $('#friendMsg').textContent = t; };
+  if (!Live.ok) return msg('Not connected yet. Try again in a moment.');
+  if (code.length !== 6) return msg('A friend code has 6 letters and digits.');
+  if (code === Friends.code) return msg('That is your own code 😄');
+  const uid = (await fRef('codes/' + code).once('value').catch(() => null))?.val();
+  if (!uid) return msg('No player with that code.');
+  if (Friends.list[uid]) return msg('You are already friends!');
+  if (Friends.reqs[uid]) return acceptFriend(uid); // they already asked you
+  try { await fRef('requests/' + uid + '/' + Live.uid).set({ n: myName().slice(0, 16), t: fNow() }); msg('Friend request sent! ✉️'); $('#friendIn').value = ''; tone(880, 0.08, 'triangle', 0.05); }
+  catch (e) { msg('Could not send the request.'); }
+}
+async function acceptFriend(f) {
+  try { await fRef('friends/' + Live.uid + '/' + f).set(true); await fRef('friends/' + f + '/' + Live.uid).set(true); await fRef('requests/' + Live.uid + '/' + f).remove(); toast('You are now friends! 🤝'); sfx.coin(); track('friends'); }
+  catch (e) { toast('Could not accept the request.'); }
+}
+function declineFriend(f) { fRef('requests/' + Live.uid + '/' + f).remove().catch(() => {}); }
+async function removeFriend(f) {
+  try { await fRef('friends/' + Live.uid + '/' + f).remove(); await fRef('friends/' + f + '/' + Live.uid).remove(); } catch (e) {}
+  closeFriendCard(); toast('Friend removed.');
+}
+async function inviteFriend(f) {
+  if (!Live.ok) return;
+  if (mode !== 'host') { if (mode === 'guest') { toast('Only the host of a room can invite.'); return; } await hostCreate(); }
+  if (mode !== 'host' || !roomCode) { toast('Could not create a room.'); return; }
+  try { await fRef('invites/' + f + '/' + Live.uid).set({ n: myName().slice(0, 16), room: roomCode, t: fNow() }); toast('Invite sent to ' + ((Friends.users[f] || {}).n || 'your friend') + '! 📨'); }
+  catch (e) { toast('Could not send the invite.'); }
+}
+function friendsShowInvite() {
+  const now = liveNow(), box = $('#inviteBox');
+  const entry = Object.entries(Friends.invites).find(([f, v]) => v && now - (v.t || 0) < 180000 && !Friends.inviteShown[f + ':' + v.t]);
+  if (!entry || !box.hidden || mode === 'host' || mode === 'guest') return;
+  const [f, v] = entry; Friends.inviteShown[f + ':' + v.t] = 1;
+  box.dataset.f = f; box.dataset.room = v.room; $('#inviteTxt').textContent = (cleanName(v.n) || 'A friend') + ' invites you to play!';
+  box.hidden = false; tone(784, 0.12, 'triangle', 0.06); tone(1046, 0.2, 'triangle', 0.06, 1, 0.12); buzz([40, 40, 80]);
+}
+async function answerInvite(join) {
+  const box = $('#inviteBox'), f = box.dataset.f, room = box.dataset.room; box.hidden = true;
+  fRef('invites/' + Live.uid + '/' + f).remove().catch(() => {});
+  if (join && room) { if (st && mode === 'practice') await leave(); showScreen('menu'); $('#code').value = room; guestJoin(); }
+  setTimeout(friendsShowInvite, 500);
+}
+// ----- UI -----
+function syncFriendsUI() {
+  const nReq = Object.keys(Friends.reqs).length, b = $('#friendsBadge');
+  $('#btnFriends').hidden = !Live.ok; b.hidden = !nReq; b.textContent = nReq;
+  if (curScreen === 'friends') renderFriends();
+  if (curScreen === 'lobby') $('#btnLobbyInvite').hidden = !(Live.ok && mode === 'host' && Object.keys(Friends.list).length);
+}
+let friendsBack = 'menu';
+function openFriends() { friendsBack = mode === 'host' || mode === 'guest' ? 'lobby' : 'menu'; showScreen('friends'); $('#friendMsg').textContent = ''; renderFriends(); }
+function renderFriends() {
+  $('#myFriendCode').textContent = Friends.code || '······';
+  const rq = $('#friendReqs'); rq.textContent = '';
+  const reqs = Object.entries(Friends.reqs);
+  $('#friendReqHead').hidden = !reqs.length;
+  for (const [f, v] of reqs) {
+    const row = document.createElement('div'); row.className = 'frow req';
+    row.append(Object.assign(document.createElement('b'), { textContent: cleanName(v && v.n) || 'Player' }), Object.assign(document.createElement('small'), { textContent: 'wants to be friends' }));
+    const a = document.createElement('button'); a.type = 'button'; a.className = 'primary'; a.textContent = 'Accept'; a.addEventListener('click', () => acceptFriend(f));
+    const d = document.createElement('button'); d.type = 'button'; d.textContent = 'Decline'; d.addEventListener('click', () => declineFriend(f));
+    row.append(a, d); rq.append(row);
+  }
+  const box = $('#friendList'); box.textContent = '';
+  const ids = Object.keys(Friends.list).sort((a, b) => (!!friendOnline(b) - !!friendOnline(a)) || String((Friends.users[a] || {}).n).localeCompare(String((Friends.users[b] || {}).n)));
+  if (!ids.length) box.append(Object.assign(document.createElement('p'), { className: 'note', textContent: 'No friends yet. Share your code, or type a friend\'s code above.' }));
+  for (const f of ids) {
+    const u = Friends.users[f] || {}, on = friendOnline(f), row = document.createElement('div'); row.className = 'frow' + (on ? ' on' : '');
+    let lvTxt = ''; try { const c = JSON.parse(u.card || '{}'); lvTxt = (c.pr ? 'P' + ROMAN[c.pr] + ' · ' : '') + 'Lv ' + (c.lv || 1); } catch (e) {}
+    const info = document.createElement('div'); info.className = 'finfo';
+    info.append(Object.assign(document.createElement('b'), { textContent: (cleanName(u.n) || 'Player') }), Object.assign(document.createElement('small'), { textContent: lvTxt + ' · ' + (on ? '🟢 ' + (LIVE_MODES[on.m] || 'Online') : 'last seen ' + fmtAgo(u.t)) }));
+    const pb = document.createElement('button'); pb.type = 'button'; pb.textContent = 'Profile'; pb.addEventListener('click', () => openFriendCard(f));
+    const ib = document.createElement('button'); ib.type = 'button'; ib.className = 'primary'; ib.textContent = 'Invite'; ib.disabled = !on || mode === 'guest'; ib.addEventListener('click', () => inviteFriend(f));
+    row.append(Object.assign(document.createElement('i'), { className: 'fdot' }), info, pb, ib); box.append(row);
+  }
+}
+function openFriendCard(f) {
+  const u = Friends.users[f] || {}; let d = null; try { d = validCard(JSON.parse(u.card || '{}')); } catch (e) { d = validCard({}); }
+  Friends.viewing = { f, d }; $('#friendCard').hidden = false;
+  const on = friendOnline(f);
+  $('#fcStatus').textContent = on ? '🟢 Online · ' + (LIVE_MODES[on.m] || '') : 'Last seen ' + fmtAgo(u.t);
+  $('#btnFcInvite').disabled = !on || mode === 'guest';
+}
+function closeFriendCard() { Friends.viewing = null; $('#friendCard').hidden = true; }
+function drawFriendCard() { if (!Friends.viewing) return; const cv = $('#fcCv'); drawCard(cv.getContext('2d'), Friends.viewing.d, clock); }
 // ----- raid boon vote (UI + host tally) -----
 let myVote = null, voteBuilt = '', voteAnnounced = '';
 function voteHumans() { return st ? alivePlayers(st).filter(i => i === mySeat || (mode === 'host' && hostSeats[i])) : []; }
@@ -12747,7 +12957,8 @@ function frame(now) {
   if (curScreen === 'raid' && raidTab === 'raids' && Math.floor(clock*30) % 2 === 0) drawRaidScreen();
   if (curScreen === 'redeem') drawRedeemStage(dt);
   if (curScreen === 'levels') drawLevelsFrame();
-  liveTick();
+  liveFrame();
+  if (Friends.viewing) drawFriendCard();
   if (curScreen === 'menu' && Math.floor(clock*20) % 2 === 0) drawLevelBarBadge();
   if (lvFx) drawLvFx(dt);
   if (curScreen === 'raid' && raidTab === 'forge') { drawForgeStage(dt); if (Math.floor(clock*10) % 3 === 0) document.querySelectorAll('#forgeStash canvas, #forgeColl canvas').forEach(cv => { if (cv.dataset.k === 'shard') drawShardChip(cv); else drawLootCv(cv, cv.dataset.k, cv.dataset.id); }); }
@@ -12885,6 +13096,18 @@ document.querySelectorAll('#build .stepper button').forEach(b => b.addEventListe
 addEventListener('keydown', e => { if (curScreen !== 'build' || !ed || e.target.tagName === 'INPUT') return; if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? edRedo() : edUndo(); } else if (e.key === 'Delete' || e.key === 'Backspace') { if (ed.sel >= 0) { edSnapshot(); ed.L.objs.splice(ed.sel, 1); ed.sel = -1; renderBuilder(); } } });
 // opening a shared arena link: ?arena=CODE
 $('#btnLive').addEventListener('click', () => { audioOn(); openLive(); });
+$('#btnFriends').addEventListener('click', () => { audioOn(); openFriends(); });
+$('#btnLobbyInvite').addEventListener('click', () => { audioOn(); openFriends(); });
+$('#btnFriendsBack').addEventListener('click', () => showScreen(friendsBack === 'lobby' && (mode === 'host' || mode === 'guest') ? 'lobby' : 'menu'));
+$('#btnAddFriend').addEventListener('click', () => { audioOn(); sendFriendRequest(); });
+$('#friendIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendFriendRequest(); } });
+$('#btnCopyCode').addEventListener('click', () => { try { navigator.clipboard.writeText(Friends.code); toast('Friend code copied!'); } catch (e) {} });
+$('#btnShareCode').addEventListener('click', async () => { const url = location.origin + location.pathname + '?friend=' + Friends.code; try { if (navigator.share) await navigator.share({ title: 'Trepong', text: 'Add me as a friend in Trepong!', url }); else { await navigator.clipboard.writeText(url); toast('Link copied!'); } } catch (e) {} });
+$('#btnFcClose').addEventListener('click', closeFriendCard);
+$('#btnFcInvite').addEventListener('click', () => { const f = Friends.viewing && Friends.viewing.f; closeFriendCard(); if (f) inviteFriend(f); });
+$('#btnFcRemove').addEventListener('click', e => { const b = e.currentTarget; if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Tap again to remove'; setTimeout(() => { delete b.dataset.armed; b.textContent = 'Remove friend'; }, 3000); return; } delete b.dataset.armed; b.textContent = 'Remove friend'; if (Friends.viewing) removeFriend(Friends.viewing.f); });
+$('#btnInvJoin').addEventListener('click', () => { audioOn(); answerInvite(true); });
+$('#btnInvNo').addEventListener('click', () => answerInvite(false));
 $('#btnLiveBack').addEventListener('click', () => showScreen('menu'));
 document.querySelectorAll('#live .lvtab2').forEach(b => b.addEventListener('click', () => { liveTab = b.dataset.b; renderLive(); }));
 $('#liveRallySeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; liveRally = +b.dataset.n; renderLive(); });
@@ -13080,7 +13303,7 @@ function applyLayout() {
     if (!menuOn) $('#menu').hidden = false;
     const r = mp.getBoundingClientRect();
     if (!menuOn) $('#menu').hidden = true;
-    if (r.height > 0) z = clamp(Math.min((innerWidth - 64)/r.width, (innerHeight - 40)/r.height), 1, 1.4);
+    if (r.height > 0) z = clamp(Math.min((innerWidth - 64)/r.width, (innerHeight - 40)/r.height), 0.85, 1.4);
   }
   document.documentElement.style.setProperty('--uiz', String(Math.round(z*100)/100));
   setSeg($('#uizSeg'), uiSize, 'z');

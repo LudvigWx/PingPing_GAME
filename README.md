@@ -49,5 +49,6 @@ Länken `https://ludvigwx.github.io/PingPing_GAME/?code=GHOSTPADDLE` öppnar inl
 ## Live (spelare online + topplistor)
 Webbversionen pratar med Firebase-projektet `trepong-c44d8` (koden ligger i `src/js/meta/36-live.js`).
 - `presence/` – vem som är online och vad de gör just nu (försvinner automatiskt när någon stänger spelet)
-- `boards/` – topplistorna (Daily Arena, rally per antal spelare, Tower, weekly boss, raids, level)
+- `boards/` – topplistorna (Daily Arena, rally per antal spelare, Tower, weekly boss, raids, Adventure, level)
+- `users/`, `codes/`, `requests/`, `friends/`, `invites/` – vänsystemet (`src/js/meta/37-friends.js`)
 - Säkerhetsreglerna ligger i `database.rules.json`. Ändrar du dem: klistra in i Firebase → Realtime Database → Rules → Publish.
