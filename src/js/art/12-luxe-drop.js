@@ -271,7 +271,7 @@ const LX_BALLS = {
     for (let i = 0; i < n; i++) { const p = P[i], q = P[(i + 1) % n]; c.fillStyle = 'hsl(' + (195 + (i % 2)*15) + ',90%,' + (72 + 18*Math.sin(t*3 + i)) + '%)'; lx_poly(c, [[x, y], p, q]); c.fill(); }
     const I = Array.from({ length: n }, (_, i) => [x + Math.cos(rot + (i + 0.5)*TAU/n)*r*0.5, y + Math.sin(rot + (i + 0.5)*TAU/n)*r*0.5]);
     c.fillStyle = 'rgba(255,255,255,0.75)'; lx_poly(c, I); c.fill();
-    c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = Math.max(0.4, r*0.06); lx_poly(c, P); c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = r*0.06; lx_poly(c, P); c.stroke();
     c.globalCompositeOperation = 'lighter'; c.fillStyle = 'hsla(' + ((t*150) % 360) + ',100%,70%,0.4)'; lx_poly(c, [[x, y], P[0], P[1], P[2]]); c.fill();
     const f = (t % 1.4)/1.4; if (f < 0.25) { c.globalAlpha = A0*Math.sin(f/0.25*Math.PI); c.fillStyle = '#FFFFFF'; star4(c, x + r*0.5, y - r*0.6, r*0.9); }
   }
@@ -322,9 +322,11 @@ function drawAura6(c, id, hw, t, col) { const f = LX_AURAS[id]; if (!f) return f
 
 // ---------------------------------------------------------------- victory effects (full screen, drawn every frame from t)
 const LX_VIC = ['bubblepop', 'sakura', 'coinrain', 'northern', 'dragon'];
+const LX_VIC_FN = {}, LX_CHIP_FN = {};   // extra victory effects / shop chips registered by later drops
 function lx_env(t) { return Math.min(1, t/0.4)*Math.max(0, Math.min(1, (4.4 - t)/0.8)); }
 function vic6(T, t, dt) {
   if (!LX_VIC.includes(T)) return;
+  if (LX_VIC_FN[T]) { ctx.save(); try { LX_VIC_FN[T](t, dt); } catch (e) {} ctx.restore(); return; }
   const c = ctx, a = lx_env(t);
   c.save();
   try {
@@ -391,6 +393,7 @@ function vic6(T, t, dt) {
 }
 function drawVictoryChip6(c, id, w, h) {
   if (!LX_VIC.includes(id)) return false;
+  if (LX_CHIP_FN[id]) { c.save(); try { LX_CHIP_FN[id](c, w, h); } catch (e) {} c.restore(); return true; }
   const t = clock;
   if (id === 'bubblepop') { for (let i = 0; i < 6; i++) { const u = (t*0.5 + i/6) % 1; c.strokeStyle = 'hsl(' + (i*60) + ',90%,75%)'; c.lineWidth = 1.5; c.beginPath(); c.arc(12 + i*12, h - u*h, 4 + (i % 3)*2, 0, TAU); c.stroke(); } }
   if (id === 'sakura') { for (let i = 0; i < 9; i++) { c.save(); c.translate((i*23 + t*20) % w, (i*13 + t*30) % h); c.rotate(t*2 + i); c.fillStyle = i % 2 ? '#FFC2D6' : '#FF8FB4'; c.beginPath(); c.moveTo(0, -5); c.quadraticCurveTo(4, -2, 0, 5); c.quadraticCurveTo(-4, -2, 0, -5); c.fill(); c.restore(); } }

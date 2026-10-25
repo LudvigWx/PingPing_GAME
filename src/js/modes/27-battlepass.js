@@ -13,6 +13,7 @@ function drawRewardChip(cv, r) {
   }
   if (r[0] === 'chest') { drawChestBox(c, r[1], w/2, h*0.72 + Math.sin(clock*3)*1.5, 0.42, 0, 0.5); return; }
   if (r[0].startsWith('p')) { drawProfChip(cv, r[0], r[1], clock); return; }
+  if (r[0] === 'u' || r[0] === 'b' || r[0] === 'a') { const keep = previewLook; previewLook = { ...myLook }; drawChip(cv, r[0], r[1]); previewLook = keep; return; }
   if (r[0] === 'c') { lookCanvas(cv, { ...myLook, c: r[1], h: 'none', f: 'eyes' }, 2.4, 11); return; }
   if (r[0] === 'h') { lookCanvas(cv, { ...myLook, h: r[1], f: 'none' }, 2.1, 9); return; }
   if (r[0] === 'f') { lookCanvas(cv, { ...myLook, h: 'none', f: r[1] }, 3.4, 9); return; }

@@ -177,6 +177,7 @@ for (const W of WORLDS) for (const key in W.rw) for (const r of W.rw[key]) {
   EXCL_SRC[rewardKey(r)] = where;
 }
 function exclusiveText(kind, id) {
+  if (typeof GIFT_SRC !== 'undefined' && GIFT_SRC[kind + ':' + id]) return { short: 'Gift', long: 'A one-of-a-kind gift bundle. Only from a secret code.' };
   if (LEVEL_SRC[kind + ':' + id] < 0) { const p = -LEVEL_SRC[kind + ':' + id]; return { short: 'Prestige ' + ROMAN[p], long: 'Prestige reward: reach Prestige ' + ROMAN[p] + ' (' + PRESTIGE_NAMES[p] + ').' }; }
   if (LEVEL_SRC[kind + ':' + id]) return { short: 'Level ' + LEVEL_SRC[kind + ':' + id], long: 'Level road reward: reach level ' + LEVEL_SRC[kind + ':' + id] + '.' };
   if (SECRETS[kind + ':' + id]) return { short: 'Secret', long: 'A secret item. Hint: "' + SECRETS[kind + ':' + id] + '"' };

@@ -4,6 +4,7 @@
 const CODES = {
   '91d980becc16bbdcad14d30ce28dfd70cf0db22cba9ea07d90c8645791a77b41': { n: 'Welcome to Trepong', r: [['coins', 250], ['chest', 'wood']] },
   '46532d99f79b700069b83c07e7eb3c54c677dfc5455b05867226df55eb801965': { n: 'Pumpkin Night secret', r: [['pe', 'candycorn'], ['pt', 'codebreaker'], ['coins', 300]], end: ADV_EVENT_END },
+  '073debdc198f532c2377f183bf93402dc58544d8a6a2804f0fcd53b864c13241': { n: 'The Forester\'s Bundle', r: [['h', 'pinetree'], ['f', 'pinecones'], ['b', 'lingon'], ['u', 'leafwind'], ['v', 'forestfall'], ['a', 'forest']], look: 1, vic: 'forestfall' },
   '2bc15f89d763b69932b54df3a71aae3d54195cf72a1e6e2ab8986419368cb118': { n: 'The Creator', r: [['pb', 'creator'], ['pg', 'creator'], ['pt', 'creator']], eq: 1, big: 1 }
 };
 PROF.pb.push(['creator', 'Architect\'s Prism', 'm', 'creator', 1]);
@@ -57,13 +58,17 @@ async function redeemCode() {
   if (C.end && now > C.end) { redeemAnim = { kind: 'no', t: 0 }; redeemMsg('"' + C.n + '" has expired. Keep an eye out for the next one!', 'bad'); return; }
   for (const r of C.r) grantReward(r, true);
   if (C.eq) { for (const r of C.r) if (['pb', 'pg', 'pt', 'pe'].includes(r[0])) myProf[r[0]] = r[1]; myProf = validProf(myProf); saveProf(); }
+  if (C.look) { // gift bundles put everything on straight away
+    const nl = { ...myLook }; for (const r of C.r) { if (r[0] === 'a') { menuArena = r[1]; store('trepong-arena', r[1]); } else if (LOOK_FIELD[r[0]]) nl[LOOK_FIELD[r[0]]] = r[1]; }
+    myLook = validLook(nl); store('trepong-look', JSON.stringify(myLook)); if (typeof syncArenaSeg === 'function') syncArenaSeg(); pushProfile();
+  }
   redeemed.push(h); saveRedeemed(); track('codes');
   redeemShow = { r: C.r, big: !!C.big, n: C.n };
   redeemAnim = { kind: 'yes', t: 0, big: !!C.big, n: C.n };
   $('#redeemIn').value = '';
-  redeemMsg(C.big ? 'Welcome home, creator. Everything is equipped.' : 'Code redeemed: ' + C.n + '!', 'good');
+  redeemMsg(C.big ? 'Welcome home, creator. Everything is equipped.' : 'Code redeemed: ' + C.n + '!' + (C.look ? ' Everything is equipped.' : ''), 'good');
   sfx.win(); buzz(C.big ? [40, 30, 80, 30, 200] : [40, 30, 80]);
-  startVictory(C.big ? 'supernova' : 'confetti');
+  startVictory(C.vic || (C.big ? 'supernova' : 'confetti'));
   renderRedeem();
 }
 let redeemParts = [];

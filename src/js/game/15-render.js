@@ -174,6 +174,7 @@ function worldTf(v) { ctx.setTransform(DPR*v.scale*v.c, DPR*v.scale*v.sn, -DPR*v
 
 function drawBg() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  { const gg = st || (typeof demo !== 'undefined' ? demo : null); if (gg && gg.ar === 'forest') { drawForestBg(); return; } }
   const g = ctx.createRadialGradient(W/2, H*0.45, 0, W/2, H*0.45, Math.max(W, H)*0.8);
   g.addColorStop(0, '#1B1440'); g.addColorStop(1, '#0C0A1C');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -250,7 +251,8 @@ function drawArenaDecor(g, A, dim) {
     ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, 0.32, 0, TAU); ctx.fill();
     ctx.strokeStyle = 'rgba(255,170,90,0.5)'; ctx.lineWidth = 0.006;
     for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.ellipse(0, 0, 0.14 + k*0.05, 0.05 + k*0.02, clock*(0.6 + k*0.3), 0, TAU); ctx.stroke(); }
-  } else if (g.ar === 'retro') {
+  } else if (g.ar === 'forest') drawForestFloor(A);
+  else if (g.ar === 'retro') {
     ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(80,255,160,0.12)'; ctx.lineWidth = 0.003;
     for (let k = -1.2; k <= 1.2; k += 0.1) { ctx.beginPath(); ctx.moveTo(k, -1.3); ctx.lineTo(k, 1.3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-1.3, k); ctx.lineTo(1.3, k); ctx.stroke(); }
     ctx.restore();
@@ -261,7 +263,7 @@ function drawGame(g, seatView, dim, lk, isLive) {
   ctx.globalAlpha = dim;
   worldTf(v);
   ctx.beginPath(); A.verts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
-  ctx.fillStyle = ({ ice: 'rgba(170,230,255,0.13)', hole: 'rgba(40,10,60,0.35)', retro: 'rgba(40,255,140,0.05)' })[g.ar] || 'rgba(120,100,255,0.06)'; ctx.fill();
+  ctx.fillStyle = ({ ice: 'rgba(170,230,255,0.13)', hole: 'rgba(40,10,60,0.35)', retro: 'rgba(40,255,140,0.05)', forest: 'rgba(70,150,90,0.14)' })[g.ar] || 'rgba(120,100,255,0.06)'; ctx.fill();
   drawArenaDecor(g, A, dim);
   for (const L of g.lava || []) {
     const lg = ctx.createRadialGradient(L[0], L[1], 0, L[0], L[1], L[2]);
@@ -281,6 +283,7 @@ function drawGame(g, seatView, dim, lk, isLive) {
   }
   ctx.lineWidth = 0.004; ctx.strokeStyle = g.ar === 'retro' ? 'rgba(80,255,160,0.25)' : 'rgba(160,150,230,0.14)';
   for (const k of [0.33, 0.66]) { ctx.beginPath(); A.verts.forEach((p, i) => i ? ctx.lineTo(p[0]*k, p[1]*k) : ctx.moveTo(p[0]*k, p[1]*k)); ctx.closePath(); ctx.stroke(); }
+  if (g.ar === 'forest') drawForestEdge(A, dim);
   ctx.lineCap = 'round';
   for (let i = 0; i < g.n; i++) if (g.mods[i].slow && g.alive[i]) {
     const s = A.sides[A.seatSide[i]], dd = 0.38 + INSET;
@@ -298,7 +301,7 @@ function drawGame(g, seatView, dim, lk, isLive) {
       ctx.beginPath(); ctx.moveTo(s.A[0]+ox, s.A[1]+oy); ctx.lineTo(s.B[0]+ox, s.B[1]+oy); ctx.stroke();
     } else {
       const f = flash[seat] || 0, col = colOf(seat, lk);
-      ctx.strokeStyle = col; ctx.globalAlpha = dim * (0.22 + f*0.7); ctx.lineWidth = 0.006 + f*0.02;
+      ctx.strokeStyle = col; ctx.globalAlpha = dim * ((g.ar === 'forest' ? 0.55 : 0.22) + f*0.7); ctx.lineWidth = 0.006 + f*0.02;
       ctx.setLineDash([0.03, 0.025]);
       ctx.beginPath(); ctx.moveTo(s.A[0], s.A[1]); ctx.lineTo(s.B[0], s.B[1]); ctx.stroke();
       ctx.setLineDash([]); ctx.globalAlpha = dim;

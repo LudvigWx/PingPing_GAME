@@ -530,16 +530,16 @@ function pr5_ballLegend(c, A0, x, y, r, t, vx, vy) {
   pr5_rays(c, 10, r*0.7, r*2.2, r*1.6, t*0.7, 0.1); c.fill(); c.restore();
   c.globalCompositeOperation = 'source-over'; c.globalAlpha = A0;
   // laurel ring
-  c.fillStyle = '#FFD84A'; c.strokeStyle = '#8A5A06'; c.lineWidth = Math.max(0.3, r*0.04);
+  c.fillStyle = '#FFD84A'; c.strokeStyle = '#8A5A06'; c.lineWidth = r*0.04;
   pr5_laurel(c, x, y, r*1.18, Math.PI*0.55, Math.PI*1.38, 5, r*0.48, r*0.24); c.fill(); c.stroke();
   pr5_laurel(c, x, y, r*1.18, Math.PI*0.45, -Math.PI*0.38, 5, r*0.48, r*0.24); c.fill(); c.stroke();
   // orb
   c.fillStyle = pr5_rg(c, x - r*0.35, y - r*0.4, r*0.05, r*1.05, ['#FFFFFF', '#FFF6D0', '#FFD84A', '#C8860E', '#7A4A04']);
   c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
-  c.strokeStyle = 'rgba(255,246,200,0.9)'; c.lineWidth = Math.max(0.4, r*0.07); c.stroke();
+  c.strokeStyle = 'rgba(255,246,200,0.9)'; c.lineWidth = r*0.07; c.stroke();
   // triangle crest (slowly turning)
   const T = pr5_triPts(x, y + r*0.04, r*0.46, Math.sin(t*1.3)*0.25);
-  c.fillStyle = '#FFFFFF'; c.strokeStyle = '#B07A0A'; c.lineWidth = Math.max(0.35, r*0.08); c.lineJoin = 'round'; poly(c, T); c.stroke(); c.fill();
+  c.fillStyle = '#FFFFFF'; c.strokeStyle = '#B07A0A'; c.lineWidth = r*0.08; c.lineJoin = 'round'; poly(c, T); c.stroke(); c.fill();
   c.fillStyle = '#FFC93A'; poly(c, pr5_triPts(x, y + r*0.04, r*0.2, Math.sin(t*1.3)*0.25 + Math.PI)); c.fill();
   c.fillStyle = 'rgba(255,255,255,0.9)'; c.beginPath(); c.ellipse(x - r*0.38, y - r*0.46, r*0.24, r*0.14, -0.6, 0, TAU); c.fill();
   // glint

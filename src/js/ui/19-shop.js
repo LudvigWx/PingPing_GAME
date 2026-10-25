@@ -82,6 +82,7 @@ function syncShop() {
 function drawArenaChip(cvs, id) {
   const c = cvs.getContext('2d'), w = cvs.width, h = cvs.height;
   c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
+  if (id === 'forest') { drawForestChip(cvs); return; }
   c.fillStyle = { ice: '#BFEFFF', hole: '#1A0828', retro: '#06210F', classic: '#241C4A' }[id]; c.beginPath(); c.moveTo(w/2, 4); c.lineTo(w - 10, h - 4); c.lineTo(10, h - 4); c.closePath(); c.fill();
   if (id === 'hole') { const g = c.createRadialGradient(w/2, h*0.62, 0, w/2, h*0.62, 14); g.addColorStop(0, '#000'); g.addColorStop(0.6, 'rgba(255,140,60,0.8)'); g.addColorStop(1, 'rgba(255,140,60,0)'); c.fillStyle = g; c.beginPath(); c.arc(w/2, h*0.62, 14, 0, TAU); c.fill(); }
   if (id === 'retro') { c.strokeStyle = '#3CFF8C'; c.lineWidth = 1; for (let x = 14; x < w - 10; x += 8) { c.beginPath(); c.moveTo(x, h - 4); c.lineTo(w/2, 4); c.stroke(); } }
@@ -92,7 +93,7 @@ function syncArenaSeg() {
   const seg = $('#arenaSeg'); seg.textContent = '';
   for (const [id, n] of Object.entries(ARENAS)) {
     const b = document.createElement('button'); b.type = 'button'; b.dataset.a = id;
-    const own = ownsItem('a', id);
+    const own = ownsItem('a', id); if (!own && PRICE.a[id] == null) continue;
     b.setAttribute('aria-pressed', String(curArena() === id));
     b.append(document.createTextNode(n));
     if (!own) { const s = document.createElement('small'); s.textContent = PRICE.a[id] + ' coins'; b.append(s); }
