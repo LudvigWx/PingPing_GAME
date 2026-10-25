@@ -45,3 +45,9 @@ Koderna ligger bara som SHA-256-hashar i `const CODES` i `src/js/meta/33-redeem.
 2. Klistra in raden den skriver ut i `CODES`, byt namn och belöningar (och `end:` om koden ska sluta gälla).
 3. Kör `python build.py`, committa och pusha.
 Länken `https://ludvigwx.github.io/PingPing_GAME/?code=GHOSTPADDLE` öppnar inlösningen med koden ifylld.
+
+## Live (spelare online + topplistor)
+Webbversionen pratar med Firebase-projektet `trepong-c44d8` (koden ligger i `src/js/meta/36-live.js`).
+- `presence/` – vem som är online och vad de gör just nu (försvinner automatiskt när någon stänger spelet)
+- `boards/` – topplistorna (Daily Arena, rally per antal spelare, Tower, weekly boss, raids, level)
+- Säkerhetsreglerna ligger i `database.rules.json`. Ändrar du dem: klistra in i Firebase → Realtime Database → Rules → Publish.

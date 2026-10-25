@@ -13,6 +13,7 @@
   <div class="panel menupanel">
     <div class="mhead">
       <div class="mtools">
+        <button id="btnLive" class="livepill" type="button" hidden><i></i><b id="liveN">0</b> online</button>
         <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
         <button id="btnRedeem" class="gear" type="button" aria-label="Redeem code" title="Redeem code">🎁</button>
         <button id="btnSettings" class="gear" type="button" aria-label="Settings" title="Settings">⚙</button>
@@ -26,9 +27,9 @@
       <button id="btnLook" class="lookbtn" type="button"><canvas id="menuLook" width="144" height="88"></canvas><span>Your paddle and shop<small><span class="coin" id="menuCoins">0</span><span>coins</span></small></span></button>
     </section>
     <section class="mg modes">
-      <button id="btnAdv" class="advbtn" type="button"><canvas id="menuAdv" width="560" height="125"></canvas><span class="advtx"><b>Adventure</b><small>Story worlds, bosses and loot</small></span><span class="advnew" id="advNew">NEW</span></button>
-      <button id="btnArenas" class="buildbtn" type="button"><span class="bico">🛠️</span><span><b>Arena Builder</b><small>Build and share arenas · <span class="dailytag">Daily Arena</span></small></span><span class="advnew" id="arenaNew">NEW</span></button>
-      <button id="btnRaid" class="advbtn raidbtn" type="button"><canvas id="menuRaid" width="560" height="125"></canvas><span class="advtx"><b>Raids</b><small id="raidMenuSub">Giant bosses · rare loot</small></span><span class="advnew" id="raidNew">NEW</span></button>
+      <button id="btnAdv" class="advbtn" type="button"><canvas id="menuAdv" width="560" height="125"></canvas><span class="advtx"><b>Adventure</b><small>Story worlds, bosses and loot<span id="liveAdv" class="livecnt"></span></small></span><span class="advnew" id="advNew">NEW</span></button>
+      <button id="btnArenas" class="buildbtn" type="button"><span class="bico">🛠️</span><span><b>Arena Builder</b><small>Build and share arenas · <span class="dailytag">Daily Arena</span><span id="liveBuild" class="livecnt"></span></small></span><span class="advnew" id="arenaNew">NEW</span></button>
+      <button id="btnRaid" class="advbtn raidbtn" type="button"><canvas id="menuRaid" width="560" height="125"></canvas><span class="advtx"><b>Raids</b><small><span id="raidMenuSub">Giant bosses · rare loot</span><span id="liveRaid" class="livecnt"></span></small></span><span class="advnew" id="raidNew">NEW</span></button>
     </section>
     <section class="mg play">
       <div class="mtitle">Play</div>
@@ -213,7 +214,7 @@
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 12 (Oct 9, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 13 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -267,6 +268,20 @@
     <button id="btnBpAll" class="claimall" type="button" hidden>Claim all</button>
     <div class="bpcols"><span>Tier</span><span>Free</span><span>★ Premium</span></div>
     <div id="bpList" class="bplist"></div>
+  </div>
+</div>
+
+<div id="live" class="screen" hidden>
+  <div class="panel livepanel">
+    <div class="toprow"><button id="btnLiveBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Live</span><span></span></div>
+    <div class="livehead"><i class="livedot"></i><b id="liveCount">0 players online right now</b></div>
+    <div id="liveModes" class="livemodes"></div>
+    <label>Leaderboards</label>
+    <div class="tabs qtabs livetabs"><button type="button" class="lvtab2" data-b="daily">Daily</button><button type="button" class="lvtab2" data-b="rally">Rally</button><button type="button" class="lvtab2" data-b="tower">Tower</button><button type="button" class="lvtab2" data-b="weekly">Weekly</button><button type="button" class="lvtab2" data-b="raids">Raids</button><button type="button" class="lvtab2" data-b="level">Level</button></div>
+    <div class="seg five" id="liveRallySeg" hidden><button type="button" data-n="2">2</button><button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button><button type="button" data-n="6">6</button></div>
+    <p class="note" id="liveBoardSub"></p>
+    <div id="liveList" class="lb"></div>
+    <p class="note" id="liveMe"></p>
   </div>
 </div>
 
@@ -436,6 +451,7 @@
         <small id="dailyDesc"></small>
         <div class="medals" id="dailyMedals"></div>
         <small id="dailyBest"></small>
+        <small id="dailyLive" class="dailylive" hidden></small>
         <button id="btnDailyGo" class="primary" type="button">Play today's arena</button>
       </div>
     </div>

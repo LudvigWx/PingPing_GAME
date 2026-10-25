@@ -35,6 +35,7 @@
  "js/meta/33-redeem.js",
  "js/meta/34-progression.js",
  "js/meta/35-goodies.js",
+ "js/meta/36-live.js",
  "js/modes/36-raid-vote.js",
  "js/core/37-main-loop.js",
  "js/core/38-wiring.js"

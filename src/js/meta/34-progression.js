@@ -163,7 +163,7 @@ function doPrestige() {
   presArmed = false;
   stats.prest = p + 1; stats.pxp = 0; stats.lvSeen = 1; stats.readyShown = 0; saveStats();
   const rw = prestigeRewards(stats.prest), got = rw.map(r => grantReward(r, true));
-  trackMax('prestige', stats.prest); pushProfile(); syncLevelBar();
+  trackMax('prestige', stats.prest); pushProfile(); syncLevelBar(); liveSubmit('level', 'all', stats.prest*1000 + 1);
   startLvFx({ kind: 'prestige', p: stats.prest, from: p, lv: 1, rewards: got });
   renderLevels();
 }
@@ -192,7 +192,7 @@ function lvCheck() {
     const got = [], merged = {}; let coinsSum = 0;
     for (let L = seen + 1; L <= o.L; L++) for (const r of levelRewards(L)) { if (r[0] === 'coins') coinsSum += r[1]; else got.push(grantLevelReward(r)); }
     if (coinsSum) { addCoins(coinsSum); got.unshift(fmt(coinsSum) + ' coins'); }
-    stats.lvSeen = o.L; trackMax('plevel', o.L); saveStats(); syncLevelBar(); pushProfile();
+    stats.lvSeen = o.L; trackMax('plevel', o.L); saveStats(); syncLevelBar(); pushProfile(); liveSubmit('level', 'all', (stats.prest || 0)*1000 + o.L);
     const crossed = LV_SPECIAL.filter(v => v > seen && v <= o.L).pop();
     startLvFx({ kind: crossed || o.L === LV_CAP ? 'special' : 'normal', lv: o.L, from: seen, p: stats.prest || 0, rewards: got, milestone: crossed || (o.L === LV_CAP ? LV_CAP : 0) });
   }

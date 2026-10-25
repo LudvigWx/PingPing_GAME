@@ -286,10 +286,10 @@ function myName() { return cleanName($('#name').value) || 'Player'; }
 function colOf(i, lk) { const l = (lk || looks)[i]; return l ? l.c : SEAT_DEFAULT[i]; }
 
 // ---------- screens ----------
-const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels'];
+const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live'];
 function showScreen(name) {
   SCREENS.forEach(id => $('#' + id).hidden = id !== name);
-  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels'].includes(name);
+  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live'].includes(name);
   curScreen = name;
   if (name === 'menu' && typeof lvCheck === 'function') setTimeout(() => { if (curScreen === 'menu' && !lvFx) { lvCheck(); syncLevelBar(); if (!lvFx) loginCheck(); } }, 350);
   if (name && $('#' + name)) $('#' + name).scrollTop = 0;

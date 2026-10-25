@@ -114,6 +114,11 @@ document.querySelectorAll('#build .stepper button').forEach(b => b.addEventListe
 }));
 addEventListener('keydown', e => { if (curScreen !== 'build' || !ed || e.target.tagName === 'INPUT') return; if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? edRedo() : edUndo(); } else if (e.key === 'Delete' || e.key === 'Backspace') { if (ed.sel >= 0) { edSnapshot(); ed.L.objs.splice(ed.sel, 1); ed.sel = -1; renderBuilder(); } } });
 // opening a shared arena link: ?arena=CODE
+$('#btnLive').addEventListener('click', () => { audioOn(); openLive(); });
+$('#btnLiveBack').addEventListener('click', () => showScreen('menu'));
+document.querySelectorAll('#live .lvtab2').forEach(b => b.addEventListener('click', () => { liveTab = b.dataset.b; renderLive(); }));
+$('#liveRallySeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; liveRally = +b.dataset.n; renderLive(); });
+setTimeout(liveInit, 1500);
 $('#btnLevel').addEventListener('click', () => { audioOn(); openLevels(collClaimable() ? 'coll' : lvTab); });
 $('#btnLvBack').addEventListener('click', () => showScreen('menu'));
 document.querySelectorAll('#levels .ltab').forEach(b => b.addEventListener('click', () => { lvTab = b.dataset.t; presArmed = false; renderLevels(); }));

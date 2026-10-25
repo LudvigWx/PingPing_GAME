@@ -58,6 +58,7 @@ function frame(now) {
   if (curScreen === 'raid' && raidTab === 'raids' && Math.floor(clock*30) % 2 === 0) drawRaidScreen();
   if (curScreen === 'redeem') drawRedeemStage(dt);
   if (curScreen === 'levels') drawLevelsFrame();
+  liveTick();
   if (curScreen === 'menu' && Math.floor(clock*20) % 2 === 0) drawLevelBarBadge();
   if (lvFx) drawLvFx(dt);
   if (curScreen === 'raid' && raidTab === 'forge') { drawForgeStage(dt); if (Math.floor(clock*10) % 3 === 0) document.querySelectorAll('#forgeStash canvas, #forgeColl canvas').forEach(cv => { if (cv.dataset.k === 'shard') drawShardChip(cv); else drawLootCv(cv, cv.dataset.k, cv.dataset.id); }); }

@@ -50,7 +50,7 @@ function dailyResolve() {
   const fresh = [];
   for (let m = d.medals; m < got; m++) { const M = DAILY_MEDALS[m]; addCoins(M[2]); addBpXp(M[3], 'Daily Arena'); fresh.push(M[0]); if (m === 2) { d.golds++; track('dailyGolds'); if (d.golds >= 3) unlockSecret('v', 'singularity'); } }
   if (got > 0 && d.medals === 0) { d.streak = d.lastDay === prevArenaDay(today) ? d.streak + 1 : 1; d.lastDay = today; if (d.streak % 7 === 0) grantReward(['chest', 'gold']); else if (d.streak % 3 === 0) { freeChests++; saveFree(); } }
-  d.medals = Math.max(d.medals, got); saveDaily(d); syncDailyBadge();
+  d.medals = Math.max(d.medals, got); saveDaily(d); syncDailyBadge(); liveSubmit('daily', String(today), d.best);
   el.hidden = false;
   el.textContent = 'Daily Arena · best rally ' + fmt(sc) + (wasBest ? ' (new best today!)' : '') + (fresh.length ? ' · 🏅 ' + fresh.join(', ') + ' medal' + (fresh.length > 1 ? 's' : '') + '! +' + fresh.reduce((a, n) => a + DAILY_MEDALS[['Bronze', 'Silver', 'Gold'].indexOf(n)][2], 0) + ' coins' : got < 3 ? ' · next medal at ' + fmt(T[got]) : ' · all medals today!') + (d.streak > 1 && fresh.length && d.lastDay === today ? ' · 🔥 ' + d.streak + '-day streak' : '');
 }

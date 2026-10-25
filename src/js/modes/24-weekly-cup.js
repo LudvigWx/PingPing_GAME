@@ -26,7 +26,8 @@ function renderWeekly() {
   $('#wkSub').textContent = 'New boss every Monday. Arena: ' + ARENAS[cfg.ar] + '. Your first win each week gives 150 coins.' + (best ? ' Your best time: ' + fmtTime(best.t) + '.' : '');
   lookCanvas($('#wkLook'), { c: cfg.c, h: cfg.h, f: cfg.f, t: 'std', s: 'solid' }, 2.6);
   const list = $('#wkList'); list.textContent = '';
-  if (!DB) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'The leaderboard shows when the page is open while signed in to Claude.'; list.append(p); return; }
+  if (!DB && Live.ok) { const lr = Live.tops['weekly/' + weekId()] || []; lbRows = lr.map(r => ({ id: r.id, n: r.n, t: r.s/10, w: weekId(), p: 1 })); myUid = Live.uid; }
+  else if (!DB) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'The leaderboard shows when the page is open while signed in to Claude.'; list.append(p); return; }
   const rows = lbRows.filter(r => r.w === weekId()).sort((a, b) => a.t - b.t).slice(0, 10);
   if (!rows.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'No one has beaten the weekly boss yet. Be the first!'; list.append(p); }
   rows.forEach((r, i) => {
@@ -48,6 +49,7 @@ async function initDB() {
 async function submitWeekly(t, players) {
   const prev = weeklyBest();
   if (!prev || t < prev.t) store('trepong-wk', JSON.stringify({ w: weekId(), t }));
+  liveSubmit('weekly', String(weekId()), t*10, true);
   if (!DB || !myUid) return;
   const mine = lbRows.find(r => r.id === myUid && r.w === weekId());
   if (mine && mine.t <= t) return;

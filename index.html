@@ -587,6 +587,18 @@ body.desk .dailycard canvas{width:160px;height:120px}
 .stk.have{opacity:1} .stk.on{border-color:#7CFFB2;background:color-mix(in srgb,#7CFFB2 14%,transparent)}
 .stk.u{border-color:color-mix(in srgb,#7CFFB2 45%,var(--edge))} .stk.r{border-color:color-mix(in srgb,#4FA8FF 50%,var(--edge))} .stk.e{border-color:color-mix(in srgb,#C59BFF 60%,var(--edge))} .stk.l{border-color:#FFB23E} .stk.m{border-color:#FF4F8B;box-shadow:0 0 12px -6px #FF4F8B}
 .profsave{margin-left:10px;padding:8px 14px;font-size:14px}
+.livepill{margin-right:auto;display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:12px;border-radius:999px;border-color:color-mix(in srgb,#7CFFB2 60%,var(--edge));color:#7CFFB2}
+.livepill i,.livedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7CFFB2;box-shadow:0 0 8px #7CFFB2;animation:pulse 1s ease-in-out infinite alternate}
+.livepill+.installtop{margin-right:0}
+.livecnt{color:#7CFFB2;font-weight:700}
+.dailylive{color:#7CFFB2!important}
+.livepanel{width:min(100%,480px)}
+.livepanel .toprow .eyebrow{flex:1;text-align:center}
+.livehead{display:flex;align-items:center;justify-content:center;gap:10px}
+.livehead b{font-family:var(--display);font-weight:400;font-size:18px}
+.livemodes{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.livemodes span{border:1px solid var(--edge);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
+.livetabs{justify-content:center;flex-wrap:wrap}
 .mtools{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin:-8px -6px -4px 0}
 body.desk .mtools{position:absolute;top:0;right:0;margin:0}
 .gear{flex:none;width:40px;height:40px;padding:0;border-radius:50%;font-size:20px;line-height:1;color:var(--mute)}
@@ -932,6 +944,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
   <div class="panel menupanel">
     <div class="mhead">
       <div class="mtools">
+        <button id="btnLive" class="livepill" type="button" hidden><i></i><b id="liveN">0</b> online</button>
         <button id="btnInstallTop" class="installtop" type="button" hidden>⬇ Install app</button>
         <button id="btnRedeem" class="gear" type="button" aria-label="Redeem code" title="Redeem code">🎁</button>
         <button id="btnSettings" class="gear" type="button" aria-label="Settings" title="Settings">⚙</button>
@@ -945,9 +958,9 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <button id="btnLook" class="lookbtn" type="button"><canvas id="menuLook" width="144" height="88"></canvas><span>Your paddle and shop<small><span class="coin" id="menuCoins">0</span><span>coins</span></small></span></button>
     </section>
     <section class="mg modes">
-      <button id="btnAdv" class="advbtn" type="button"><canvas id="menuAdv" width="560" height="125"></canvas><span class="advtx"><b>Adventure</b><small>Story worlds, bosses and loot</small></span><span class="advnew" id="advNew">NEW</span></button>
-      <button id="btnArenas" class="buildbtn" type="button"><span class="bico">🛠️</span><span><b>Arena Builder</b><small>Build and share arenas · <span class="dailytag">Daily Arena</span></small></span><span class="advnew" id="arenaNew">NEW</span></button>
-      <button id="btnRaid" class="advbtn raidbtn" type="button"><canvas id="menuRaid" width="560" height="125"></canvas><span class="advtx"><b>Raids</b><small id="raidMenuSub">Giant bosses · rare loot</small></span><span class="advnew" id="raidNew">NEW</span></button>
+      <button id="btnAdv" class="advbtn" type="button"><canvas id="menuAdv" width="560" height="125"></canvas><span class="advtx"><b>Adventure</b><small>Story worlds, bosses and loot<span id="liveAdv" class="livecnt"></span></small></span><span class="advnew" id="advNew">NEW</span></button>
+      <button id="btnArenas" class="buildbtn" type="button"><span class="bico">🛠️</span><span><b>Arena Builder</b><small>Build and share arenas · <span class="dailytag">Daily Arena</span><span id="liveBuild" class="livecnt"></span></small></span><span class="advnew" id="arenaNew">NEW</span></button>
+      <button id="btnRaid" class="advbtn raidbtn" type="button"><canvas id="menuRaid" width="560" height="125"></canvas><span class="advtx"><b>Raids</b><small><span id="raidMenuSub">Giant bosses · rare loot</span><span id="liveRaid" class="livecnt"></span></small></span><span class="advnew" id="raidNew">NEW</span></button>
     </section>
     <section class="mg play">
       <div class="mtitle">Play</div>
@@ -1132,7 +1145,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
       <div class="duo"><button id="btnSaveAct" class="primary" type="button">Copy</button><button id="btnSaveClose" type="button">Close</button></div>
       <p class="note" id="saveMsg"></p>
     </div>
-    <p class="note" id="buildTag">Trepong · build 12 (Oct 9, 2026)</p>
+    <p class="note" id="buildTag">Trepong · build 13 (Oct 25, 2026)</p>
     <label>Controls</label>
     <div class="ctrls">
       <div><b>Mobile</b><span>Drag with your finger to move the paddle. Two fingers at once = supersmash. Hero power and emotes have their own buttons.</span></div>
@@ -1186,6 +1199,20 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
     <button id="btnBpAll" class="claimall" type="button" hidden>Claim all</button>
     <div class="bpcols"><span>Tier</span><span>Free</span><span>★ Premium</span></div>
     <div id="bpList" class="bplist"></div>
+  </div>
+</div>
+
+<div id="live" class="screen" hidden>
+  <div class="panel livepanel">
+    <div class="toprow"><button id="btnLiveBack" class="backbtn" type="button">‹ Back</button><span class="eyebrow">Live</span><span></span></div>
+    <div class="livehead"><i class="livedot"></i><b id="liveCount">0 players online right now</b></div>
+    <div id="liveModes" class="livemodes"></div>
+    <label>Leaderboards</label>
+    <div class="tabs qtabs livetabs"><button type="button" class="lvtab2" data-b="daily">Daily</button><button type="button" class="lvtab2" data-b="rally">Rally</button><button type="button" class="lvtab2" data-b="tower">Tower</button><button type="button" class="lvtab2" data-b="weekly">Weekly</button><button type="button" class="lvtab2" data-b="raids">Raids</button><button type="button" class="lvtab2" data-b="level">Level</button></div>
+    <div class="seg five" id="liveRallySeg" hidden><button type="button" data-n="2">2</button><button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button><button type="button" data-n="6">6</button></div>
+    <p class="note" id="liveBoardSub"></p>
+    <div id="liveList" class="lb"></div>
+    <p class="note" id="liveMe"></p>
   </div>
 </div>
 
@@ -1355,6 +1382,7 @@ body.desk #chests .panel,body.desk #quests .panel,body.desk #cup .panel{width:mi
         <small id="dailyDesc"></small>
         <div class="medals" id="dailyMedals"></div>
         <small id="dailyBest"></small>
+        <small id="dailyLive" class="dailylive" hidden></small>
         <button id="btnDailyGo" class="primary" type="button">Play today's arena</button>
       </div>
     </div>
@@ -8060,10 +8088,10 @@ function myName() { return cleanName($('#name').value) || 'Player'; }
 function colOf(i, lk) { const l = (lk || looks)[i]; return l ? l.c : SEAT_DEFAULT[i]; }
 
 // ---------- screens ----------
-const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels'];
+const SCREENS = ['menu', 'lobby', 'over', 'custom', 'pick', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live'];
 function showScreen(name) {
   SCREENS.forEach(id => $('#' + id).hidden = id !== name);
-  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels'].includes(name);
+  $('#hud').hidden = mode === 'menu' || ['menu', 'custom', 'quests', 'tower', 'profile', 'chests', 'cup', 'settings', 'adv', 'story', 'bp', 'raid', 'build', 'arenas', 'redeem', 'levels', 'live'].includes(name);
   curScreen = name;
   if (name === 'menu' && typeof lvCheck === 'function') setTimeout(() => { if (curScreen === 'menu' && !lvFx) { lvCheck(); syncLevelBar(); if (!lvFx) loginCheck(); } }, 350);
   if (name && $('#' + name)) $('#' + name).scrollTop = 0;
@@ -9729,6 +9757,9 @@ function trackMatchEnd(earned) {
     if ((st.cards[mySeat] || []).some(k => CARDS[k].r === 'x')) track('cursedWins');
   }
   trackMax('teamScore', st.tot); trackMax('rallySc', st.best);
+  if (!st.boss && !st.raid && !st.lv && st.n >= 2 && st.n <= 6) liveSubmit('rally' + st.n, 'all', st.best);
+  if (st.boss && st.boss.floor) liveSubmit('tower', 'all', towerCleared());
+  if (st.raid) setTimeout(() => liveSubmit('raids', 'all', stats.raidClears || 0), 500);
   if (st.mut) track('chaosMatches');
   if (st.n >= 6 && !st.boss) track('sixMatch');
   const ars = new Set(stats.arenas || []); ars.add(st.ar); stats.arenas = [...ars]; trackMax('arenaCount', ars.size);
@@ -10377,7 +10408,8 @@ function renderWeekly() {
   $('#wkSub').textContent = 'New boss every Monday. Arena: ' + ARENAS[cfg.ar] + '. Your first win each week gives 150 coins.' + (best ? ' Your best time: ' + fmtTime(best.t) + '.' : '');
   lookCanvas($('#wkLook'), { c: cfg.c, h: cfg.h, f: cfg.f, t: 'std', s: 'solid' }, 2.6);
   const list = $('#wkList'); list.textContent = '';
-  if (!DB) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'The shared leaderboard lives in the Claude version. Your best time is saved on this device.'; list.append(p); return; }
+  if (!DB && Live.ok) { const lr = Live.tops['weekly/' + weekId()] || []; lbRows = lr.map(r => ({ id: r.id, n: r.n, t: r.s/10, w: weekId(), p: 1 })); myUid = Live.uid; }
+  else if (!DB) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'The shared leaderboard lives in the Claude version. Your best time is saved on this device.'; list.append(p); return; }
   const rows = lbRows.filter(r => r.w === weekId()).sort((a, b) => a.t - b.t).slice(0, 10);
   if (!rows.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'No one has beaten the weekly boss yet. Be the first!'; list.append(p); }
   rows.forEach((r, i) => {
@@ -10399,6 +10431,7 @@ async function initDB() {
 async function submitWeekly(t, players) {
   const prev = weeklyBest();
   if (!prev || t < prev.t) store('trepong-wk', JSON.stringify({ w: weekId(), t }));
+  liveSubmit('weekly', String(weekId()), t*10, true);
   if (!DB || !myUid) return;
   const mine = lbRows.find(r => r.id === myUid && r.w === weekId());
   if (mine && mine.t <= t) return;
@@ -11765,7 +11798,7 @@ function dailyResolve() {
   const fresh = [];
   for (let m = d.medals; m < got; m++) { const M = DAILY_MEDALS[m]; addCoins(M[2]); addBpXp(M[3], 'Daily Arena'); fresh.push(M[0]); if (m === 2) { d.golds++; track('dailyGolds'); if (d.golds >= 3) unlockSecret('v', 'singularity'); } }
   if (got > 0 && d.medals === 0) { d.streak = d.lastDay === prevArenaDay(today) ? d.streak + 1 : 1; d.lastDay = today; if (d.streak % 7 === 0) grantReward(['chest', 'gold']); else if (d.streak % 3 === 0) { freeChests++; saveFree(); } }
-  d.medals = Math.max(d.medals, got); saveDaily(d); syncDailyBadge();
+  d.medals = Math.max(d.medals, got); saveDaily(d); syncDailyBadge(); liveSubmit('daily', String(today), d.best);
   el.hidden = false;
   el.textContent = 'Daily Arena · best rally ' + fmt(sc) + (wasBest ? ' (new best today!)' : '') + (fresh.length ? ' · 🏅 ' + fresh.join(', ') + ' medal' + (fresh.length > 1 ? 's' : '') + '! +' + fresh.reduce((a, n) => a + DAILY_MEDALS[['Bronze', 'Silver', 'Gold'].indexOf(n)][2], 0) + ' coins' : got < 3 ? ' · next medal at ' + fmt(T[got]) : ' · all medals today!') + (d.streak > 1 && fresh.length && d.lastDay === today ? ' · 🔥 ' + d.streak + '-day streak' : '');
 }
@@ -12312,7 +12345,7 @@ function doPrestige() {
   presArmed = false;
   stats.prest = p + 1; stats.pxp = 0; stats.lvSeen = 1; stats.readyShown = 0; saveStats();
   const rw = prestigeRewards(stats.prest), got = rw.map(r => grantReward(r, true));
-  trackMax('prestige', stats.prest); pushProfile(); syncLevelBar();
+  trackMax('prestige', stats.prest); pushProfile(); syncLevelBar(); liveSubmit('level', 'all', stats.prest*1000 + 1);
   startLvFx({ kind: 'prestige', p: stats.prest, from: p, lv: 1, rewards: got });
   renderLevels();
 }
@@ -12341,7 +12374,7 @@ function lvCheck() {
     const got = [], merged = {}; let coinsSum = 0;
     for (let L = seen + 1; L <= o.L; L++) for (const r of levelRewards(L)) { if (r[0] === 'coins') coinsSum += r[1]; else got.push(grantLevelReward(r)); }
     if (coinsSum) { addCoins(coinsSum); got.unshift(fmt(coinsSum) + ' coins'); }
-    stats.lvSeen = o.L; trackMax('plevel', o.L); saveStats(); syncLevelBar(); pushProfile();
+    stats.lvSeen = o.L; trackMax('plevel', o.L); saveStats(); syncLevelBar(); pushProfile(); liveSubmit('level', 'all', (stats.prest || 0)*1000 + o.L);
     const crossed = LV_SPECIAL.filter(v => v > seen && v <= o.L).pop();
     startLvFx({ kind: crossed || o.L === LV_CAP ? 'special' : 'normal', lv: o.L, from: seen, p: stats.prest || 0, rewards: got, milestone: crossed || (o.L === LV_CAP ? LV_CAP : 0) });
   }
@@ -12479,6 +12512,135 @@ ACH_CAT.skill.push('heat4', 'rev10', 'gold25'); ACH_CAT.collect.push('sec1', 'se
 // Before this, unlocked borders/backgrounds/ball skins from those modules fell back to the defaults on every restart.
 myLook = validLook(storeJSON('trepong-look', null));
 myProf = validProf(Object.assign({ pb: 'plain', pg: 'night', pt: 'newbie', pe: 'none', sh: [] }, storeJSON('trepong-prof', {})));
+// ---------- live: players online right now + global leaderboards (Firebase, web version only) ----------
+// Firebase Realtime Database layout (see database.rules.json):
+//   presence/<uid> = { m: what they are doing, t: last heartbeat }
+//   boards/<board>/<period>/<uid> = { n: name, s: score, t: time }
+const LIVE_CFG = {
+  apiKey: 'AIzaSyD0WCKWFhvrs_EpT8pNZW7PUR6i_f1KeYY',
+  authDomain: 'trepong-c44d8.firebaseapp.com',
+  databaseURL: 'https://trepong-c44d8-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'trepong-c44d8',
+  storageBucket: 'trepong-c44d8.firebasestorage.app',
+  messagingSenderId: '113130426744',
+  appId: '1:113130426744:web:ecf21d30ea127be894388d'
+};
+const LIVE_SDK = ['app', 'auth', 'database'].map(p => 'https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-' + p + '-compat.js');
+// board id: [title, period function, lower is better, score formatter]
+const LIVE_BOARDS = {
+  daily: ['Daily Arena', () => String(arenaDay()), false, s => fmt(s)],
+  rally: ['Best rally', () => 'all', false, s => fmt(s)],
+  tower: ['Champion Tower', () => 'all', false, s => 'Floor ' + s],
+  weekly: ['Weekly boss', () => String(weekId()), true, s => fmtTime(s/10)],
+  raids: ['Raid clears', () => 'all', false, s => s + (s === 1 ? ' clear' : ' clears')],
+  level: ['Highest level', () => 'all', false, s => (Math.floor(s/1000) ? 'P' + ROMAN[Math.floor(s/1000)] + ' · ' : '') + 'Lv ' + (s % 1000)]
+};
+const LIVE_MODES = { menu: '🏠 Menu', practice: '🤖 Vs bots', online: '🌐 Online rooms', adv: '🗺️ Adventure', raid: '⚔️ Raids', tower: '🗼 Tower', daily: '🏟️ Daily Arena', build: '🛠️ Arena Builder', cup: '🏆 Cup' };
+const Live = { ok: false, uid: null, db: null, off: 0, online: [], mode: '', subs: {}, tops: {} };
+function liveLoad(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.append(s); }); }
+async function liveInit() {
+  if (!window.PeerRoom || Live.started) return; // only the GitHub Pages version talks to Firebase
+  Live.started = true;
+  try {
+    for (const src of LIVE_SDK) await liveLoad(src);
+    const fb = window.firebase; fb.initializeApp(LIVE_CFG);
+    Live.db = fb.database();
+    Live.db.ref('.info/serverTimeOffset').on('value', s => { Live.off = s.val() || 0; });
+    fb.auth().onAuthStateChanged(u => { if (!u) return; Live.uid = u.uid; Live.ok = true; livePresence(); liveSubmitAll(); liveWatch(); });
+    await fb.auth().signInAnonymously();
+  } catch (e) { Live.ok = false; }
+}
+function liveNow() { return Date.now() + Live.off; }
+function liveMode() {
+  if (curScreen && curScreen !== 'over' && curScreen !== 'pick') return ({ adv: 'adv', story: 'adv', raid: 'raid', build: 'build', arenas: 'build', lobby: 'online', tower: 'tower', cup: 'cup' })[curScreen] || 'menu';
+  if (mode === 'host' || mode === 'guest') return 'online';
+  if (special === 'adv') return 'adv';
+  if (st && st.raid) return 'raid';
+  if (dailyRun) return 'daily';
+  if (special === 'cup') return 'cup';
+  if (st && st.boss && st.boss.floor) return 'tower';
+  return st ? 'practice' : 'menu';
+}
+function livePresence() {
+  if (!Live.ok) return;
+  const ref = Live.db.ref('presence/' + Live.uid);
+  ref.onDisconnect().remove();
+  Live.mode = liveMode(); ref.set({ m: Live.mode, t: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+  clearInterval(Live.hb); Live.hb = setInterval(() => { if (Live.ok) ref.set({ m: liveMode(), t: firebase.database.ServerValue.TIMESTAMP }).catch(() => {}); }, 60000);
+  Live.db.ref('presence').on('value', s => {
+    const now = liveNow(), v = s.val() || {};
+    Live.online = Object.values(v).filter(p => p && now - (p.t || 0) < 150000); // a heartbeat in the last 2.5 min
+    syncLiveUI();
+  });
+}
+function liveTick() { // called every frame; only writes when what you are doing changes
+  if (!Live.ok) return;
+  const m = liveMode(); if (m === Live.mode) return;
+  Live.mode = m; Live.db.ref('presence/' + Live.uid).set({ m, t: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+}
+// submit a score: only if it beats what you already sent for that board and period
+function liveSubmit(board, period, score, lower) {
+  score = Math.max(0, Math.min(1e7, Math.round(+score || 0))); if (!score && !lower) return;
+  const key = board + '/' + period, sent = storeJSON('trepong-live', {}) || {}, prev = sent[key];
+  if (prev != null && (lower ? score >= prev : score <= prev)) return;
+  if (!Live.ok) return; // try again next time; nothing is marked as sent
+  sent[key] = score; for (const k in sent) if (k.startsWith('daily/') && k !== 'daily/' + arenaDay()) delete sent[k];
+  store('trepong-live', JSON.stringify(sent));
+  Live.db.ref('boards/' + board + '/' + period + '/' + Live.uid).set({ n: myName().slice(0, 16), s: score, t: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+}
+function liveSubmitAll() { // everything we already know about you, so you show up right away
+  liveSubmit('level', 'all', (stats.prest || 0)*1000 + myLevel());
+  liveSubmit('tower', 'all', towerCleared());
+  liveSubmit('raids', 'all', stats.raidClears || 0);
+  for (let n = 2; n <= 6; n++) { const r = +store('trepong-rec-' + n) || 0; if (r) liveSubmit('rally' + n, 'all', r); }
+  const d = dailyData(); if (d.best) liveSubmit('daily', String(arenaDay()), d.best);
+  const w = weeklyBest(); if (w) liveSubmit('weekly', String(weekId()), w.t*10, true);
+}
+// keep the top 10 of a board live
+function liveTop(board, period, lower, cb) {
+  const key = board + '/' + period; if (Live.subs[key]) return;
+  let q = Live.db.ref('boards/' + key).orderByChild('s'); q = lower ? q.limitToFirst(25) : q.limitToLast(25);
+  Live.subs[key] = q; q.on('value', s => {
+    const rows = []; s.forEach(c => { const v = c.val() || {}; rows.push({ id: c.key, n: cleanName(v.n) || 'Player', s: +v.s || 0 }); });
+    rows.sort((a, b) => lower ? a.s - b.s : b.s - a.s); Live.tops[key] = rows; if (cb) cb(); syncLiveUI();
+  });
+}
+function liveWatch() { liveTop('daily', String(arenaDay()), false); liveTop('weekly', String(weekId()), true, () => { if (curScreen === 'tower') renderWeekly(); }); }
+// ----- UI -----
+let liveTab = 'daily', liveRally = 3;
+function syncLiveUI() {
+  const n = Live.online.length, pill = $('#btnLive'); pill.hidden = !Live.ok;
+  $('#liveN').textContent = n;
+  const cnt = m => Live.online.filter(p => p.m === m).length;
+  for (const [id, m] of [['liveAdv', 'adv'], ['liveRaid', 'raid'], ['liveBuild', 'build'], ['liveBuild2', 'daily']]) { const el = $('#' + id); if (el) { const c = cnt(m); el.textContent = c ? ' · ' + c + ' playing' : ''; } }
+  const dr = Live.tops['daily/' + arenaDay()], dl = $('#dailyLive');
+  if (dl) { dl.hidden = !Live.ok; if (Live.ok) { const me = dr ? dr.findIndex(r => r.id === Live.uid) : -1; dl.textContent = dr && dr.length ? '🌍 Today\'s #1: ' + dr[0].n + ' ' + fmt(dr[0].s) + (me >= 0 ? ' · you are #' + (me + 1) : '') : '🌍 No scores yet today. Be the first!'; } }
+  if (curScreen === 'live') renderLive();
+}
+function openLive() { mode = 'menu'; st = null; series = null; special = null; showScreen('live'); renderLive(); }
+function renderLive() {
+  const by = {}; for (const p of Live.online) by[p.m] = (by[p.m] || 0) + 1;
+  $('#liveCount').textContent = Live.online.length + (Live.online.length === 1 ? ' player' : ' players') + ' online right now';
+  const box = $('#liveModes'); box.textContent = '';
+  Object.keys(LIVE_MODES).filter(m => by[m]).sort((a, b) => by[b] - by[a]).forEach(m => box.append(Object.assign(document.createElement('span'), { textContent: LIVE_MODES[m] + ' ' + by[m] })));
+  document.querySelectorAll('#live .lvtab2').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.b === liveTab)));
+  $('#liveRallySeg').hidden = liveTab !== 'rally'; setSeg($('#liveRallySeg'), liveRally, 'n');
+  const B = LIVE_BOARDS[liveTab], board = liveTab === 'rally' ? 'rally' + liveRally : liveTab, period = B[1](), key = board + '/' + period;
+  $('#liveBoardSub').textContent = liveTab === 'daily' ? 'Today\'s arena: ' + dailyLevel(arenaDay()).name + '. Best single rally.' : liveTab === 'weekly' ? 'This week: ' + weeklyCfg().n + '. Fastest win.' : liveTab === 'rally' ? 'Best rally score in a ' + liveRally + '-player match.' : liveTab === 'tower' ? 'Highest Champion Tower floor cleared.' : liveTab === 'raids' ? 'Most raid clears.' : 'Prestige first, then level.';
+  if (Live.ok) liveTop(board, period, B[2]);
+  const list = $('#liveList'); list.textContent = '';
+  const rows = Live.tops[key];
+  if (!Live.ok) { list.append(Object.assign(document.createElement('p'), { className: 'note', textContent: 'Connecting…' })); return; }
+  if (!rows) { list.append(Object.assign(document.createElement('p'), { className: 'note', textContent: 'Loading…' })); return; }
+  if (!rows.length) { list.append(Object.assign(document.createElement('p'), { className: 'note', textContent: 'No scores yet. Be the first!' })); return; }
+  rows.slice(0, 10).forEach((r, i) => {
+    const el = document.createElement('div'); el.className = 'lbrow' + (r.id === Live.uid ? ' me' : '');
+    el.append(Object.assign(document.createElement('span'), { className: 'pos', textContent: ['🥇', '🥈', '🥉'][i] || String(i + 1) }), Object.assign(document.createElement('span'), { className: 'nm', textContent: r.n }), Object.assign(document.createElement('span'), { className: 'tm', textContent: B[3](r.s) }));
+    list.append(el);
+  });
+  const me = rows.findIndex(r => r.id === Live.uid);
+  $('#liveMe').textContent = me >= 10 ? 'You: #' + (me + 1) + ' · ' + B[3](rows[me].s) : me < 0 ? 'You are not on this list yet.' : '';
+}
 // ----- raid boon vote (UI + host tally) -----
 let myVote = null, voteBuilt = '', voteAnnounced = '';
 function voteHumans() { return st ? alivePlayers(st).filter(i => i === mySeat || (mode === 'host' && hostSeats[i])) : []; }
@@ -12585,6 +12747,7 @@ function frame(now) {
   if (curScreen === 'raid' && raidTab === 'raids' && Math.floor(clock*30) % 2 === 0) drawRaidScreen();
   if (curScreen === 'redeem') drawRedeemStage(dt);
   if (curScreen === 'levels') drawLevelsFrame();
+  liveTick();
   if (curScreen === 'menu' && Math.floor(clock*20) % 2 === 0) drawLevelBarBadge();
   if (lvFx) drawLvFx(dt);
   if (curScreen === 'raid' && raidTab === 'forge') { drawForgeStage(dt); if (Math.floor(clock*10) % 3 === 0) document.querySelectorAll('#forgeStash canvas, #forgeColl canvas').forEach(cv => { if (cv.dataset.k === 'shard') drawShardChip(cv); else drawLootCv(cv, cv.dataset.k, cv.dataset.id); }); }
@@ -12721,6 +12884,11 @@ document.querySelectorAll('#build .stepper button').forEach(b => b.addEventListe
 }));
 addEventListener('keydown', e => { if (curScreen !== 'build' || !ed || e.target.tagName === 'INPUT') return; if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? edRedo() : edUndo(); } else if (e.key === 'Delete' || e.key === 'Backspace') { if (ed.sel >= 0) { edSnapshot(); ed.L.objs.splice(ed.sel, 1); ed.sel = -1; renderBuilder(); } } });
 // opening a shared arena link: ?arena=CODE
+$('#btnLive').addEventListener('click', () => { audioOn(); openLive(); });
+$('#btnLiveBack').addEventListener('click', () => showScreen('menu'));
+document.querySelectorAll('#live .lvtab2').forEach(b => b.addEventListener('click', () => { liveTab = b.dataset.b; renderLive(); }));
+$('#liveRallySeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; liveRally = +b.dataset.n; renderLive(); });
+setTimeout(liveInit, 1500);
 $('#btnLevel').addEventListener('click', () => { audioOn(); openLevels(collClaimable() ? 'coll' : lvTab); });
 $('#btnLvBack').addEventListener('click', () => showScreen('menu'));
 document.querySelectorAll('#levels .ltab').forEach(b => b.addEventListener('click', () => { lvTab = b.dataset.t; presArmed = false; renderLevels(); }));
